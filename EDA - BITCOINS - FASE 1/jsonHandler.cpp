@@ -31,7 +31,7 @@ void jsonHandler::newJSON(const char* filename) {
 	jsonFile.close();
 
 	/*For every block in the blockChain...*/
-	for (const auto& j : JSON) {
+	for (auto& j : JSON) {
 		/*Gets transaction IDs.*/
 		getIDs(j);
 
@@ -52,39 +52,28 @@ unsigned int jsonHandler::generateID(unsigned char* str) {
 }
 
 /*Gets transaction IDs from json.*/
-void jsonHandler::getIDs(const json& j) {
+void jsonHandler::getIDs(const json& Json) {
 	IDs.clear();
 	std::string ss;
 	unsigned int tempID;
 
-	/*If JSON has 'tx' key...*/
-	if (j.find("tx") != j.end()) {
-		for (const auto& TX : j["tx"]) {
-			/*If JSON has 'tx' key...*/
-			if (TX.find("vin") != TX.end()) {
-				/*Loops through every 'mini JSON' in JSON['vin'].*/
-				for (const auto& miniJson : TX["vin"]) {
-					/*Validates existence of 'txid'.*/
-					if (miniJson.find("txid") != miniJson.end()) {
-						/*Gets string from JSON.*/
-						ss = miniJson["txid"].get<std::string>();
+	if (Json.is_null())
+		return;
 
-						/*Transforms string to numerical ID.*/
-						tempID = generateID((unsigned char*)ss.c_str());
+	/*For every transaction...*/
+	for (const auto& TX : Json["tx"]) {
+		/*Loops through every 'mini JSON' in JSON['vin'].*/
+		for (const auto& miniJson : TX["vin"]) {
+			/*Gets string from JSON.*/
+			ss = miniJson["txid"].get<std::string>();
 
-						/*Transforms numerical ID to hex Coded ASCII.*/
-						IDs.push_back(hexCodedASCII(tempID));
-					}
-					else
-						throw std::exception("Wrong JSON format. Expected 'txid' identifier.");
-				}
-			}
-			else
-				throw std::exception("Wrong JSON format. Expected 'vin' identifier.");
+			/*Transforms string to numerical ID.*/
+			tempID = generateID((unsigned char*)ss.c_str());
+
+			/*Transforms numerical ID to hex Coded ASCII.*/
+			IDs.push_back(hexCodedASCII(tempID));
 		}
 	}
-	else
-		throw std::exception("Wrong JSON format. Excepted 'tx' identifier.");
 }
 
 /*Transforms int into hex Coded ASCII.*/
@@ -133,5 +122,6 @@ void jsonHandler::buildMerkle(void) {
 		}
 	}
 
-	std::cout << "Merkle root: " << nodes.front() << std::endl;
+	if (nodes.size())
+		std::cout << "Merkle root: " << nodes.front() << std::endl;
 }
