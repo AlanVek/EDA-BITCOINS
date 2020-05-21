@@ -35,7 +35,7 @@ void jsonHandler::newJSON(const char* filename) {
 		/*Gets transaction IDs.*/
 		getIDs(j);
 
-		/*Copies IDs vector to temporary vector 'nodes'.*/
+		/*Copies IDs vector to temporary list 'nodes'.*/
 		nodes.assign(IDs.begin(), IDs.end());
 
 		/*Gets Merkle Root and prints it.*/
