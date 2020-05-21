@@ -7,17 +7,19 @@ using json = nlohmann::json;
 class jsonHandler {
 public:
 	jsonHandler();
-	jsonHandler(const char*);
-	void newJSON(const char* filename);
 
-	static const std::string hexCodedASCII(unsigned int);
+	jsonHandler(const char*);
+
+	void newJSON(const char* filename);
 
 private:
 	json JSON, tree;
+
+	void getIDs(const json&);
+
+	static const std::string hexCodedASCII(unsigned int);
+	void buildMerkle(void);
 	std::list<std::string> IDs;
-	void getIDs(void);
-
+	std::list<std::string> nodes;
 	static unsigned int generateID(unsigned char* str);
-
-	void buildMerkle(std::list<std::string>::iterator* = nullptr);
 };

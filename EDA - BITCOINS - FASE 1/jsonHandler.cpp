@@ -12,14 +12,12 @@ namespace {
 jsonHandler::jsonHandler() {};
 
 jsonHandler::jsonHandler(const char* filename) {
+	/*Performs to get Merkle Tree.*/
 	newJSON(filename);
-
-	getIDs();
-
-	buildMerkle();
 }
 
 void jsonHandler::newJSON(const char* filename) {
+	/*Attempts to open file.*/
 	std::fstream jsonFile(filename, std::ios::in);
 
 	if (!jsonFile.is_open()) {
@@ -27,9 +25,22 @@ void jsonHandler::newJSON(const char* filename) {
 		throw std::exception("Failed to open file.");
 	}
 
+	/*Parses file input.*/
 	JSON = json::parse(jsonFile);
 
 	jsonFile.close();
+
+	/*For every block in the blockChain...*/
+	for (const auto& j : JSON) {
+		/*Gets transaction IDs.*/
+		getIDs(j);
+
+		/*Copies IDs vector to temporary vector 'nodes'.*/
+		nodes.assign(IDs.begin(), IDs.end());
+
+		/*Gets Merkle Root and prints it.*/
+		buildMerkle();
+	}
 }
 
 unsigned int jsonHandler::generateID(unsigned char* str) {
@@ -40,17 +51,19 @@ unsigned int jsonHandler::generateID(unsigned char* str) {
 	return ID;
 }
 
-void jsonHandler::getIDs(void) {
+/*Gets transaction IDs from json.*/
+void jsonHandler::getIDs(const json& j) {
 	IDs.clear();
 	std::string ss;
 	unsigned int tempID;
 
-	for (const auto& j : JSON) {
-		/*If JSON has 'vin' key...*/
-		if (j.find("tx") != j.end()) {
-			if (j["tx"][0].find("vin") != j["tx"][0].end()) {
+	/*If JSON has 'tx' key...*/
+	if (j.find("tx") != j.end()) {
+		for (const auto& TX : j["tx"]) {
+			/*If JSON has 'tx' key...*/
+			if (TX.find("vin") != TX.end()) {
 				/*Loops through every 'mini JSON' in JSON['vin'].*/
-				for (const auto& miniJson : j["tx"][0]["vin"]) {
+				for (const auto& miniJson : TX["vin"]) {
 					/*Validates existence of 'txid'.*/
 					if (miniJson.find("txid") != miniJson.end()) {
 						/*Gets string from JSON.*/
@@ -65,19 +78,20 @@ void jsonHandler::getIDs(void) {
 					else
 						throw std::exception("Wrong JSON format. Expected 'txid' identifier.");
 				}
-
-				/*Duplicates last entry if there's an uneven amount of entries.*/
-				if (IDs.size() % 2)
-					IDs.push_back(IDs.back());
 			}
 			else
 				throw std::exception("Wrong JSON format. Expected 'vin' identifier.");
 		}
-		else
-			throw std::exception("Wrong JSON format. Excepted 'tx' identifier.");
+
+		/*Takes entries to the form of 2^n.*/
+		while (floor(log2(IDs.size())) != log2(IDs.size()))
+			IDs.push_back(IDs.back());
 	}
+	else
+		throw std::exception("Wrong JSON format. Excepted 'tx' identifier.");
 }
 
+/*Transforms int into hex Coded ASCII.*/
 const std::string jsonHandler::hexCodedASCII(unsigned int number) {
 	std::stringstream stre;
 
@@ -96,41 +110,38 @@ const std::string jsonHandler::hexCodedASCII(unsigned int number) {
 	return result;
 }
 
-void jsonHandler::buildMerkle(std::list<std::string>::iterator* itr) {
-	static std::list<std::string> nodes(IDs);
+/*Gets Merkle Root.*/
+void jsonHandler::buildMerkle(void) {
 	static bool going = true;
 
 	std::list<std::string>::iterator itrTemp;
-
-	if (!itr) {
-		itr = new std::list<std::string>::iterator(nodes.begin());
-	}
-
 	std::string temp;
 
-	if ((*itr) != nodes.end() && going) {
-		if ((*itr) == nodes.end() || ++(*itr) == nodes.end()) {
+	/*For every pair in the list...*/
+	for (auto i = nodes.begin(); i != nodes.end() && going; i++)
+
+		/*If it's the last one, it leaves.*/
+		if (i == nodes.end() || ++i == nodes.end()) {
 			going = false;
-			(*itr)--;
+			i--;
 		}
+
+	/*Otherwise, it concats both strings and gets
+	a new ID and a new hex Coded ASCII from that ID.*/
 		else {
-			temp = **itr;
-			(*itr)--;
-			(**itr).append(temp);
-			**itr = hexCodedASCII(generateID((unsigned char*)temp.c_str()));
-			itrTemp = ++(*itr);
-			(*itr)--;
+			temp = *i;
+			i--;
+			(*i).append(temp);
+			*i = hexCodedASCII(generateID((unsigned char*)(*i).c_str()));
+			itrTemp = (++i);
+			i--;
 			nodes.erase(itrTemp);
 		}
-	}
 
 	if (nodes.size() > 1)
-		buildMerkle(itr);
+		buildMerkle();
 
 	else {
-		std::cout << *nodes.begin() << std::endl;
-		nodes.clear();
-		if (itr)
-			delete itr;
+		std::cout << "Merkle root: " << nodes.front() << std::endl;
 	}
 }
