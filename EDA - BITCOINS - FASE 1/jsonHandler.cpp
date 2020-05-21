@@ -121,7 +121,7 @@ void jsonHandler::buildMerkle(void) {
 	for (auto i = nodes.begin(); i != nodes.end() && going; i++)
 
 		/*If it's the last one, it leaves.*/
-		if (i == nodes.end() || ++i == nodes.end()) {
+		if (++i == nodes.end()) {
 			going = false;
 			i--;
 		}
@@ -129,19 +129,17 @@ void jsonHandler::buildMerkle(void) {
 	/*Otherwise, it concats both strings and gets
 	a new ID and a new hex Coded ASCII from that ID.*/
 		else {
+			itrTemp = i;
 			temp = *i;
-			i--;
-			(*i).append(temp);
+			(*(--i)).append(temp);
 			*i = hexCodedASCII(generateID((unsigned char*)(*i).c_str()));
-			itrTemp = (++i);
-			i--;
 			nodes.erase(itrTemp);
 		}
 
+	/*If the root wasn't found, it goes through the next level.*/
 	if (nodes.size() > 1)
 		buildMerkle();
 
-	else {
+	else
 		std::cout << "Merkle root: " << nodes.front() << std::endl;
-	}
 }
