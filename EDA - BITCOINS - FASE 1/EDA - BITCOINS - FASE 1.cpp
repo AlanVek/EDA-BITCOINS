@@ -5,8 +5,7 @@ int main()
 {
 	try {
 		jsonHandler j;
-
-		j.newJSON("blockChain (1).json");
+		j.newJSON("blockChain.json");
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;

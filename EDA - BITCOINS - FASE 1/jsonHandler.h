@@ -8,17 +8,21 @@ class jsonHandler {
 public:
 	jsonHandler();
 
-	jsonHandler(const char*);
+	jsonHandler(const std::string&);
 
-	void newJSON(const char* filename);
+	void newJSON(const std::string& filename);
 
 private:
-	static const std::string hexCodedASCII(unsigned int);
+	inline static const std::string hexCodedASCII(unsigned int);
 	void getIDs(const json&);
-	void buildMerkle(void);
-	std::list<std::string> nodes;
+	void printMerkle(void);
 	static unsigned int generateID(unsigned char* str);
-	json JSON, tree;
+	json JSON;
 
-	std::list<std::string> IDs;
+	inline static const std::string hash(const std::string&);
+
+	std::list<std::string> nodes, IDs;
+	std::vector<std::string> tree;
+
+	void buildTree();
 };

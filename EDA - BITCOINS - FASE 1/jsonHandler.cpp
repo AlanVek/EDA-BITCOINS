@@ -1,7 +1,5 @@
 #include "jsonHandler.h"
 #include <fstream>
-#include <iomanip>
-#include <sstream>
 #include <iostream>
 
 namespace {
@@ -9,14 +7,14 @@ namespace {
 	const char hexLimit_sup = 'f';
 }
 
-jsonHandler::jsonHandler() {};
+jsonHandler::jsonHandler() {}
 
-jsonHandler::jsonHandler(const char* filename) {
+jsonHandler::jsonHandler(const std::string& filename) {
 	/*Performs to get Merkle Tree.*/
 	newJSON(filename);
 }
 
-void jsonHandler::newJSON(const char* filename) {
+void jsonHandler::newJSON(const std::string& filename) {
 	/*Attempts to open file.*/
 	std::fstream jsonFile(filename, std::ios::in);
 
@@ -39,7 +37,11 @@ void jsonHandler::newJSON(const char* filename) {
 		nodes.assign(IDs.begin(), IDs.end());
 
 		/*Gets Merkle Root and prints it.*/
-		buildMerkle();
+		buildTree();
+
+		//printMerkle();
+
+		tree.clear();
 	}
 }
 
@@ -54,49 +56,51 @@ unsigned int jsonHandler::generateID(unsigned char* str) {
 /*Gets transaction IDs from json.*/
 void jsonHandler::getIDs(const json& Json) {
 	IDs.clear();
-	std::string ss;
+
 	unsigned int tempID;
 
 	if (Json.is_null())
 		return;
 
+	std::string tx_id;
 	/*For every transaction...*/
 	for (const auto& TX : Json["tx"]) {
 		/*Loops through every 'mini JSON' in JSON['vin'].*/
-		for (const auto& miniJson : TX["vin"]) {
+		for (const auto& miniJson : TX["vin"])
 			/*Gets string from JSON.*/
-			ss = miniJson["txid"].get<std::string>();
+			tx_id.append(miniJson["txid"].get<std::string>());
 
-			/*Transforms string to numerical ID.*/
-			tempID = generateID((unsigned char*)ss.c_str());
+		/*Hashes id and appends it to IDs.*/
+		IDs.push_back(hash(tx_id));
 
-			/*Transforms numerical ID to hex Coded ASCII.*/
-			IDs.push_back(hexCodedASCII(tempID));
-		}
+		tx_id.clear();
 	}
 }
 
 /*Transforms int into hex Coded ASCII.*/
-const std::string jsonHandler::hexCodedASCII(unsigned int number) {
-	std::stringstream stre;
+inline const std::string jsonHandler::hexCodedASCII(unsigned int number) {
+	char res[9];
+	sprintf_s(res, "%08X", number);
 
-	/*Generates HEX number from int.*/
-	stre << std::setfill('0') << std::setw(2 * sizeof(unsigned int)) << std::hex << number;
-
-	/*Sets string with result.*/
-	std::string result = stre.str();
-
-	/*Transforms string to upper-case.*/
-	for (int i = 0; i < result.length(); i++) {
-		if (hexLimit_inf <= result[i] && hexLimit_sup >= result[i])
-			result[i] = std::toupper(result[i]);
-	}
-
-	return result;
+	return res;
 }
 
-/*Gets Merkle Root.*/
-void jsonHandler::buildMerkle(void) {
+///*Gets Merkle Root.*/
+//void jsonHandler::printMerkle(void) {
+//	unsigned int levels = log2(tree.size() + 1);
+//
+//	for (int i = levels; i > -1; i--) {
+//		for (int j = 0; j < pow(2, levels - i); j++) {
+//			/*for (int k = 0; k < pow(2, i + 1); k++)
+//				std::cout << ' ';*/
+//			std::cout << tree[pow(2, i)
+//		} j] << ' ';
+//		}
+//		std::cout << std::endl;
+//	}
+//}
+
+void jsonHandler::buildTree(void) {
 	static bool going = true;
 
 	std::list<std::string>::iterator itrTemp;
@@ -107,21 +111,28 @@ void jsonHandler::buildMerkle(void) {
 		if (nodes.size() % 2)
 			nodes.push_back(nodes.back());
 
+		tree.insert(tree.end(), nodes.begin(), nodes.end());
+
 		/*For every node in the list...*/
 		for (auto i = nodes.begin(); i != nodes.end(); i++) {
 			itrTemp = ++i;
 
 			/*Concats next node's content to the current node's content.*/
-			(*(--i)).append(*itrTemp);
+			(*(i)) = hash(*(--i)) + hash(*itrTemp);
 
-			/*Transforms content to ID and ID to hex Coded ASCII.*/
-			*i = hexCodedASCII(generateID((unsigned char*)(*i).c_str()));
+			/*Hashes node's content.*/
+			*i = hash(*i);
 
 			/*Erases next node.*/
 			nodes.erase(itrTemp);
 		}
 	}
+	if (nodes.size()) {
+		tree.insert(tree.end(), nodes.back());
+		std::cout << "Merkle root: " << nodes.back() << std::endl;
+	}
+}
 
-	if (nodes.size())
-		std::cout << "Merkle root: " << nodes.front() << std::endl;
+inline const std::string jsonHandler::hash(const std::string& code) {
+	return hexCodedASCII(generateID((unsigned char*)code.c_str()));
 }
