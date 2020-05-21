@@ -82,10 +82,6 @@ void jsonHandler::getIDs(const json& j) {
 			else
 				throw std::exception("Wrong JSON format. Expected 'vin' identifier.");
 		}
-
-		/*Takes entries to the form of 2^n.*/
-		while (floor(log2(IDs.size())) != log2(IDs.size()))
-			IDs.push_back(IDs.back());
 	}
 	else
 		throw std::exception("Wrong JSON format. Excepted 'tx' identifier.");
@@ -115,31 +111,27 @@ void jsonHandler::buildMerkle(void) {
 	static bool going = true;
 
 	std::list<std::string>::iterator itrTemp;
-	std::string temp;
 
-	/*For every pair in the list...*/
-	for (auto i = nodes.begin(); i != nodes.end() && going; i++)
+	/*While nodes list is not the Merkle Root...*/
+	while (nodes.size() > 1) {
+		/*If node amount is uneven, it copies the last one to the back of the list.*/
+		if (nodes.size() % 2)
+			nodes.push_back(nodes.back());
 
-		/*If it's the last one, it leaves.*/
-		if (++i == nodes.end()) {
-			going = false;
-			i--;
-		}
+		/*For every node in the list...*/
+		for (auto i = nodes.begin(); i != nodes.end(); i++) {
+			itrTemp = ++i;
 
-	/*Otherwise, it concats both strings and gets
-	a new ID and a new hex Coded ASCII from that ID.*/
-		else {
-			itrTemp = i;
-			temp = *i;
-			(*(--i)).append(temp);
+			/*Concats next node's content to the current node's content.*/
+			(*(--i)).append(*itrTemp);
+
+			/*Transforms content to ID and ID to hex Coded ASCII.*/
 			*i = hexCodedASCII(generateID((unsigned char*)(*i).c_str()));
+
+			/*Erases next node.*/
 			nodes.erase(itrTemp);
 		}
+	}
 
-	/*If the root wasn't found, it goes through the next level.*/
-	if (nodes.size() > 1)
-		buildMerkle();
-
-	else
-		std::cout << "Merkle root: " << nodes.front() << std::endl;
+	std::cout << "Merkle root: " << nodes.front() << std::endl;
 }
