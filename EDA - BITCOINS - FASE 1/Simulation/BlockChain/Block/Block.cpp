@@ -96,8 +96,23 @@ void Block::buildTree(void) {
 		merkleRoot = nodes.back();
 	}
 }
-const std::string& Block::getMerkleRoot() const { return merkleRoot; }
 
+const std::string Block::getData(const BlockInfo& data) const {
+	switch (data) {
+	case BlockInfo::BLOCKID:
+		return ID;
+	case BlockInfo::BLOCK_NUMBER:
+		return std::to_string(blockNumber);
+	case BlockInfo::SEE_MROOT:
+		return merkleRoot;
+	case BlockInfo::NTX:
+		return std::to_string(nTx);
+	case BlockInfo::NONCE:
+		return std::to_string(nonce);
+	case BlockInfo::PREVIOUS_BLOCKID:
+		return previousID;
+	}
+}
 void Block::printData() const {
 	std::cout << "{\n";
 	std::cout << "\tBlock ID: " << ID << std::endl;

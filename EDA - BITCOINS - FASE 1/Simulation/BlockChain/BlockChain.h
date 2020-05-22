@@ -14,6 +14,10 @@ public:
 
 	void printBlockData(const std::initializer_list<unsigned int> & = {});
 
+	const std::string getBlockInfo(int index, const BlockInfo&) const;
+
+	const unsigned int getBlockAmount() const;
+
 private:
 
 	json JSON;

@@ -19,8 +19,30 @@ void Simulation::dispatch(const Events& code) {
 		break;
 	case Events::NEW_FILE:
 		blockChain.loadBlockChain(gui->getFilename());
+		gui->setChainLength(blockChain.getBlockAmount());
+		break;
 	case Events::BLOCKID:
-		gui->setInfoShower()
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCKID));
+		break;
+	case Events::SEE_MROOT:
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::SEE_MROOT));
+		break;
+	case Events::PREVIOUS_BLOCKID:
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::PREVIOUS_BLOCKID));
+		break;
+	case Events::NONCE:
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::NONCE));
+		break;
+	case Events::NTX:
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::NTX));
+		break;
+	case Events::BLOCK_NUMBER:
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCK_NUMBER));
+		break;
+
+	case Events::VALIDATE_MROOT:
+		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::VALIDATE_MROOT));
+
 	default:
 		break;
 	}

@@ -2,6 +2,16 @@
 #include "json.hpp"
 #include <list>
 
+const enum class BlockInfo {
+	SEE_MROOT,
+	BLOCKID,
+	PREVIOUS_BLOCKID,
+	NTX,
+	BLOCK_NUMBER,
+	NONCE,
+	VALIDATE_MROOT
+};
+
 using json = nlohmann::json;
 class Block
 {
@@ -10,7 +20,7 @@ public:
 
 	void printData() const;
 
-	const std::string& getMerkleRoot() const;
+	const std::string getData(const BlockInfo&) const;
 private:
 	void getIDs(const json&);
 

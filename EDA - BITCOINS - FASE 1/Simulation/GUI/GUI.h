@@ -8,7 +8,6 @@
 const enum class Events : int {
 	NOTHING = 0,
 	END,
-	CONTENT,
 	SEE_MROOT,
 	VALIDATE_MROOT,
 	ALL_MERKLE,
@@ -20,6 +19,13 @@ const enum class Events : int {
 	NEW_FILE
 };
 /********************************/
+
+const enum class States {
+	INIT = 0,
+	WAITING,
+	FILE_OK,
+	BLOCK_OK
+};
 
 class GUI {
 public:
@@ -35,6 +41,8 @@ public:
 	const std::string& getFilename(void) const;
 
 	void setInfoShower(const std::string&);
+
+	void setChainLength(unsigned int);
 private:
 	/*Initial setup.*/
 	/**********************************/
@@ -48,6 +56,8 @@ private:
 	inline void displayPath();
 	inline void displayActions();
 	void displayFiles();
+	void displayBlocks();
+	void performCases();
 
 	template <class Widget, class F1, class F2 = void(*)(void)>
 	inline auto displayWidget(const Widget&, const F1& f1, const F2 & = []() {}) -> decltype(f1());
@@ -70,10 +80,11 @@ private:
 
 	/*Flag data members.*/
 	/******************************/
-	bool force, init;
+	bool force;
 	unsigned int chainLength;
 	std::string action_msg, shower;
 	Events action;
+	States state;
 	/******************************/
 
 	/*Data members modifiable by user.*/

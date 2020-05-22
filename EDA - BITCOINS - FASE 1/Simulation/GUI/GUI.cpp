@@ -23,7 +23,7 @@ GUI::GUI(void) :
 	guiQueue(nullptr),
 	action(Events::NOTHING),
 	force(true),
-	init(true),
+	state(States::INIT),
 	action_msg("none."),
 	index(0),
 	chainLength(0)
@@ -126,19 +126,30 @@ const Events GUI::checkStatus(void) {
 		/*Text input for new path.*/
 		displayPath();
 
-		if (!init) {
+		if (state > States::INIT) {
 			ImGui::NewLine(); ImGui::NewLine();
 
 			/*Files from path.*/
 			displayFiles();
-			displayWidget("Load", [&result]() {result = Events::NEW_FILE; });
+			displayWidget("Load", [&result, this]() {result = Events::NEW_FILE; state = States::FILE_OK; });
 
-			ImGui::NewLine(); ImGui::NewLine();
+			if (state >= States::FILE_OK) {
+				ImGui::NewLine(); ImGui::NewLine();
 
-			/*Actions for compression and decompression.*/
-			displayActions();
+				displayBlocks();
 
-			ImGui::NewLine(); ImGui::NewLine();
+				if (state >= States::BLOCK_OK) {
+					ImGui::NewLine();
+
+					displayActions();
+					ImGui::NewLine();
+					ImGui::Text("Result: ");
+					ImGui::SameLine();
+					ImGui::Text(shower.c_str());
+					ImGui::NewLine();
+					result = action;
+				}
+			}
 
 			/*Exit button.*/
 			displayWidget("Exit", [&result]() {result = Events::END; });
@@ -178,7 +189,6 @@ inline void GUI::displayActions() {
 	ImGui::SameLine();
 	displayWidget("Validate MR", std::bind(button_callback, Events::VALIDATE_MROOT, "Merkle Root validation"));
 
-	ImGui::NewLine();
 	/*Message with selected option.*/
 	ImGui::Text(("Selected: " + action_msg).c_str());
 }
@@ -189,10 +199,12 @@ inline void GUI::displayPath() {
 	ImGui::InputText(" ", &path);
 
 	ImGui::SameLine();
-	displayWidget("Go", [this]() {if (Filesystem::exists(path.c_str())) { fs.newPath(path); init = false; }});
+	displayWidget("Go", [this]() {if (Filesystem::exists(path.c_str())) {
+		fs.newPath(path); state = States::WAITING;
+	}});
 
 	ImGui::SameLine();
-	displayWidget("Reset", [this]() {path.clear(); init = true; });
+	displayWidget("Reset", [this]() {path.clear(); state = States::INIT; });
 }
 
 /*Displays path and files/folders in path.*/
@@ -242,6 +254,14 @@ inline void GUI::render() const {
 	al_flip_display();
 }
 
+void GUI::displayBlocks(void) {
+	for (unsigned int i = 0; i < chainLength; i++) {
+		displayWidget(("Block" + std::to_string(i + 1)).c_str(), [this, i]() {state = States::BLOCK_OK; index = i; });
+		ImGui::SameLine();
+	}
+	ImGui::Text(("Selected: " + std::to_string(index + 1)).c_str());
+}
+
 /*Getters.*/
 const std::string& GUI::getFilename(void) const { return selected; }
 const unsigned int GUI::getBlockIndex(void) const { return index; }
@@ -284,3 +304,6 @@ const std::vector<std::string>& GUI::updateFiles(const char* path) {
 
 	return fs.pathContent(path, shouldForce, { data::fixedFormat });
 }
+
+void GUI::setChainLength(unsigned int chainLength) { this->chainLength = chainLength; }
+void GUI::setInfoShower(const std::string& shower) { this->shower = shower; }

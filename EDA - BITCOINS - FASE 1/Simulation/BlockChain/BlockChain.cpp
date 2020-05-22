@@ -9,6 +9,8 @@ BlockChain::BlockChain(const std::string& filename) {
 }
 
 void BlockChain::loadBlockChain(const std::string& filename) {
+	blocks.clear();
+
 	/*Attempts to open file.*/
 	std::fstream jsonFile(filename, std::ios::in);
 
@@ -27,10 +29,12 @@ void BlockChain::loadBlockChain(const std::string& filename) {
 		blocks.push_back(Block(j));
 }
 
-void BlockChain::printMerkleRoots() {
-	for (const auto& block : blocks)
-		std::cout << block.getMerkleRoot() << std::endl;
-}
+//void BlockChain::printMerkleRoots() {
+//	for (const auto& block : blocks)
+//		std::cout << block.getMerkleRoot() << std::endl;
+//}
+
+const unsigned int BlockChain::getBlockAmount() const { return blocks.size(); }
 
 void BlockChain::printBlockData(const std::initializer_list<unsigned int>& indexes) {
 	if (indexes.size()) {
@@ -44,4 +48,14 @@ void BlockChain::printBlockData(const std::initializer_list<unsigned int>& index
 			block.printData();
 		}
 	}
+}
+
+const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) const {
+	if (member == BlockInfo::VALIDATE_MROOT) {
+		if (JSON[index]["merkleroot"].get<std::string>() == blocks[index].getData(BlockInfo::SEE_MROOT))
+			return "True";
+		else
+			return "False";
+	}
+	return blocks[index].getData(member);
 }
