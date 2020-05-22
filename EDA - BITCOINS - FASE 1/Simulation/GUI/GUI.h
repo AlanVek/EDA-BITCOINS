@@ -55,7 +55,7 @@ private:
 	inline void newWindow() const;
 	inline void displayPath();
 	inline void displayActions();
-	void displayFiles();
+	bool displayFiles();
 	void displayBlocks();
 
 	template <class Widget, class F1, class F2 = void(*)(void)>

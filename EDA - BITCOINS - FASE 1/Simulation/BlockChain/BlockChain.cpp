@@ -36,26 +36,20 @@ void BlockChain::loadBlockChain(const std::string& filename) {
 
 const unsigned int BlockChain::getBlockAmount() const { return blocks.size(); }
 
-void BlockChain::printBlockData(const std::initializer_list<unsigned int>& indexes) {
-	if (indexes.size()) {
-		for (auto index : indexes) {
-			if (index >= 0 && index < blocks.size())
-				blocks[index].printData();
-		}
-	}
-	else {
-		for (const auto& block : blocks) {
-			block.printData();
-		}
-	}
-}
+//void BlockChain::printBlockData(const std::initializer_list<unsigned int>& indexes) {
+//	if (indexes.size()) {
+//		for (auto index : indexes) {
+//			if (index >= 0 && index < blocks.size())
+//				blocks[index].printData();
+//		}
+//	}
+//	else {
+//		for (const auto& block : blocks) {
+//			block.printData();
+//		}
+//	}
+//}
 
 const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) const {
-	if (member == BlockInfo::VALIDATE_MROOT) {
-		if (JSON[index]["merkleroot"].get<std::string>() == blocks[index].getData(BlockInfo::SEE_MROOT))
-			return "True";
-		else
-			return "False";
-	}
 	return blocks[index].getData(member);
 }

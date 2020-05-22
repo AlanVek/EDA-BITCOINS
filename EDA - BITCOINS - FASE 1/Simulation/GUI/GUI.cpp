@@ -14,6 +14,7 @@ namespace data {
 	const unsigned int height = 500;
 
 	const char* fixedFormat = ".json";
+	int notSelectedIndex = -1;
 }
 /***************************************/
 
@@ -25,7 +26,7 @@ GUI::GUI(void) :
 	force(true),
 	state(States::INIT),
 	action_msg("none."),
-	index(0),
+	index(data::notSelectedIndex),
 	chainLength(0)
 {
 	setAllegro();
@@ -131,10 +132,10 @@ const Events GUI::checkStatus(void) {
 			ImGui::NewLine(); ImGui::NewLine();
 
 			/*Shows files from path.*/
-			displayFiles();
-
-			/*'Load' button.*/
-			displayWidget("Load", [&result, this]() {result = Events::NEW_FILE; state = States::FILE_OK; });
+			if (displayFiles()) {
+				result = Events::NEW_FILE;
+				state = States::FILE_OK;
+			};
 
 			/*If a file has been loaded...*/
 			if (state >= States::FILE_OK) {
@@ -150,11 +151,16 @@ const Events GUI::checkStatus(void) {
 					/*Shows actions to perform to a given block.*/
 					displayActions();
 					ImGui::NewLine();
-					ImGui::Text("Result: ");
-					ImGui::SameLine();
-					ImGui::Text(shower.c_str());
-					ImGui::NewLine();
-					result = action;
+					if (index != data::notSelectedIndex) {
+						ImGui::Text("Result: ");
+						ImGui::SameLine();
+						ImGui::Text(shower.c_str());
+						ImGui::NewLine();
+						result = action;
+					}
+				}
+				else {
+					index = data::notSelectedIndex;
 				}
 			}
 
@@ -174,14 +180,16 @@ const Events GUI::checkStatus(void) {
 
 /*Displays action buttons.*/
 inline void GUI::displayActions() {
+	bool someOn = false;
+
 	ImGui::Text("Action to perform: ");
 
 	/*Button callback for both buttons.*/
-	const auto button_callback = [this](const Events code, const char* msg) {
+	const auto button_callback = [this, &someOn](const Events code, const char* msg) {
 		action = code;
 		action_msg = msg;
+		someOn = true;
 	};
-
 	/*Creates buttons to different functionalities.*/
 	displayWidget("Block ID", std::bind(button_callback, Events::BLOCKID, "Block ID"));
 	ImGui::SameLine();
@@ -197,6 +205,10 @@ inline void GUI::displayActions() {
 	ImGui::SameLine();
 	displayWidget("Validate MR", std::bind(button_callback, Events::VALIDATE_MROOT, "Merkle Root validation"));
 
+	if (!(bool)action) {
+		action_msg = "none.";
+		shower = "";
+	}
 	/*Message with selected option.*/
 	ImGui::Text(("Selected: " + action_msg).c_str());
 }
@@ -218,7 +230,8 @@ inline void GUI::displayPath() {
 }
 
 /*Displays path and files/folders in path.*/
-void GUI::displayFiles() {
+bool GUI::displayFiles() {
+	bool result = false;
 	std::string tempPath = fs.getPath();
 
 	ImGui::Text("Current path: ");
@@ -235,10 +248,13 @@ void GUI::displayFiles() {
 			bool checker = (file == selected);
 			/*Sets a checkbox with its name. Updates file's value in map.*/
 			displayWidget(std::bind(ImGui::Checkbox, file.c_str(), (bool*)&checker),
-				[this, &checker, &file]() {if ((bool)checker) selected = file; });
+				[this, &checker, &file, &result]() {if ((bool)checker) { selected = file; result = true; }
+				else { selected = ""; state = States::WAITING; } });
 		}
 	}
 	ImGui::Text("-----------------------------------");
+
+	return result;
 }
 
 /*Sets a new ImGUI frame and window.*/
@@ -266,11 +282,17 @@ inline void GUI::render() const {
 
 /*For every block in the vector, it shows it.*/
 void GUI::displayBlocks(void) {
+	bool checker;
 	for (unsigned int i = 0; i < chainLength; i++) {
-		displayWidget(("Block" + std::to_string(i + 1)).c_str(), [this, i]() {state = States::BLOCK_OK; index = i; });
+		checker = (index == i);
+		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i + 1)).c_str(), &checker),
+			[this, i, &checker]() {state = States::BLOCK_OK; if (checker) index = i;
+			else { index = data::notSelectedIndex; state = States::FILE_OK; action = Events::NOTHING; }
+			});
 		ImGui::SameLine();
 	}
-	ImGui::Text(("Selected: " + std::to_string(index + 1)).c_str());
+	ImGui::NewLine();
+	ImGui::Text(("Selected: " + ((index + 1) ? std::to_string(index + 1) : "none.")).c_str());
 }
 
 /*Getters.*/

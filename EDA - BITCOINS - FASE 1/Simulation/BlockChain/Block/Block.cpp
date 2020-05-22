@@ -2,9 +2,10 @@
 #include <iostream>
 
 Block::Block(const json& JSON) {
-	getIDs(JSON);
+	this->JSON = JSON;
+	transformData();
 
-	getFullData(JSON);
+	getIDs();
 
 	/*Copies IDs vector to temporary list 'nodes'.*/
 	nodes.assign(IDs.begin(), IDs.end());
@@ -13,26 +14,24 @@ Block::Block(const json& JSON) {
 	buildTree();
 };
 
-void Block::getFullData(const json& JSON) {
-	blockNumber = JSON["height"].get<unsigned int>();
-	ID = JSON["blockid"].get<std::string>();
-	previousID = JSON["previousblockid"].get<std::string>();
-	nonce = JSON["nonce"].get<unsigned int>();
-	nTx = JSON["nTx"].get<unsigned int>();
+void Block::transformData() {
+	JSON["height"] = std::to_string(JSON["height"].get<unsigned int>());
+	JSON["nonce"] = std::to_string(JSON["nonce"].get<unsigned int>());
+	JSON["nTx"] = std::to_string(JSON["nTx"].get<unsigned int>());
 }
 
 /*Gets transaction IDs from json.*/
-void Block::getIDs(const json& Json) {
+void Block::getIDs() {
 	IDs.clear();
 
 	unsigned int tempID;
 
-	if (Json.is_null())
+	if (JSON.is_null())
 		return;
 
 	std::string tx_id;
 	/*For every transaction...*/
-	for (const auto& TX : Json["tx"]) {
+	for (const auto& TX : JSON["tx"]) {
 		/*Loops through every 'mini JSON' in JSON['vin'].*/
 		for (const auto& miniJson : TX["vin"])
 			/*Gets string from JSON.*/
@@ -93,33 +92,39 @@ void Block::buildTree(void) {
 	}
 	if (nodes.size()) {
 		tree.insert(tree.end(), nodes.back());
-		merkleRoot = nodes.back();
+		JSON["calculated_merkleRoot"] = nodes.back();
+		if (nodes.back() == JSON["merkleroot"])
+			JSON["validation"] = "True";
+		else
+			JSON["validation"] = "False";
 	}
 }
 
 const std::string Block::getData(const BlockInfo& data) const {
 	switch (data) {
 	case BlockInfo::BLOCKID:
-		return ID;
+		return JSON["blockid"];
 	case BlockInfo::BLOCK_NUMBER:
-		return std::to_string(blockNumber);
+		return JSON["height"];
 	case BlockInfo::SEE_MROOT:
-		return merkleRoot;
+		return JSON["merkleroot"];
+	case BlockInfo::VALIDATE_MROOT:
+		return JSON["validation"];
 	case BlockInfo::NTX:
-		return std::to_string(nTx);
+		return JSON["nTx"];
 	case BlockInfo::NONCE:
-		return std::to_string(nonce);
+		return JSON["nonce"];
 	case BlockInfo::PREVIOUS_BLOCKID:
-		return previousID;
+		return JSON["previousblockid"];
 	}
 }
-void Block::printData() const {
-	std::cout << "{\n";
-	std::cout << "\tBlock ID: " << ID << std::endl;
-	std::cout << "\tHeight: " << blockNumber << std::endl;
-	std::cout << "\tMerkleRoot " << merkleRoot << std::endl;
-	std::cout << "\tnTx: " << nTx << std::endl;
-	std::cout << "\tNonce: " << nonce << std::endl;
-	std::cout << "\tPrevious block ID:  " << previousID << std::endl;
-	std::cout << "}\n";
-}
+//void Block::printData() const {
+//	std::cout << "{\n";
+//	std::cout << "\tBlock ID: " << ID << std::endl;
+//	std::cout << "\tHeight: " << blockNumber << std::endl;
+//	std::cout << "\tMerkleRoot " << merkleRoot << std::endl;
+//	std::cout << "\tnTx: " << nTx << std::endl;
+//	std::cout << "\tNonce: " << nonce << std::endl;
+//	std::cout << "\tPrevious block ID:  " << previousID << std::endl;
+//	std::cout << "}\n";
+//}

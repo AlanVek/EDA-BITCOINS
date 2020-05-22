@@ -22,16 +22,14 @@ public:
 
 	const std::string getData(const BlockInfo&) const;
 private:
-	void getIDs(const json&);
+	void getIDs();
+
+	json JSON;
 
 	/*Block data.*/
 	std::list<std::string> nodes, IDs;
 
-	std::string ID, previousID;
-
-	unsigned int  blockNumber, nTx, nonce;
-
-	void getFullData(const json&);
+	void transformData();
 
 	/*Hashing*/
 	static unsigned int generateID(unsigned char* str);
@@ -41,6 +39,4 @@ private:
 	/*Merkle Tree*/
 	void buildTree();
 	std::vector<std::string> tree;
-	//void printMerkle(void);
-	std::string merkleRoot;
 };
