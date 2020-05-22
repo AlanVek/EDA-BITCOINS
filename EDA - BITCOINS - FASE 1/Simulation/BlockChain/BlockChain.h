@@ -10,13 +10,11 @@ public:
 
 	void loadBlockChain(const std::string& filename);
 
-	void printMerkleRoots(void);
-
-	void printBlockData(const std::initializer_list<unsigned int> & = {});
-
 	const std::string getBlockInfo(int index, const BlockInfo&) const;
 
 	const unsigned int getBlockAmount() const;
+
+	const std::string reprTree(unsigned int);
 
 private:
 

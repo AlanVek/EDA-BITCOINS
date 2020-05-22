@@ -118,13 +118,21 @@ const std::string Block::getData(const BlockInfo& data) const {
 		return JSON["previousblockid"];
 	}
 }
-//void Block::printData() const {
-//	std::cout << "{\n";
-//	std::cout << "\tBlock ID: " << ID << std::endl;
-//	std::cout << "\tHeight: " << blockNumber << std::endl;
-//	std::cout << "\tMerkleRoot " << merkleRoot << std::endl;
-//	std::cout << "\tnTx: " << nTx << std::endl;
-//	std::cout << "\tNonce: " << nonce << std::endl;
-//	std::cout << "\tPrevious block ID:  " << previousID << std::endl;
-//	std::cout << "}\n";
-//}
+
+std::string Block::printTree(void) const {
+	unsigned int levels = log2(tree.size() + 1);
+
+	std::string result;
+	unsigned int temp;
+	unsigned int templevel = levels;
+	for (int i = 0; i < tree.size(); i++) {
+		temp = pow(2, templevel - 1);
+		if (i % temp || !i)
+			result.append(tree[i] + '\t');
+		else {
+			result.append("\n\t" + tree[i]);
+			templevel--;
+		}
+	}
+	return result;
+}

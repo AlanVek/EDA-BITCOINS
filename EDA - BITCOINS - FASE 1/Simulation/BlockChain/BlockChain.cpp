@@ -36,19 +36,9 @@ void BlockChain::loadBlockChain(const std::string& filename) {
 
 const unsigned int BlockChain::getBlockAmount() const { return blocks.size(); }
 
-//void BlockChain::printBlockData(const std::initializer_list<unsigned int>& indexes) {
-//	if (indexes.size()) {
-//		for (auto index : indexes) {
-//			if (index >= 0 && index < blocks.size())
-//				blocks[index].printData();
-//		}
-//	}
-//	else {
-//		for (const auto& block : blocks) {
-//			block.printData();
-//		}
-//	}
-//}
+const std::string BlockChain::reprTree(unsigned int index) {
+	return blocks[index].printTree();
+};
 
 const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) const {
 	return blocks[index].getData(member);

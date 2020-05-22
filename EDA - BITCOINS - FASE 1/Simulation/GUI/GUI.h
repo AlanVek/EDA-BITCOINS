@@ -16,7 +16,8 @@ const enum class Events : int {
 	NTX,
 	BLOCK_NUMBER,
 	NONCE,
-	NEW_FILE
+	NEW_FILE,
+	PRINT_TREE
 };
 /********************************/
 
@@ -65,6 +66,7 @@ private:
 	inline auto displayWidget(const char*, const F1& f1, const F2 & = []() {})->decltype(f1());
 
 	inline void render() const;
+	inline void setAllFalse(const States&, bool = false);
 	/*************************************************************************************************/
 
 	/*Exit and resize events.*/

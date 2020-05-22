@@ -7,9 +7,12 @@ int main()
 		Simulation mySim;
 		Events ev;
 
+		/*While user hasn't asked to leave...*/
 		while (mySim.isRunning()) {
+			/*Generates GUI event.*/
 			ev = mySim.eventGenerator();
 
+			/*Dispatches said event.*/
 			mySim.dispatch(ev);
 		}
 	}

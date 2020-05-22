@@ -18,7 +18,7 @@ class Block
 public:
 	Block(const json&);
 
-	void printData() const;
+	std::string printTree() const;
 
 	const std::string getData(const BlockInfo&) const;
 private:

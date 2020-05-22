@@ -40,10 +40,11 @@ void Simulation::dispatch(const Events& code) {
 	case Events::BLOCK_NUMBER:
 		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCK_NUMBER));
 		break;
-
 	case Events::VALIDATE_MROOT:
 		gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::VALIDATE_MROOT));
-
+		break;
+	case Events::PRINT_TREE:
+		gui->setInfoShower(blockChain.reprTree(gui->getBlockIndex()));
 	default:
 		break;
 	}
