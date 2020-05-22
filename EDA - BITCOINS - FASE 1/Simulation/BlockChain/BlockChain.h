@@ -1,5 +1,5 @@
 #pragma once
-#include "Block.h"
+#include "Block/Block.h"
 
 using json = nlohmann::json;
 class BlockChain

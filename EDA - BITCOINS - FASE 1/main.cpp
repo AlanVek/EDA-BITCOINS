@@ -1,12 +1,17 @@
 #include <iostream>
-#include "BlockChain.h"
+#include "Simulation/Simulation.h"
 
 int main()
 {
 	try {
-		BlockChain bc("blockChain.json");
+		Simulation mySim;
+		Events ev;
 
-		bc.printBlockData();
+		while (mySim.isRunning()) {
+			ev = mySim.eventGenerator();
+
+			mySim.dispatch(ev);
+		}
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
