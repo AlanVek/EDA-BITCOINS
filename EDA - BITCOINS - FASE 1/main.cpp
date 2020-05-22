@@ -1,11 +1,12 @@
 #include <iostream>
-#include "jsonHandler.h"
+#include "BlockChain.h"
 
 int main()
 {
 	try {
-		jsonHandler j;
-		j.newJSON("blockChain.json");
+		BlockChain bc("blockChain.json");
+
+		bc.printBlockData();
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;

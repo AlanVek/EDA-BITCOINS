@@ -147,11 +147,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EDA - BITCOINS - FASE 1.cpp" />
-    <ClCompile Include="jsonHandler.cpp" />
+    <ClCompile Include="Block.cpp" />
+    <ClCompile Include="BlockChain.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="jsonHandler.h" />
+    <ClInclude Include="Block.h" />
+    <ClInclude Include="BlockChain.h" />
     <ClInclude Include="json.hpp" />
   </ItemGroup>
   <ItemGroup>
