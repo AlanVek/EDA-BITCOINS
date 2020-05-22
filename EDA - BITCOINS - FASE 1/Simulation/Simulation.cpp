@@ -7,6 +7,7 @@ using namespace std::placeholders;
 //Simulation constructor.
 Simulation::Simulation(void) : running(true)
 {
+	/*Attempts to create new GUI variable.*/
 	gui = new GUI;
 }
 

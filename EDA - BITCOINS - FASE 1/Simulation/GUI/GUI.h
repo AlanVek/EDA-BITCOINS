@@ -57,7 +57,6 @@ private:
 	inline void displayActions();
 	void displayFiles();
 	void displayBlocks();
-	void performCases();
 
 	template <class Widget, class F1, class F2 = void(*)(void)>
 	inline auto displayWidget(const Widget&, const F1& f1, const F2 & = []() {}) -> decltype(f1());

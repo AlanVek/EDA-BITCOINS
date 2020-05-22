@@ -17,7 +17,7 @@ namespace data {
 }
 /***************************************/
 
-/*GUI constructor. Clears 'format' string and sets Allegro resources.*/
+/*GUI constructor. Initializes data members and sets Allegro resources.*/
 GUI::GUI(void) :
 	guiDisp(nullptr),
 	guiQueue(nullptr),
@@ -126,21 +126,28 @@ const Events GUI::checkStatus(void) {
 		/*Text input for new path.*/
 		displayPath();
 
+		/*If it's not the first run after update...*/
 		if (state > States::INIT) {
 			ImGui::NewLine(); ImGui::NewLine();
 
-			/*Files from path.*/
+			/*Shows files from path.*/
 			displayFiles();
+
+			/*'Load' button.*/
 			displayWidget("Load", [&result, this]() {result = Events::NEW_FILE; state = States::FILE_OK; });
 
+			/*If a file has been loaded...*/
 			if (state >= States::FILE_OK) {
 				ImGui::NewLine(); ImGui::NewLine();
 
+				/*Shows blocks in BlockChain.*/
 				displayBlocks();
 
+				/*If a block was selected...*/
 				if (state >= States::BLOCK_OK) {
 					ImGui::NewLine();
 
+					/*Shows actions to perform to a given block.*/
 					displayActions();
 					ImGui::NewLine();
 					ImGui::Text("Result: ");
@@ -175,6 +182,7 @@ inline void GUI::displayActions() {
 		action_msg = msg;
 	};
 
+	/*Creates buttons to different functionalities.*/
 	displayWidget("Block ID", std::bind(button_callback, Events::BLOCKID, "Block ID"));
 	ImGui::SameLine();
 	displayWidget("Previous ID", std::bind(button_callback, Events::PREVIOUS_BLOCKID, "Previous ID"));
@@ -199,11 +207,13 @@ inline void GUI::displayPath() {
 	ImGui::InputText(" ", &path);
 
 	ImGui::SameLine();
-	displayWidget("Go", [this]() {if (Filesystem::exists(path.c_str())) {
-		fs.newPath(path); state = States::WAITING;
-	}});
+
+	/*Button to go to the written path (if it exists).*/
+	displayWidget("Go", [this]() {if (Filesystem::exists(path.c_str())) { fs.newPath(path); state = States::WAITING; }});
 
 	ImGui::SameLine();
+
+	/*Button to go to the original path.*/
 	displayWidget("Reset", [this]() {path.clear(); state = States::INIT; });
 }
 
@@ -254,6 +264,7 @@ inline void GUI::render() const {
 	al_flip_display();
 }
 
+/*For every block in the vector, it shows it.*/
 void GUI::displayBlocks(void) {
 	for (unsigned int i = 0; i < chainLength; i++) {
 		displayWidget(("Block" + std::to_string(i + 1)).c_str(), [this, i]() {state = States::BLOCK_OK; index = i; });
@@ -265,6 +276,10 @@ void GUI::displayBlocks(void) {
 /*Getters.*/
 const std::string& GUI::getFilename(void) const { return selected; }
 const unsigned int GUI::getBlockIndex(void) const { return index; }
+
+/*Setters.*/
+void GUI::setChainLength(unsigned int chainLength) { this->chainLength = chainLength; }
+void GUI::setInfoShower(const std::string& shower) { this->shower = shower; }
 
 /*Cleanup. Frees resources.*/
 GUI::~GUI() {
@@ -304,6 +319,3 @@ const std::vector<std::string>& GUI::updateFiles(const char* path) {
 
 	return fs.pathContent(path, shouldForce, { data::fixedFormat });
 }
-
-void GUI::setChainLength(unsigned int chainLength) { this->chainLength = chainLength; }
-void GUI::setInfoShower(const std::string& shower) { this->shower = shower; }
