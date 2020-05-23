@@ -1,6 +1,5 @@
 #include "BlockChain.h"
 #include <fstream>
-#include <iostream>
 
 BlockChain::BlockChain() {}
 
@@ -29,17 +28,12 @@ void BlockChain::loadBlockChain(const std::string& filename) {
 		blocks.push_back(Block(j));
 }
 
-//void BlockChain::printMerkleRoots() {
-//	for (const auto& block : blocks)
-//		std::cout << block.getMerkleRoot() << std::endl;
-//}
-
 const unsigned int BlockChain::getBlockAmount() const { return blocks.size(); }
 
 const std::string BlockChain::reprTree(unsigned int index) {
 	return blocks[index].printTree();
 };
 
-const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) const {
+const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) {
 	return blocks[index].getData(member);
 }

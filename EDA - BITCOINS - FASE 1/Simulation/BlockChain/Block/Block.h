@@ -2,6 +2,8 @@
 #include "json.hpp"
 #include <list>
 
+class BlockChain;
+
 const enum class BlockInfo {
 	SEE_MROOT,
 	BLOCKID,
@@ -18,10 +20,11 @@ class Block
 public:
 	Block(const json&);
 
-	std::string printTree() const;
+	std::string printTree();
 
-	const std::string getData(const BlockInfo&) const;
+	const std::string getData(const BlockInfo&);
 private:
+
 	void getIDs();
 
 	json JSON;

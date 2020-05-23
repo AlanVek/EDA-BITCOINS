@@ -1,8 +1,4 @@
 #include "Simulation.h"
-#include <iostream>
-#include <functional>
-
-using namespace std::placeholders;
 
 //Simulation constructor.
 Simulation::Simulation(void) : running(true)
@@ -48,6 +44,8 @@ void Simulation::dispatch(const Events& code) {
 	default:
 		break;
 	}
+
+	//gui->actionSolved();
 }
 
 /*Generates event from GUI.*/

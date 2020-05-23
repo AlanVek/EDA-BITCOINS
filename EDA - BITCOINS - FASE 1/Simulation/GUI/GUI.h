@@ -39,11 +39,13 @@ public:
 
 	const unsigned int getBlockIndex() const;
 
-	const std::string& getFilename(void) const;
+	const std::string& getFilename(void);
 
 	void setInfoShower(const std::string&);
 
 	void setChainLength(unsigned int);
+	void actionSolved(void);
+
 private:
 	/*Initial setup.*/
 	/**********************************/

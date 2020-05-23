@@ -10,7 +10,7 @@
 /*GUI data.*/
 /***************************************/
 namespace data {
-	const unsigned int width = 920;
+	const unsigned int width = 1000;
 	const unsigned int height = 500;
 
 	const char* fixedFormat = ".json";
@@ -156,7 +156,7 @@ const Events GUI::checkStatus(void) {
 					if (index != data::notSelectedIndex) {
 						/*Shows result of action applied to block.*/
 						ImGui::Text("Result: ");
-						ImGui::SameLine();
+						ImGui::NewLine();
 						ImGui::Text(shower.c_str());
 						ImGui::NewLine();
 						result = action;
@@ -178,6 +178,8 @@ const Events GUI::checkStatus(void) {
 	}
 	return result;
 }
+
+void GUI::actionSolved(void) { action = Events::NOTHING; }
 
 /*Displays action buttons.*/
 inline void GUI::displayActions() {
@@ -241,13 +243,13 @@ bool GUI::displayFiles() {
 	for (const auto& file : updateFiles()) {
 		/*If it's a file...*/
 		if (Filesystem::isFile((tempPath + '\\' + file).c_str())) {
-			checker = (file == selected);
+			checker = ((tempPath + '\\' + file) == selected);
 
 			/*Sets a checkbox with its name. Updates file's value in map.*/
 			displayWidget(std::bind(ImGui::Checkbox, file.c_str(), (bool*)&checker),
 
-				[this, &checker, &file, &result]() {
-					if ((bool)checker) { selected = file; result = true; }
+				[this, &checker, &file, &result, &tempPath]() {
+					if ((bool)checker) { setAllFalse(States::WAITING); selected = tempPath + '\\' + file; result = true; }
 					else { setAllFalse(States::WAITING, true); }
 				});
 		}
@@ -285,7 +287,7 @@ void GUI::displayBlocks(void) {
 	bool checker;
 	for (unsigned int i = 0; i < chainLength; i++) {
 		checker = (index == i);
-		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i + 1)).c_str(), &checker),
+		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i)).c_str(), &checker),
 
 			[this, i, &checker]() {
 				if (checker) { index = i; state = States::BLOCK_OK; }
@@ -294,11 +296,11 @@ void GUI::displayBlocks(void) {
 		ImGui::SameLine();
 	}
 	ImGui::NewLine();
-	ImGui::Text(("Selected: " + (index != data::notSelectedIndex ? std::to_string(index + 1) : "none.")).c_str());
+	ImGui::Text(("Selected: Block " + (index != data::notSelectedIndex ? std::to_string(index) : "none.")).c_str());
 }
 
 /*Getters.*/
-const std::string& GUI::getFilename(void) const { return selected; }
+const std::string& GUI::getFilename(void) { return selected; }
 const unsigned int GUI::getBlockIndex(void) const { return index; }
 
 /*Setters.*/
