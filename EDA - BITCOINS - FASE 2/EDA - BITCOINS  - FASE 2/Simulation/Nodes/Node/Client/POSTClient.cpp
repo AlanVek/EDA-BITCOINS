@@ -4,13 +4,21 @@ using json = nlohmann::json;
 
 namespace {
 	const char* begURL = "eda_coin";
-}
+	size_t writeCallback(char*, size_t, size_t, void*);
 
-size_t writeCallback(char*, size_t, size_t, void*);
+	//Callback with string as userData.
+	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
+		std::string* userDataPtr = (std::string*) userData;
+
+		userDataPtr->append(ptr, size * nmemb);
+
+		return size * nmemb;
+	}
+}
 
 //POSTClient constructor.
 POSTClient::POSTClient(const std::string& ip, const unsigned int port, const json& data) : Client(ip, port), data(data) {
-	url = ip + '\\' + begURL;
+	url = ip + '/' + begURL;
 }
 
 //Configurates client for tweet request.
@@ -93,15 +101,6 @@ bool POSTClient::perform(void) {
 	}
 	else
 		throw std::exception("Invalid data.");
-}
-
-//Callback with string as userData.
-size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
-	std::string* userDataPtr = (std::string*) userData;
-
-	userDataPtr->append(ptr, size * nmemb);
-
-	return size * nmemb;
 }
 
 POSTClient::~POSTClient() {}

@@ -44,6 +44,12 @@
     <Filter Include="Source Files\Node Sources\BlockChain Sources">
       <UniqueIdentifier>{1d4ba3da-8b7e-46d9-9bec-ce12e80d960f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Node Headers\Client Headers\GET Clients">
+      <UniqueIdentifier>{1e45f0c4-2308-4f63-89ab-ca30a6f9bb0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers\Client Headers\POST Clients">
+      <UniqueIdentifier>{619533ba-cd06-4d2e-b43c-e1ed4f82c830}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -103,7 +109,9 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp">
       <Filter>Source Files\Node Sources\Client Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp">
+      <Filter>Source Files\Node Sources\Client Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\FSMFramework\eventHandling.h">
@@ -169,28 +177,31 @@
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h">
       <Filter>Header Files\Node Headers\Client Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\MerkleClient.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\FilterClient.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\GETClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\GETHeaderClient.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
+      <Filter>Header Files\Node Headers\Client Headers\GET Clients</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\GETBlockClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\GET Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\GET Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\FilterClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\MerkleClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\AllClients.h">
       <Filter>Header Files\Node Headers\Client Headers</Filter>
     </ClInclude>
   </ItemGroup>

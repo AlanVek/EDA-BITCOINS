@@ -190,6 +190,7 @@
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\Full_Node.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\AllClients.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\FilterClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\GETBlockClient.h" />

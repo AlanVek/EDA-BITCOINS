@@ -8,7 +8,11 @@ public:
 	~Full_Node();
 
 protected:
-	virtual void connect(const std::string&, const unsigned int);
+	virtual void NEWGET(const std::string&, const unsigned int, const std::string&, const unsigned int);
+	virtual void NEWPOST(const std::string&, const unsigned int, const json&);
+
+	virtual void perform();
+
 	virtual void newNeighbor(const std::string& ip, const unsigned int port);
 
 	BlockChain blockChain;

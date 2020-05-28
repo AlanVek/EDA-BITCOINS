@@ -2,17 +2,25 @@
 
 namespace {
 	const char* begURL = "eda_coin";
+	size_t writeCallback(char*, size_t, size_t, void*);
+
+	//Callback with string as userData.
+	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
+		std::string* userDataPtr = (std::string*) userData;
+
+		userDataPtr->append(ptr, size * nmemb);
+
+		return size * nmemb;
+	}
 }
 //Host / eda_coin / get_block_header ? block_id = number & count = number
-
-size_t writeCallback(char*, size_t, size_t, void*);
 
 GETClient::GETClient(const std::string& ip, const unsigned int port, const std::string& id,
 	const unsigned int count) : Client(ip, port)
 {
 	this->id = id;
 	this->count = count;
-	url = ip + '\\' + begURL;
+	url = ip + '/' + begURL;
 }
 
 //Configurates client for tweet request.
@@ -89,13 +97,4 @@ bool GETClient::perform(void) {
 	}
 	else
 		throw std::exception("Invalid data.");
-}
-
-//Callback with string as userData.
-size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
-	std::string* userDataPtr = (std::string*) userData;
-
-	userDataPtr->append(ptr, size * nmemb);
-
-	return size * nmemb;
 }
