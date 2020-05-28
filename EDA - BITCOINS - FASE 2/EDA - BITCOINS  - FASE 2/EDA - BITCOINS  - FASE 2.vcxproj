@@ -149,36 +149,48 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Simulation\GUI\Filesystem\Filesystem.cpp" />
-    <ClCompile Include="Simulation\GUI\GUI.cpp" />
-    <ClCompile Include="Simulation\GUI\imgui\imgui.cpp" />
-    <ClCompile Include="Simulation\GUI\imgui\imgui_demo.cpp" />
-    <ClCompile Include="Simulation\GUI\imgui\imgui_draw.cpp" />
-    <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp" />
-    <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp" />
-    <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\eventHandling.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\FSM.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\genericFSM.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUIEvents.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\GUI.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_impl_allegro5.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_stdlib.cpp" />
+    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
     <ClCompile Include="Simulation\Nodes\SVP_Node.cpp" />
     <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\GUI\Filesystem\Filesystem.h" />
-    <ClInclude Include="Simulation\GUI\GUI.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imconfig.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imgui.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imgui_impl_allegro5.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imgui_internal.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imgui_stdlib.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h" />
-    <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h" />
+    <ClInclude Include="Simulation\FSMFramework\eventHandling.h" />
+    <ClInclude Include="Simulation\FSMFramework\FSM.h" />
+    <ClInclude Include="Simulation\FSMFramework\genericFSM.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUIEvents.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\GUI.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imconfig.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_impl_allegro5.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_internal.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_stdlib.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_textedit.h" />
+    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_truetype.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\Full_Node.h" />
@@ -189,9 +201,6 @@
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
     <ClInclude Include="Simulation\Nodes\SVP_Node.h" />
     <ClInclude Include="Simulation\Simulation.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

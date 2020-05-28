@@ -8,6 +8,5 @@ public:
 
 protected:
 	virtual void connect(const std::string&, const unsigned int);
-	virtual void connectionCallback();
 	virtual void newNeighbor(const std::string& ip, const unsigned int port);
 };

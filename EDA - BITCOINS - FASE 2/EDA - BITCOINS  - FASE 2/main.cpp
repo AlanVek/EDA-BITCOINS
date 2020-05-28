@@ -2,20 +2,14 @@
 #include "Simulation/Simulation.h"
 int main()
 {
+	int result = -1;
 	try {
-		Simulation mySim;
-		Events ev;
-
-		/*While user hasn't asked to leave...*/
-		while (mySim.isRunning()) {
-			/*Generates GUI event.*/
-			ev = mySim.eventGenerator();
-
-			/*Dispatches said event.*/
-			mySim.dispatch(ev);
-		}
+		//Simulation mySim;
+		result = 0;
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
 	}
+
+	return result;
 }
