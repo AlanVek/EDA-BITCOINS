@@ -3,15 +3,14 @@
 #include <curl/curl.h>
 #include <string>
 #include <fstream>
-
-#define HOST (std::string)"127.0.0.1"
-#define PATH (std::string) "/img/page/page.html"
-#define PORT 80
-
 class Client
 {
 public:
-	Client(std::string host_ = HOST, std::string path_ = PATH, int port_ = PORT);
+	Client(const std::string&, const std::string&, unsigned int);
+
+	Client();
+
+	void setData(const std::string&, const std::string&, unsigned int);
 
 	void startConnection();
 

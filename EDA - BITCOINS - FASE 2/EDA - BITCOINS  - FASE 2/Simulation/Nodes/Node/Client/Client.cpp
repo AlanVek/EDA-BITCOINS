@@ -10,9 +10,32 @@ const int fileNameSize = 10;
 size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData);
 
 //Client constructor. Initializes CURL, and the easy mode. Calls client configuration.
-Client::Client(std::string host_, std::string path_, int port_) : host(host_), path(path_), port(port_)
+Client::Client(const std::string& host, const std::string& path, unsigned int port) : host(host), path(path), port(port)
 {
 	handler = nullptr;
+
+	error = curl_global_init(CURL_GLOBAL_ALL);
+
+	if (error == CURLE_OK) {
+		handler = curl_easy_init();
+		if (handler)
+			configurateClient();
+		else
+			throw (Error("Failed to initialize handler.\n"));
+	}
+	else
+		throw(Error("Failed to set Curl.\n"));
+}
+
+Client::Client() {
+	handler = nullptr;
+};
+
+//Client constructor. Initializes CURL, and the easy mode. Calls client configuration.
+void Client::setData(const std::string& host, const std::string& path, unsigned int port) {
+	this->host = host;
+	this->path = path;
+	this->port = port;
 
 	error = curl_global_init(CURL_GLOBAL_ALL);
 
@@ -36,9 +59,13 @@ Client::~Client() {
 
 //After initial setup, activates the handler.
 void Client::startConnection(void) {
-	error = curl_easy_perform(handler);
-	if (error != CURLE_OK)
-		throw(Error("Bad connection.\n"));
+	if (handler) {
+		error = curl_easy_perform(handler);
+		if (error != CURLE_OK)
+			throw(Error("Bad connection.\n"));
+	}
+	else
+		throw std::exception("Client data not loaded.");
 }
 
 /*Configurates client to send a GET request to server and

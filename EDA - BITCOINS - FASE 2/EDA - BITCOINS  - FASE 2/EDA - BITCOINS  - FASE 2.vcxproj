@@ -160,11 +160,11 @@
     <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="Simulation\Node\Client\Client.cpp" />
-    <ClCompile Include="Simulation\Node\Client\DataInput.cpp" />
-    <ClCompile Include="Simulation\Node\Client\Errors.cpp" />
-    <ClCompile Include="Simulation\Node\Node.cpp" />
-    <ClCompile Include="Simulation\Node\Server\Server.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
+    <ClCompile Include="Simulation\Nodes\SVP_Node.cpp" />
     <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -180,11 +180,12 @@
     <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h" />
     <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h" />
     <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h" />
-    <ClInclude Include="Simulation\Node\Client\Client.h" />
-    <ClInclude Include="Simulation\Node\Client\DataInput.h" />
-    <ClInclude Include="Simulation\Node\Client\Errors.h" />
-    <ClInclude Include="Simulation\Node\Node.h" />
-    <ClInclude Include="Simulation\Node\Server\Server.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\Client.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\DataInput.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\Errors.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Node.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
+    <ClInclude Include="Simulation\Nodes\SVP_Node.h" />
     <ClInclude Include="Simulation\Simulation.h" />
   </ItemGroup>
   <ItemGroup>

@@ -3,13 +3,12 @@
 #include <boost/asio.hpp>
 #include <string>
 
-#define MAXSIZE 1000
+#define MAXSIZE 10000
 
 class Server
 {
 public:
 	Server(boost::asio::io_context& io_context_);
-
 	~Server();
 private:
 	void waitForConnection(void);
