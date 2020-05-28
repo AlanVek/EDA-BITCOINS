@@ -85,15 +85,6 @@
     <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_widgets.cpp">
       <Filter>Source Files\ImGui Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp">
-      <Filter>Source Files\Node Sources\Client Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp">
-      <Filter>Source Files\Node Sources\Client Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp">
-      <Filter>Source Files\Node Sources\Client Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp">
       <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
@@ -109,17 +100,12 @@
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
       <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp">
+      <Filter>Source Files\Node Sources\Client Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\Nodes\Node\Client\Client.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\DataInput.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Client\Errors.h">
-      <Filter>Header Files\Node Headers\Client Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\FSMFramework\eventHandling.h">
       <Filter>Header Files\FSM Headers</Filter>
     </ClInclude>
@@ -179,6 +165,33 @@
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h">
       <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\Client.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\MerkleClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\FilterClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETHeaderClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETBlockClient.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

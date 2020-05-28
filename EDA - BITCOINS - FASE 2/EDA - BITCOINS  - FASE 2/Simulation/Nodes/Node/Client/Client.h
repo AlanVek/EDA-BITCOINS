@@ -1,31 +1,39 @@
 #pragma once
-
 #include <curl/curl.h>
-#include <string>
-#include <fstream>
-class Client
-{
+#include "json.hpp"
+
+using json = nlohmann::json;
+
+class Client {
 public:
-	Client(const std::string&, const std::string&, unsigned int);
 
-	Client();
+	/*Constructor*/
+	Client(const std::string& ip, const unsigned int port) : ip(ip), port(port), multiHandler(nullptr), handler(nullptr) {
+		if (ip.length() && port)
+			stillRunning = 1;
+		else
+			throw std::exception("Wrong input in client.");
+	};
 
-	void setData(const std::string&, const std::string&, unsigned int);
+	/*Destructor*/
+	virtual ~Client(void) {};
 
-	void startConnection();
+	virtual bool perform() = 0;
 
-	std::fstream& getBuffer(void);
+protected:
+	virtual void configurateClient(void) = 0;
 
-	~Client();
-	void openFile(void);
-private:
-	void configurateClient(void);
-	std::string path, host;
-	int port;
+	/*cURL data members.*/
+	/**********************/
+	CURL* handler, * multiHandler;
+	CURLMcode errorMulti;
+	/**********************/
 
-	char* contentType;
-
-	std::fstream message;
-	CURL* handler;
-	CURLcode error;
+	/*Connection data members.*/
+	/********************************/
+	std::string ip, unparsedAnswer, url;
+	json data, answer;
+	unsigned int port;
+	int stillRunning;
+	/********************************/
 };

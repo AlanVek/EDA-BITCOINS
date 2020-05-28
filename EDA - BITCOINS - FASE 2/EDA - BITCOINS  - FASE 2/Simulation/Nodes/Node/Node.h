@@ -9,7 +9,7 @@ public:
 	virtual ~Node() {}
 protected:
 
-	Client client;
+	Client* client;
 	Server server;
 	std::map<std::string, unsigned int> neighbors;
 

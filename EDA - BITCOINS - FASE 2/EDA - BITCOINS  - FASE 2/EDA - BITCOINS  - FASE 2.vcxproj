@@ -167,9 +167,8 @@
     <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
     <ClCompile Include="Simulation\Nodes\SVP_Node.cpp" />
   </ItemGroup>
@@ -191,9 +190,15 @@
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\Full_Node.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\FilterClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETBlockClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETHeaderClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\MerkleClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h" />
-    <ClInclude Include="Simulation\Nodes\Node\Client\DataInput.h" />
-    <ClInclude Include="Simulation\Nodes\Node\Client\Errors.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Node.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
     <ClInclude Include="Simulation\Nodes\SVP_Node.h" />
