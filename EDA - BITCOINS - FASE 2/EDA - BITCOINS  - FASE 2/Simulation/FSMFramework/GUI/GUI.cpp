@@ -113,8 +113,8 @@ bool GUI::eventManager(void) {
 }
 
 //Cycle that shows menu (called with every iteration).
-const Events GUI::checkStatus(void) {
-	Events result = Events::NOTHING;
+const unsigned int GUI::checkStatus(void) {
+	unsigned int result = Events::NOTHING;
 
 	al_set_target_backbuffer(guiDisp);
 
@@ -188,7 +188,7 @@ inline void GUI::displayActions() {
 	ImGui::Text("Action to perform: ");
 
 	/*Button callback for both buttons.*/
-	const auto button_callback = [this](const Events code, const char* msg) {
+	const auto button_callback = [this](const unsigned int code, const char* msg) {
 		action = code;
 		action_msg = msg;
 	};

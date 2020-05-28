@@ -6,4 +6,4 @@ Full_Node::~Full_Node() {}
 
 void Full_Node::connect(const std::string& ip, const unsigned int) {}
 
-void Full_Node::newNeighbor(const std::string& ip, const unsigned int port) { neighbors.push_back(Neighbor(ip, port)); }
+void Full_Node::newNeighbor(const std::string& ip, const unsigned int port) { neighbors[ip] = port; }

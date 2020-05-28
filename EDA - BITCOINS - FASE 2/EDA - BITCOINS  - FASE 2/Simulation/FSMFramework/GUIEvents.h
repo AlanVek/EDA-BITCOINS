@@ -1,37 +1,33 @@
 #pragma once
 #include <array>
 #include "eventHandling.h"
+#include "GUI/GUI.h"
 
-enum implEvent : eventTypes { EventA, EventB, EventC, EventD, EventQuit };
+//	const enum : unsigned int {
+//		NOTHING = 0,
+//		END,
+//		SEE_MROOT,
+//		VALIDATE_MROOT,
+//		ALL_MERKLE,
+//		BLOCKID,
+//		PREVIOUS_BLOCKID,
+//		NTX,
+//		BLOCK_NUMBER,
+//		NONCE,
+//		NEW_FILE,
+//		PRINT_TREE
+//	};
+//}
 
-class cEventA : public genericEvent
+class Nothing : public genericEvent
 {
 public:
-	eventTypes getType(void) { return EventA; }
+	eventTypes getType(void) { return Events::NOTHING; }
 };
 
-class cEventB : public genericEvent
-{
+class End : public genericEvent {
 public:
-	eventTypes getType(void) { return EventB; }
-};
-
-class cEventC : public genericEvent
-{
-public:
-	eventTypes getType(void) { return EventC; }
-};
-
-class cEventD : public genericEvent
-{
-public:
-	eventTypes getType(void) { return EventD; }
-};
-
-class cEventQuit : public genericEvent
-{
-public:
-	eventTypes getType(void) { return EventQuit; }
+	eventTypes getType(void) { return Events::END; }
 };
 
 class GUIEvents : public eventGenerator
@@ -39,9 +35,9 @@ class GUIEvents : public eventGenerator
 public:
 	GUIEvents();
 	genericEvent* getEvent(void);
+	~GUIEvents() {};
 
 private:
 
-	unsigned int pos;
-	const std::array<implEvent, 13> testEvs = { EventB,EventB,EventB,EventD,EventD,EventD,EventC,EventA,EventB,EventA,EventB,EventD,EventQuit };
+	GUI gui;
 };

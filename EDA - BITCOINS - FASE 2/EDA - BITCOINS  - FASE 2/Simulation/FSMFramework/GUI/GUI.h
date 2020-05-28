@@ -5,20 +5,22 @@
 
 /*GUI event codes.*/
 /********************************/
-const enum class Events : int {
-	NOTHING = 0,
-	END,
-	SEE_MROOT,
-	VALIDATE_MROOT,
-	ALL_MERKLE,
-	BLOCKID,
-	PREVIOUS_BLOCKID,
-	NTX,
-	BLOCK_NUMBER,
-	NONCE,
-	NEW_FILE,
-	PRINT_TREE
-};
+namespace Events {
+	const enum : unsigned int {
+		NOTHING = 0,
+		END,
+		SEE_MROOT,
+		VALIDATE_MROOT,
+		ALL_MERKLE,
+		BLOCKID,
+		PREVIOUS_BLOCKID,
+		NTX,
+		BLOCK_NUMBER,
+		NONCE,
+		NEW_FILE,
+		PRINT_TREE
+	};
+}
 /********************************/
 
 class GUI {
@@ -28,7 +30,7 @@ public:
 
 	~GUI();
 
-	const Events checkStatus(void);
+	const unsigned int checkStatus(void);
 
 	const unsigned int getBlockIndex() const;
 
@@ -86,7 +88,7 @@ private:
 	bool force;
 	unsigned int chainLength;
 	std::string action_msg, shower;
-	Events action;
+	unsigned int action;
 	States state;
 	/******************************/
 

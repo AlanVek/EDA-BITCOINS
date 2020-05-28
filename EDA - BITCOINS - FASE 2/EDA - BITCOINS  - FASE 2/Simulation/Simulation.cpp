@@ -56,7 +56,7 @@ Simulation::Simulation(void) : running(true)
 //}
 
 /*Generates event from GUI.*/
-const Events Simulation::eventGenerator() { return gui->checkStatus(); }
+const unsigned int Simulation::eventGenerator() { return gui->checkStatus(); }
 
 /*Getter.*/
 bool Simulation::isRunning(void) { return running; }

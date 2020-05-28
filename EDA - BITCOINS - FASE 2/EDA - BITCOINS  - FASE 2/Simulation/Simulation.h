@@ -10,9 +10,9 @@ public:
 	Simulation(void);
 	~Simulation(void);
 
-	void dispatch(const Events&);
+	void dispatch(const unsigned int);
 
-	const Events eventGenerator();
+	const unsigned int eventGenerator();
 
 	bool isRunning(void);
 
