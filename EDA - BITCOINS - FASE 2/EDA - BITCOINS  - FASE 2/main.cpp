@@ -1,5 +1,4 @@
 #include <iostream>
-#include "Simulation/Simulation.h"
 #include "Simulation/FSMFramework/FSM.h"
 #include "Simulation/FSMFramework/GUIEvents.h"
 int main()
@@ -29,7 +28,7 @@ int main()
 				if (ev->getType() == Events::END)
 					running = false;
 				else {
-					/*Fucking(something).*/
+					/*Something.*/
 
 					fsm.cycle(ev);
 				}

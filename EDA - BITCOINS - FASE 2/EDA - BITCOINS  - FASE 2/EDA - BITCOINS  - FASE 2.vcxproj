@@ -154,7 +154,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Simulation\FSMFramework\eventHandling.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\FSM.cpp" />
     <ClCompile Include="Simulation\FSMFramework\genericFSM.cpp" />
     <ClCompile Include="Simulation\FSMFramework\GUIEvents.cpp" />
     <ClCompile Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.cpp" />
@@ -171,10 +170,8 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
     <ClCompile Include="Simulation\Nodes\SVP_Node.cpp" />
-    <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\FSMFramework\eventHandling.h" />
@@ -200,7 +197,6 @@
     <ClInclude Include="Simulation\Nodes\Node\Node.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
     <ClInclude Include="Simulation\Nodes\SVP_Node.h" />
-    <ClInclude Include="Simulation\Simulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

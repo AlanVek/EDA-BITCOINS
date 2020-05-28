@@ -1,8 +1,8 @@
 #pragma once
 #include "genericFSM.h"
 #include "eventHandling.h"
-#include "GUI/GUI.h"
 
+/*Function cast.*/
 #define TX(x) (static_cast<void (genericFSM::* )(genericEvent *)>(&FSM::x))
 
 namespace eventStates {
@@ -21,7 +21,6 @@ public:
 
 private:
 
-	/*Function cast.*/
 	const fsmCell fsmTable[4][4] = {
 		//       EventA                 EventB                  EventC                  EventD
 		{  	{eventStates::END,TX(test)},		{eventStates::END,TX(test)},		{eventStates::END,TX(test)},		{eventStates::END,TX(test)}},   //State0
