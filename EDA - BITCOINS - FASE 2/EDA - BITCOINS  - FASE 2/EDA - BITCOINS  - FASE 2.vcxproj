@@ -150,12 +150,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Node.cpp" />
     <ClCompile Include="Simulation\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\BlockChain\Block\Block.cpp" />
-    <ClCompile Include="Simulation\Client\Client.cpp" />
-    <ClCompile Include="Simulation\Client\DataInput.cpp" />
-    <ClCompile Include="Simulation\Client\Errors.cpp" />
     <ClCompile Include="Simulation\GUI\Filesystem\Filesystem.cpp" />
     <ClCompile Include="Simulation\GUI\GUI.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui.cpp" />
@@ -164,16 +160,16 @@
     <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="Simulation\Server\Server.cpp" />
+    <ClCompile Include="Simulation\Node\Client\Client.cpp" />
+    <ClCompile Include="Simulation\Node\Client\DataInput.cpp" />
+    <ClCompile Include="Simulation\Node\Client\Errors.cpp" />
+    <ClCompile Include="Simulation\Node\Node.cpp" />
+    <ClCompile Include="Simulation\Node\Server\Server.cpp" />
     <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Node.h" />
     <ClInclude Include="Simulation\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\BlockChain\Block\Block.h" />
-    <ClInclude Include="Simulation\Client\Client.h" />
-    <ClInclude Include="Simulation\Client\DataInput.h" />
-    <ClInclude Include="Simulation\Client\Errors.h" />
     <ClInclude Include="Simulation\GUI\Filesystem\Filesystem.h" />
     <ClInclude Include="Simulation\GUI\GUI.h" />
     <ClInclude Include="Simulation\GUI\imgui\imconfig.h" />
@@ -184,7 +180,11 @@
     <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h" />
     <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h" />
     <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h" />
-    <ClInclude Include="Simulation\Server\Server.h" />
+    <ClInclude Include="Simulation\Node\Client\Client.h" />
+    <ClInclude Include="Simulation\Node\Client\DataInput.h" />
+    <ClInclude Include="Simulation\Node\Client\Errors.h" />
+    <ClInclude Include="Simulation\Node\Node.h" />
+    <ClInclude Include="Simulation\Node\Server\Server.h" />
     <ClInclude Include="Simulation\Simulation.h" />
   </ItemGroup>
   <ItemGroup>

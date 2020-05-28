@@ -1,6 +1,6 @@
 #pragma once
-#include "Simulation/Client/Client.h"
-#include "Simulation/Server/Server.h"
+#include "Client/Client.h"
+#include "Server/Server.h"
 class Node
 {
 public:

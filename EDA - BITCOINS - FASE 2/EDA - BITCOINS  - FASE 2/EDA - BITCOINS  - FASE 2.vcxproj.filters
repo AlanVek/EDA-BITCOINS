@@ -63,19 +63,19 @@
     <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp">
       <Filter>Source Files\ImGui Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Server\Server.cpp">
+    <ClCompile Include="Simulation\Node\Node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Node.cpp">
+    <ClCompile Include="Simulation\Node\Server\Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Client\Client.cpp">
+    <ClCompile Include="Simulation\Node\Client\Client.cpp">
       <Filter>Source Files\Client Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Client\DataInput.cpp">
+    <ClCompile Include="Simulation\Node\Client\DataInput.cpp">
       <Filter>Source Files\Client Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Client\Errors.cpp">
+    <ClCompile Include="Simulation\Node\Client\Errors.cpp">
       <Filter>Source Files\Client Sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,19 +119,19 @@
     <ClInclude Include="Simulation\GUI\imgui\imconfig.h">
       <Filter>Header Files\ImGui Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Server\Server.h">
+    <ClInclude Include="Simulation\Node\Node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Node.h">
+    <ClInclude Include="Simulation\Node\Server\Server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Client\Client.h">
+    <ClInclude Include="Simulation\Node\Client\Client.h">
       <Filter>Header Files\Client Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Client\DataInput.h">
+    <ClInclude Include="Simulation\Node\Client\DataInput.h">
       <Filter>Header Files\Client Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Client\Errors.h">
+    <ClInclude Include="Simulation\Node\Client\Errors.h">
       <Filter>Header Files\Client Headers</Filter>
     </ClInclude>
   </ItemGroup>
