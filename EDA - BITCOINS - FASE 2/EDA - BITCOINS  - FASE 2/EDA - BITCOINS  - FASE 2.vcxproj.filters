@@ -39,12 +39,6 @@
     <ClCompile Include="Simulation\GUI\Filesystem\Filesystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\BlockChain\BlockChain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\BlockChain\Block\Block.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\GUI\imgui\imgui.cpp">
       <Filter>Source Files\ImGui Sources</Filter>
     </ClCompile>
@@ -78,6 +72,12 @@
     <ClCompile Include="Simulation\Nodes\SVP_Node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\Simulation.h">
@@ -87,12 +87,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\GUI\Filesystem\Filesystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\BlockChain\BlockChain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\BlockChain\Block\Block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h">
@@ -135,6 +129,12 @@
       <Filter>Header Files\Client Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\SVP_Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

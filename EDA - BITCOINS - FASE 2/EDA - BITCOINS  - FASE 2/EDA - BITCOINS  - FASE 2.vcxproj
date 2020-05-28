@@ -150,8 +150,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Simulation\BlockChain\BlockChain.cpp" />
-    <ClCompile Include="Simulation\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\GUI\Filesystem\Filesystem.cpp" />
     <ClCompile Include="Simulation\GUI\GUI.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui.cpp" />
@@ -160,6 +158,8 @@
     <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp" />
+    <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp" />
@@ -168,8 +168,6 @@
     <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\BlockChain\BlockChain.h" />
-    <ClInclude Include="Simulation\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\GUI\Filesystem\Filesystem.h" />
     <ClInclude Include="Simulation\GUI\GUI.h" />
     <ClInclude Include="Simulation\GUI\imgui\imconfig.h" />
@@ -180,6 +178,8 @@
     <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h" />
     <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h" />
     <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h" />
+    <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
+    <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\DataInput.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Errors.h" />

@@ -1,5 +1,5 @@
 #pragma once
-#include "BlockChain/BlockChain.h"
+#include "Nodes/BlockChain/BlockChain.h"
 #include "GUI/GUI.h"
 
 class Simulation {
