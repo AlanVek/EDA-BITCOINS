@@ -6,3 +6,5 @@ SVP_Node::~SVP_Node() {}
 
 void SVP_Node::connect(const std::string& ip, const unsigned int) {}
 void SVP_Node::connectionCallback() {}
+
+void SVP_Node::newNeighbor(const std::string& ip, const unsigned int port) { neighbors.push_back(Neighbor(ip, port)); }

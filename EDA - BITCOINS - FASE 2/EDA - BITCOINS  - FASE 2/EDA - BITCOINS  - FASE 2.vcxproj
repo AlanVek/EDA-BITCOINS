@@ -160,6 +160,7 @@
     <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
+    <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\DataInput.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Errors.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
+    <ClInclude Include="Simulation\Nodes\Full_Node.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\DataInput.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Errors.h" />

@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Client Sources">
       <UniqueIdentifier>{98b9059b-7761-4a95-a843-4cbe7f1fc171}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Node Sources">
+      <UniqueIdentifier>{6a2989d0-ec59-4b43-89c2-b6188954d7af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers">
+      <UniqueIdentifier>{eb3f9cc3-7983-4868-9b25-0379efaa0342}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,14 +75,17 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp">
       <Filter>Source Files\Client Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Nodes\SVP_Node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Full_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\SVP_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,9 +122,6 @@
     <ClInclude Include="Simulation\GUI\imgui\imconfig.h">
       <Filter>Header Files\ImGui Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -128,14 +134,20 @@
     <ClInclude Include="Simulation\Nodes\Node\Client\Errors.h">
       <Filter>Header Files\Client Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Nodes\SVP_Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Full_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\SVP_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Node.h">
+      <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

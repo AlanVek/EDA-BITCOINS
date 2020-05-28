@@ -21,7 +21,5 @@ protected:
 
 	virtual void connect(const std::string&, const unsigned int) = 0;
 	virtual void connectionCallback() = 0;
-	virtual void newNeighbor(const std::string&, const unsigned int);
+	virtual void newNeighbor(const std::string&, const unsigned int) = 0;
 };
-
-void Node::newNeighbor(const std::string& ip, const unsigned int port) { neighbors.push_back(Neighbor(ip, port)); }
