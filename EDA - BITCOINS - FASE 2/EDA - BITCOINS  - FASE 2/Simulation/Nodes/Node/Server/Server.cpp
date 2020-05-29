@@ -21,11 +21,11 @@ Calls waitForConnection to accept connections.*/
 Server::Server(boost::asio::io_context& io_context_) :
 	io_context(io_context_), acceptor(io_context_, tcp::endpoint(tcp::v4(), 80)), socket(io_context_)
 {
-	if (socket.is_open()) {
+	/*if (socket.is_open()) {
 		socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 		socket.close();
 	}
-	waitForConnection();
+	waitForConnection();*/
 }
 
 //Destructor. Closes open socket and acceptor.

@@ -18,6 +18,8 @@ public:
 	Node(boost::asio::io_context& io_context) : server(io_context), state(States::FREE) {};
 	virtual ~Node() {}
 
+	virtual void newNeighbor(const std::string&, const unsigned int) = 0;
+
 protected:
 	const enum class States : unsigned int {
 		FREE,
@@ -33,9 +35,6 @@ protected:
 	virtual void NEWPOST(const std::string&, const ConnectionType, const json&) = 0;
 
 	virtual void perform() = 0;
-
-	virtual void connectionCallback() = 0;
-	virtual void newNeighbor(const std::string&, const unsigned int) = 0;
 
 	std::string ip;
 	unsigned int port;

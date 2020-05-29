@@ -1,4 +1,6 @@
 #include "Simulation.h"
+#include "Nodes/FULL_Node.h"
+#include "Nodes/SVP_Node.h"
 
 //Simulation constructor.
 Simulation::Simulation(void) : running(true)
@@ -9,6 +11,18 @@ Simulation::Simulation(void) : running(true)
 
 void Simulation::mainScreen() {
 	running = gui->nodeSelectionScreen();
+
+	if (running) {
+		for (const auto& node : gui->getNodes()) {
+			if (node.type == NodeTypes::NEW_FULL)
+				nodes.push_back(new Full_Node(io_context));
+			else
+				nodes.push_back(new SVP_Node(io_context));
+
+			for (const auto& neighbor : node.neighbors)
+				nodes.back()->newNeighbor(neighbor->ip, neighbor->port);
+		}
+	}
 }
 
 //Polls GUI and dispatches according to button code.
@@ -35,4 +49,9 @@ bool Simulation::isRunning(void) { return running; }
 Simulation::~Simulation() {
 	if (gui)
 		delete gui;
+
+	for (auto node : nodes) {
+		if (node)
+			delete node;
+	}
 }

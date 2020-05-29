@@ -21,8 +21,23 @@ const enum class Events : unsigned int {
 	LOADED
 };
 /********************************/
+const enum class NodeTypes {
+	NEW_SVP,
+	NEW_FULL,
+};
 
 class GUI {
+private:
+
+	struct NewNode {
+		NewNode(const NodeTypes type, const unsigned int index) : type(type), index(index) { port = 0; ip.clear(); }
+		NodeTypes type;
+		std::string ip;
+		int port;
+		unsigned int index;
+		std::vector<NewNode*> neighbors;
+	};
+
 public:
 
 	GUI();
@@ -30,6 +45,8 @@ public:
 	~GUI();
 
 	Events checkStatus(void);
+
+	const std::vector<NewNode>& getNodes();
 
 	bool nodeSelectionScreen(void);
 
@@ -51,20 +68,6 @@ private:
 		WAITING,
 		FILE_OK,
 		BLOCK_OK
-	};
-
-	const enum class NodeTypes {
-		NEW_SVP,
-		NEW_FULL,
-	};
-
-	struct NewNode {
-		NewNode(const NodeTypes type, const unsigned int index) : type(type), index(index) { port = 0; ip.clear(); }
-		NodeTypes type;
-		std::string ip;
-		int port;
-		unsigned int index;
-		std::vector<NewNode*> neighbors;
 	};
 
 	/*Initial setup.*/

@@ -1,5 +1,6 @@
 #pragma once
 #include "FSMFramework/GUI/GUI.h"
+#include "Nodes/Node/Node.h"
 
 class Simulation {
 public:
@@ -21,5 +22,9 @@ private:
 
 	GUI* gui;
 
+	std::vector <Node*> nodes;
+
 	bool running;
+
+	boost::asio::io_context io_context;
 };

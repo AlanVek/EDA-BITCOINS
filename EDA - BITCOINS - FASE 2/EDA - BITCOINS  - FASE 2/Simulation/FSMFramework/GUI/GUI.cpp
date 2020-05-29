@@ -285,8 +285,10 @@ void GUI::connections() {
 			displayWidget(
 				("Node " + std::to_string(i)).c_str(),
 				[this, i, &nodeValidation]() {
-					if (nodeValidation(nodes[i].index))
+					if (nodeValidation(nodes[i].index)) {
 						nodes.back().neighbors.push_back(&nodes[i]);
+						nodes[i].neighbors.push_back(&nodes.back());
+					}
 				}
 			);
 			ImGui::SameLine();
@@ -377,6 +379,8 @@ inline auto GUI::displayWidget(const char* txt, const F1& f1, const F2& f2)->dec
 		return f1();
 	return f2();
 }
+
+const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
 
 ///*Binding fs.pathContent with this->force and specified file format.
 //Helps to determine when to update file info.*/
