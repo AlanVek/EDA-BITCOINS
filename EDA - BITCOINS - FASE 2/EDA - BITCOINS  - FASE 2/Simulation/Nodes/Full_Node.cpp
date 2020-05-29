@@ -1,31 +1,31 @@
 #include "Full_Node.h"
 #include "Node/Client/AllClients.h"
 
-Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port) 
-	: Node(io_context, ip ,port) {}
+Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
+	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier) {}
 
-void Full_Node::NEWGET(const std::string& ip, const ConnectionType type, const std::string& id, const unsigned int count)
+void Full_Node::NEWGET(const unsigned int& id, const ConnectionType type, const std::string& blockID, const unsigned int count)
 {
 	if (state == States::FREE && !client) {
-		if (neighbors.find(ip) != neighbors.end() && count && id.length() && type == ConnectionType::GETBLOCK) {
-			client = new GETBlockClient(ip, neighbors[ip], id, count);
+		if (neighbors.find(id) != neighbors.end() && count && type == ConnectionType::GETBLOCK) {
+			client = new GETBlockClient(neighbors[id].ip, neighbors[id].port, blockID, count);
 			state = States::CLIENTMODE;
 		}
 	}
 }
 
-void Full_Node::NEWPOST(const std::string& ip, const ConnectionType type, const json& header) {
-	if (!client && state == States::FREE && neighbors.find(ip) != neighbors.end() && !header.is_null()) {
+void Full_Node::NEWPOST(const unsigned int& id, const ConnectionType type, const json& header) {
+	if (!client && state == States::FREE && neighbors.find(id) != neighbors.end() && !header.is_null()) {
 		state = States::CLIENTMODE;
 		switch (type) {
 		case ConnectionType::POSTBLOCK:
-			client = new BlockClient(ip, neighbors[ip], header);
+			client = new BlockClient(neighbors[id].ip, neighbors[id].port, header);
 			break;
 		case ConnectionType::POSTFILTER:
-			client = new FilterClient(ip, neighbors[ip], header);
+			client = new FilterClient(neighbors[id].ip, neighbors[id].port, header);
 			break;
 		case ConnectionType::POSTTRANS:
-			client = new TransactionClient(ip, neighbors[ip], header);
+			client = new TransactionClient(neighbors[id].ip, neighbors[id].port, header);
 			break;
 		default:
 			state = States::FREE;
@@ -44,9 +44,15 @@ void Full_Node::perform() {
 	}
 }
 
+const unsigned int& Full_Node::getID() { return identifier; }
+const Full_Node::States Full_Node::getState(void) { return state; }
+
 Full_Node::~Full_Node() {
 	if (client)
 		delete client;
 }
 
-void Full_Node::newNeighbor(const std::string& ip, const unsigned int port) { neighbors[ip] = port; }
+void Full_Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port)
+{
+	neighbors.insert(std::pair<const unsigned int, Node::Neighbor>(id, { ip,port }));
+}

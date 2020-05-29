@@ -12,12 +12,7 @@
 namespace data {
 	const unsigned int width = 1000;
 	const unsigned int height = 500;
-
-	const char* fixedFormat = ".json";
-	int notSelectedIndex = -1;
 }
-
-const char* messageNone = "none.";
 /***************************************/
 
 /*GUI constructor. Initializes data members and sets Allegro resources.*/
@@ -130,18 +125,10 @@ bool GUI::nodeSelectionScreen() {
 				ImGui::Text("Initial Setup: ");
 				ImGui::NewLine();
 
-				/*New Node button.*/
-				displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
+				if (state == States::INIT) {
+					/*New Node button.*/
+					displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
 
-				/*Select node type.*/
-				if (state == States::NODE_SELECTION) { newNode(); }
-
-				/*Select neighbors.*/
-				else if (state == States::NODE_CONNECTION) { connections(); }
-
-				/*Select IP and port.*/
-				else if (state == States::NODE_CREATION) { creation(); }
-				else {
 					ImGui::NewLine(); ImGui::NewLine();
 
 					/*Exit button.*/
@@ -152,6 +139,15 @@ bool GUI::nodeSelectionScreen() {
 					displayWidget("Go", [&endOfSetup, this, &result]() {
 						if (nodes.size()) { endOfSetup = true; result = true; state = States::INIT_DONE; }});
 				}
+
+				/*Select node type.*/
+				else if (state == States::NODE_SELECTION) { newNode(); }
+
+				/*Select neighbors.*/
+				else if (state == States::NODE_CONNECTION) { connections(); }
+
+				/*Select IP and port.*/
+				else if (state == States::NODE_CREATION) { creation(); }
 
 				/*Rendering.*/
 				ImGui::End();
@@ -185,7 +181,7 @@ Events GUI::checkStatus(void) {
 		/*New Message button.*/
 		displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
 
-		ImGui::NewLine(); ImGui::NewLine();
+		ImGui::NewLine();
 
 		/*Sender selection.*/
 		if (state == States::SENDER_SELECTION) selectSender();
@@ -235,6 +231,7 @@ void GUI::connections() {
 	ImGui::NewLine();
 	ImGui::Text("Choose connected nodes: ");
 
+	ImGui::Text("******************************************");
 	/*For every node available...*/
 	for (unsigned int i = 0; i < nodes.size() - 1; i++) {
 		/*If at least one is FULL (no SVP-SVP neighbors)...*/
@@ -254,6 +251,8 @@ void GUI::connections() {
 			ImGui::SameLine();
 		}
 	}
+	ImGui::NewLine();
+	ImGui::Text("******************************************");
 
 	/*Shows node's current connections.*/
 	showConnections();
@@ -418,3 +417,5 @@ inline auto GUI::displayWidget(const char* txt, const F1& f1, const F2& f2)->dec
 
 /*Getter.*/
 const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
+const unsigned int& GUI::getSenderID() { return sender->index; }
+const unsigned int& GUI::getReceiverID() { return receiver->index; }

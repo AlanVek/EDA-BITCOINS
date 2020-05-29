@@ -24,13 +24,19 @@ const enum class NodeTypes {
 class GUI {
 private:
 
+	/*Node struct to keep node info in GUI.*/
 	struct NewNode {
+		/*Constructor.*/
 		NewNode(const NodeTypes type, const unsigned int index) : type(type), index(index) { port = 0; ip.clear(); }
+
+		/*Data*/
+		/*********************************/
 		NodeTypes type;
 		std::string ip;
 		int port;
 		unsigned int index;
 		std::vector<NewNode*> neighbors;
+		/*********************************/
 	};
 
 public:
@@ -39,13 +45,21 @@ public:
 
 	~GUI();
 
+	/*General screen.*/
 	Events checkStatus(void);
 
-	const std::vector<NewNode>& getNodes();
-
+	/*Main screen.*/
 	bool nodeSelectionScreen(void);
 
+	/*Getter.*/
+	const std::vector<NewNode>& getNodes();
+
+	const unsigned int& getSenderID();
+	const unsigned int& getReceiverID();
 private:
+
+	/*GUI states.*/
+	/****************************/
 	const enum class States {
 		INIT = 0,
 		NODE_SELECTION,
@@ -56,6 +70,7 @@ private:
 		RECEIVER_SELECTION,
 		MESSAGE_SELECTION
 	};
+	/****************************/
 
 	/*Initial setup.*/
 	/**********************************/
@@ -74,7 +89,6 @@ private:
 	inline auto displayWidget(const char*, const F1& f1, const F2 & = []() {})->decltype(f1());
 
 	inline void render() const;
-	//inline void setAllFalse(const States&, bool = false);
 	/*************************************************************************************************/
 
 	/*Node creation and connection*/

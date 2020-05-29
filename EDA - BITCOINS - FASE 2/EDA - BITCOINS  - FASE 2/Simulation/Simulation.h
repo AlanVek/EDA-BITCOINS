@@ -17,6 +17,9 @@ public:
 
 private:
 
+	void perform(void);
+
+	void setClient(void);
 	/*Prevents from using copy constructor.*/
 	Simulation(const Simulation&);
 
@@ -27,4 +30,6 @@ private:
 	bool running;
 
 	boost::asio::io_context io_context;
+
+	Events ev;
 };

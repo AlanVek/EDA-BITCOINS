@@ -30,7 +30,7 @@ Server::Server(boost::asio::io_context& io_context_) :
 
 //Destructor. Closes open socket and acceptor.
 Server::~Server() {
-	std::cout << "\nClosing server.\n";
+	//std::cout << "\nClosing server.\n";
 	if (socket.is_open()) {
 		socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 		socket.close();
@@ -39,7 +39,7 @@ Server::~Server() {
 	if (acceptor.is_open())
 		acceptor.close();
 
-	std::cout << "Server is closed.\n";
+	//std::cout << "Server is closed.\n";
 }
 
 /*Sets acceptor to accept (asynchronously).*/
