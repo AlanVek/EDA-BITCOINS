@@ -153,9 +153,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\eventHandling.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\genericFSM.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUIEvents.cpp" />
     <ClCompile Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.cpp" />
     <ClCompile Include="Simulation\FSMFramework\GUI\GUI.cpp" />
     <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui.cpp" />
@@ -171,12 +168,9 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
     <ClCompile Include="Simulation\Nodes\SVP_Node.cpp" />
+    <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\FSMFramework\eventHandling.h" />
-    <ClInclude Include="Simulation\FSMFramework\FSM.h" />
-    <ClInclude Include="Simulation\FSMFramework\genericFSM.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUIEvents.h" />
     <ClInclude Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.h" />
     <ClInclude Include="Simulation\FSMFramework\GUI\GUI.h" />
     <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imconfig.h" />
@@ -203,6 +197,7 @@
     <ClInclude Include="Simulation\Nodes\Node\Node.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
     <ClInclude Include="Simulation\Nodes\SVP_Node.h" />
+    <ClInclude Include="Simulation\Simulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

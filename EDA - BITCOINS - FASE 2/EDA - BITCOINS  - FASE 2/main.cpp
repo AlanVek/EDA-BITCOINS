@@ -1,40 +1,18 @@
 #include <iostream>
-#include "Simulation/FSMFramework/FSM.h"
-#include "Simulation/FSMFramework/GUIEvents.h"
+#include "Simulation/Simulation.h"
 int main()
 {
 	int result = -1;
 	try {
-		/*General event generator.*/
-		mainEventGenerator Events;
+		Events ev;
+		Simulation mySim;
 
-		FSM fsm;
+		mySim.mainScreen();
 
-		/*GUI event generator.*/
-		GUIEvents guiEv;
+		while (mySim.isRunning()) {
+			ev = mySim.eventGenerator();
 
-		genericEvent* ev;
-
-		/*Attach GUI events to general event generator.*/
-		Events.attach(&guiEv);
-
-		bool running = true;
-
-		/*While user hasn't asked to exit...*/
-		while (running) {
-			/*Gets next event.*/
-			ev = Events.getNextEvent();
-			if (ev) {
-				if (ev->getType() == Events::END)
-					running = false;
-				else {
-					/*Something.*/
-
-					fsm.cycle(ev);
-				}
-
-				delete ev;
-			}
+			mySim.dispatch(ev);
 		}
 	}
 	catch (std::exception& e) {

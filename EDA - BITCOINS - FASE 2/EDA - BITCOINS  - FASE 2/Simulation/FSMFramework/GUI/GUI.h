@@ -5,22 +5,21 @@
 
 /*GUI event codes.*/
 /********************************/
-namespace Events {
-	const enum : unsigned int {
-		NOTHING = 0,
-		END,
-		SEE_MROOT,
-		VALIDATE_MROOT,
-		ALL_MERKLE,
-		BLOCKID,
-		PREVIOUS_BLOCKID,
-		NTX,
-		BLOCK_NUMBER,
-		NONCE,
-		NEW_FILE,
-		PRINT_TREE
-	};
-}
+const enum class Events : unsigned int {
+	NOTHING = 0,
+	END,
+	SEE_MROOT,
+	VALIDATE_MROOT,
+	ALL_MERKLE,
+	BLOCKID,
+	PREVIOUS_BLOCKID,
+	NTX,
+	BLOCK_NUMBER,
+	NONCE,
+	NEW_FILE,
+	PRINT_TREE,
+	LOADED
+};
 /********************************/
 
 class GUI {
@@ -30,7 +29,9 @@ public:
 
 	~GUI();
 
-	const unsigned int checkStatus(void);
+	Events checkStatus(void);
+
+	bool nodeSelectionScreen(void);
 
 	const unsigned int getBlockIndex() const;
 
@@ -44,9 +45,26 @@ public:
 private:
 	const enum class States {
 		INIT = 0,
+		NODE_SELECTION,
+		NODE_CONNECTION,
+		NODE_CREATION,
 		WAITING,
 		FILE_OK,
 		BLOCK_OK
+	};
+
+	const enum class NodeTypes {
+		NEW_SVP,
+		NEW_FULL,
+	};
+
+	struct NewNode {
+		NewNode(const NodeTypes type, const unsigned int index) : type(type), index(index) { port = 0; ip.clear(); }
+		NodeTypes type;
+		std::string ip;
+		int port;
+		unsigned int index;
+		std::vector<NewNode*> neighbors;
 	};
 
 	/*Initial setup.*/
@@ -60,7 +78,7 @@ private:
 	inline void newWindow() const;
 	inline void displayPath();
 	inline void displayActions();
-	bool displayFiles();
+	//bool displayFiles();
 	void displayBlocks();
 
 	template <class Widget, class F1, class F2 = void(*)(void)>
@@ -72,6 +90,11 @@ private:
 	inline void render() const;
 	inline void setAllFalse(const States&, bool = false);
 	/*************************************************************************************************/
+
+	/*Info update*/
+	void newNode(void);
+	void connections(void);
+	void creation(void);
 
 	/*Exit and resize events.*/
 	bool eventManager(void);
@@ -88,7 +111,7 @@ private:
 	bool force;
 	unsigned int chainLength;
 	std::string action_msg, shower;
-	unsigned int action;
+	Events action;
 	States state;
 	/******************************/
 
@@ -96,6 +119,7 @@ private:
 	/**********************************/
 	std::string path, selected;
 	unsigned int index;
+	std::vector <NewNode> nodes;
 	/**********************************/
 
 	/*File handling.*/

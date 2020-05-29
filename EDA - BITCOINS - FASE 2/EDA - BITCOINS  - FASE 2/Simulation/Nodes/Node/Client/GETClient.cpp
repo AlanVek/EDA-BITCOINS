@@ -2,7 +2,6 @@
 
 namespace {
 	const char* begURL = "eda_coin";
-	size_t writeCallback(char*, size_t, size_t, void*);
 
 	//Callback with string as userData.
 	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
@@ -13,13 +12,9 @@ namespace {
 		return size * nmemb;
 	}
 }
-//Host / eda_coin / get_block_header ? block_id = number & count = number
-
 GETClient::GETClient(const std::string& ip, const unsigned int port, const std::string& id,
-	const unsigned int count) : Client(ip, port)
+	const unsigned int count) : Client(ip, port), id(id), count(count)
 {
-	this->id = id;
-	this->count = count;
 	url = ip + '/' + begURL;
 }
 

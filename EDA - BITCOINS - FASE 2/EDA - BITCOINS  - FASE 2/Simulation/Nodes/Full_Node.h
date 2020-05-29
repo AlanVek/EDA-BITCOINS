@@ -8,8 +8,8 @@ public:
 	~Full_Node();
 
 protected:
-	virtual void NEWGET(const std::string&, const unsigned int, const std::string&, const unsigned int);
-	virtual void NEWPOST(const std::string&, const unsigned int, const json&);
+	virtual void NEWGET(const std::string&, const ConnectionType, const std::string&, const unsigned int);
+	virtual void NEWPOST(const std::string&, const ConnectionType, const json&);
 
 	virtual void perform();
 

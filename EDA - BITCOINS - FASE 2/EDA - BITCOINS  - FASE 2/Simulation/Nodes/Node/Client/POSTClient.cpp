@@ -4,7 +4,6 @@ using json = nlohmann::json;
 
 namespace {
 	const char* begURL = "eda_coin";
-	size_t writeCallback(char*, size_t, size_t, void*);
 
 	//Callback with string as userData.
 	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {

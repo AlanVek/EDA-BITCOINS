@@ -64,15 +64,6 @@
     <ClCompile Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.cpp">
       <Filter>Source Files\FSM Sources\GUI Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\eventHandling.cpp">
-      <Filter>Source Files\FSM Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\genericFSM.cpp">
-      <Filter>Source Files\FSM Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUIEvents.cpp">
-      <Filter>Source Files\FSM Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui.cpp">
       <Filter>Source Files\ImGui Sources</Filter>
     </ClCompile>
@@ -112,20 +103,11 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp">
       <Filter>Source Files\Node Sources\Client Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Simulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\FSMFramework\eventHandling.h">
-      <Filter>Header Files\FSM Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\FSM.h">
-      <Filter>Header Files\FSM Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\genericFSM.h">
-      <Filter>Header Files\FSM Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUIEvents.h">
-      <Filter>Header Files\FSM Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imconfig.h">
       <Filter>Header Files\ImGui Headers</Filter>
     </ClInclude>
@@ -203,6 +185,9 @@
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\AllClients.h">
       <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Simulation.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
