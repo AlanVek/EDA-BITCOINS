@@ -48,41 +48,41 @@ void Simulation::dispatch(const Events& code) {
 		/*Filter (POST).*/
 	case Events::FILTER:
 		ev = Events::FILTER;
-		setClient();
+		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTFILTER,)
 		break;
 
 		/*Blocks (GET).*/
 	case Events::GET_BLOCKS:
 		ev = Events::GET_BLOCKS;
-		setClient();
+		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::GETBLOCK,)
 
 		break;
 
 		/*Headers (GET).*/
 	case Events::GET_HEADERS:
 		ev = Events::GET_HEADERS;
-		setClient();
+		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::GETHEADER,)
 
 		break;
 
 		/*Merkleblock (POST).*/
 	case Events::MERKLEBLOCK:
 		ev = Events::MERKLEBLOCK;
-		setClient();
+		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTMERKLE,)
 
 		break;
 
 		/*Block (POST).*/
 	case Events::POST_BLOCK:
 		ev = Events::POST_BLOCK;
-		setClient();
+		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTBLOCK,)
 
 		break;
 
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
 		ev = Events::TRANSACTION;
-		setClient();
+		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTTRANS,)
 		break;
 
 	default:
@@ -115,8 +115,8 @@ void Simulation::perform(void) {
 		node->perform();
 }
 
-/*Sets new client in sender node.*/
-void Simulation::setClient() {
+/*Get message's sender's index*/
+const unsigned int Simulation::getIndex() {
 	const unsigned int& senderID = gui->getSenderID();
 	int currentIndex = -1;
 
@@ -126,27 +126,5 @@ void Simulation::setClient() {
 			currentIndex = i;
 	}
 
-	const unsigned int& receiverID = gui->getReceiverID();
-
-	/*Sets client in sender node.*/
-	switch (ev) {
-	case Events::TRANSACTION:
-		//nodes[currentIndex]->NEWPOST(receiverIP,ConnectionType::POSTTRANS, )
-		break;
-	case Events::FILTER:
-		//nodes[currentIndex]->NEWPOST(receiverIP, ConnectionType::POSTFILTER,)
-		break;
-	case Events::GET_BLOCKS:
-		//nodes[currentIndex]->NEWGET(receiverIP, ConnectionType::GETBLOCK,)
-		break;
-	case Events::GET_HEADERS:
-		//nodes[currentIndex]->NEWGET(receiverIP, ConnectionType::GETHEADER,)
-		break;
-	case Events::MERKLEBLOCK:
-		//nodes[currentIndex]->NEWPOST(receiverIP, ConnectionType::POSTMERKLE,)
-		break;
-	case Events::POST_BLOCK:
-		//nodes[currentIndex]->NEWPOST(receiverIP, ConnectionType::POSTBLOCK,)
-		break;
-	}
+	return currentIndex;
 }

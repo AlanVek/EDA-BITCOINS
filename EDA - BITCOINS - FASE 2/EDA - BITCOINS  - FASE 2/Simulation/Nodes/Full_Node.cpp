@@ -1,8 +1,12 @@
 #include "Full_Node.h"
 #include "Node/Client/AllClients.h"
+#include "Node/Server/Full_Server.h"
 
 Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
-	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier) {}
+	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier)
+{
+	server = new Full_Server(io_context, ip);
+}
 
 void Full_Node::NEWGET(const unsigned int& id, const ConnectionType type, const std::string& blockID, const unsigned int count)
 {
@@ -48,8 +52,14 @@ const unsigned int& Full_Node::getID() { return identifier; }
 const Full_Node::States Full_Node::getState(void) { return state; }
 
 Full_Node::~Full_Node() {
-	if (client)
+	if (client) {
 		delete client;
+		client = nullptr;
+	}
+	if (server) {
+		delete server;
+		server = nullptr;
+	}
 }
 
 void Full_Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port)

@@ -360,7 +360,7 @@ void GUI::creation() {
 	ImGui::NewLine();
 
 	/*'Done' button for finishing setup.*/
-	displayWidget("Done", [this]() {state = States::INIT; });
+	displayWidget("Done", [this]() {if (nodes.back().ip.length()) state = States::INIT; });
 }
 
 /*Sets a new ImGUI frame and window.*/

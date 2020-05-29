@@ -1,6 +1,5 @@
 #pragma once
 #include "Node/Node.h"
-#include "BlockChain/Block/json.hpp"
 
 class SVP_Node : public Node {
 public:

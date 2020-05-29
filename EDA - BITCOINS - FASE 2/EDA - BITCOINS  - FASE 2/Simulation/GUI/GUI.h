@@ -51,12 +51,10 @@ public:
 	/*Main screen.*/
 	bool nodeSelectionScreen(void);
 
-	/*Getter.*/
+	/*Getters.*/
 	const std::vector<NewNode>& getNodes();
-
 	const unsigned int& getSenderID();
 	const unsigned int& getReceiverID();
-
 	const NewNode& getNode(unsigned int index);
 private:
 

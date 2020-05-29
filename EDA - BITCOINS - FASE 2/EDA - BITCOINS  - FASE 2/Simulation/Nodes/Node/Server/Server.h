@@ -1,5 +1,4 @@
 #pragma once
-
 #include <boost/asio.hpp>
 #include <string>
 
@@ -8,18 +7,25 @@
 class Server
 {
 public:
-	Server(boost::asio::io_context& io_context_);
-	~Server();
-private:
+	Server(boost::asio::io_context&, const std::string&);
+	virtual ~Server();
+protected:
+
+	const enum class Connections {
+		NONE = 0,
+		POST,
+		GET
+	};
 
 	/*Connection methods.*/
 	/*******************************************/
-	void waitForConnection(void);
+	void asyncConnection(void);
 	void closeConnection(void);
 
-	void answer(bool isInputOk);
-	std::string generateTextResponse(bool);
-	size_t getFileSize(std::fstream& file);
+	void answer(bool);
+	virtual void GETResponse(bool) = 0;
+	virtual void POSTResponse(bool) = 0;
+	virtual void errorResponse(void) = 0;
 	/*******************************************/
 
 	/*Callbacks and callback-related.*/
@@ -29,14 +35,18 @@ private:
 	void inputValidation(const boost::system::error_code& error, size_t bytes);
 	/*********************************************************************************/
 
-	/*Data members.*/
-	/*********************************************/
+	/*Boost::asio data members.*/
+	/****************************************/
 	boost::asio::io_context& io_context;
 	boost::asio::ip::tcp::acceptor acceptor;
 	boost::asio::ip::tcp::socket socket;
+	/****************************************/
 
+	/*Connection data members.*/
+	/*********************************************/
 	size_t size;
 	char mess[MAXSIZE];
-	std::string response;
+	std::string response, host;
+	Connections state;
 	/*********************************************/
 };

@@ -1,6 +1,5 @@
 #pragma once
 #include "Node/Node.h"
-#include "BlockChain/BlockChain.h"
 
 class Full_Node : public Node {
 public:
@@ -16,7 +15,4 @@ public:
 	virtual void NEWPOST(const unsigned int&, const ConnectionType, const json&);
 
 	virtual const States getState(void);
-
-protected:
-	BlockChain blockChain;
 };

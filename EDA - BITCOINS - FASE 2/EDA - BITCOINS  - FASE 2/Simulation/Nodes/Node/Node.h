@@ -1,7 +1,6 @@
 #pragma once
 #include "Client/Client.h"
 #include "Server/Server.h"
-#include <string>
 #include <map>
 
 const enum class ConnectionType : unsigned int {
@@ -28,8 +27,17 @@ protected:
 
 public:
 	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-		: server(io_context), state(States::FREE), ip(ip), port(port), identifier(identifier) {};
-	virtual ~Node() {}
+		: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {};
+	virtual ~Node() {
+		if (client) {
+			delete client;
+			client = nullptr;
+		}
+		if (server) {
+			delete server;
+			server = nullptr;
+		}
+	}
 
 	virtual void newNeighbor(const unsigned int, const std::string&, const unsigned int) = 0;
 
@@ -45,7 +53,7 @@ public:
 protected:
 
 	Client* client;
-	Server server;
+	Server* server;
 	std::map<unsigned int, Neighbor> neighbors;
 
 	std::string ip;

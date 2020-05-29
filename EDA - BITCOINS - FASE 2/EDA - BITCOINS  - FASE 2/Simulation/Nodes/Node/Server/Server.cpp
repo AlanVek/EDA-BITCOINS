@@ -1,51 +1,46 @@
 #include "Server.h"
-
 #include <iostream>
 #include <boost\bind.hpp>
-#include <chrono>
 #include <fstream>
 
 using boost::asio::ip::tcp;
 
-#define HOST (std::string) "127.0.0.1"
-#define PATH (std::string) "img"
-#define FILENAME (std::string) "page/page.html"
-#define TYPE "text/html"
-
-#define TOT (HOST+'/'+PATH+'/'+FILENAME)
-
-std::string makeDaytimeString(bool plusThirty);
+namespace {
+	const std::string fixed = "eda_coin";
+}
 
 /*Server constructor. Initializes io_context, acceptor and socket.
-Calls waitForConnection to accept connections.*/
-Server::Server(boost::asio::io_context& io_context_) :
-	io_context(io_context_), acceptor(io_context_, tcp::endpoint(tcp::v4(), 80)), socket(io_context_)
+Calls asyncConnection to accept connections.*/
+Server::Server(boost::asio::io_context& io_context_, const std::string& host) :
+	host(host), io_context(io_context_), acceptor(io_context_,
+		tcp::endpoint(tcp::v4(), 80)), socket(io_context_)
 {
-	/*if (socket.is_open()) {
-		socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+	if (socket.is_open()) {
+		socket.shutdown(tcp::socket::shutdown_both);
 		socket.close();
 	}
-	waitForConnection();*/
+	asyncConnection();
 }
 
 //Destructor. Closes open socket and acceptor.
 Server::~Server() {
-	//std::cout << "\nClosing server.\n";
+	std::cout << "\nClosing server.\n";
 	if (socket.is_open()) {
-		socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+		socket.shutdown(tcp::socket::shutdown_both);
 		socket.close();
 	}
 
 	if (acceptor.is_open())
 		acceptor.close();
 
-	//std::cout << "Server is closed.\n";
+	std::cout << "Server is closed.\n";
 }
 
 /*Sets acceptor to accept (asynchronously).*/
-void Server::waitForConnection() {
+void Server::asyncConnection() {
+	state = Connections::NONE;
 	if (socket.is_open()) {
-		std::cout << "Error: Can't accept new connection from an open socket" << std::endl;
+		//std::cout << "Error: Can't accept new connection from an open socket" << std::endl;
 		return;
 	}
 	if (acceptor.is_open()) {
@@ -57,7 +52,7 @@ void Server::waitForConnection() {
 
 //Closes socket and clears message holder.
 void Server::closeConnection() {
-	socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+	socket.shutdown(tcp::socket::shutdown_both);
 	socket.close();
 	int i = 0;
 	while (mess[i] != NULL) {
@@ -73,17 +68,30 @@ void Server::inputValidation(const boost::system::error_code& error, size_t byte
 		std::string message(mess);
 
 		//Validator has the http protocol form.
-		std::string validator = "GET /" + PATH + '/' + FILENAME + " HTTP/1.1\r\nHost: " + HOST + "\r\n";
+		std::string validator_GET = "GET /" + fixed + '/';
+		std::string validator_POST = "POST /" + fixed + '/';
+		std::string host_validator = " HTTP/1.1\r\nHost: " + host + "\r\n";
 		bool isInputOk = false;
 
 		//If there's been a match at the beggining of the request...
-		if (message.find(validator) == 0) {
-			//If the request has CRLF at end, then input was valid.
-			if (message.length() > validator.length()
-				&& message[message.length() - 2] == '\r'
-				&& message[message.length() - 1] == '\n')
+		if (!message.find(validator_GET))
+			state = Connections::GET;
+		else if (!message.find(validator_POST))
+			state = Connections::POST;
+		else
+			state = Connections::NONE;
 
-				isInputOk = true;
+		if (state != Connections::NONE) {
+			if (message.find(host_validator) == std::string::npos)
+				state = Connections::NONE;
+
+			else {
+				//If the request has CRLF at end, then input was valid.
+				if (message.length() >= (validator_GET.length() + host_validator.length())
+					&& message.substr(message.length() - 2, 2) == "\r\n")
+
+					isInputOk = true;
+			}
 		}
 		else
 			std::cout << "Client sent wrong input.\n";
@@ -119,52 +127,33 @@ void Server::connectionCallback(const boost::system::error_code& error) {
 /*Called when a message has been sent to client.*/
 void Server::messageCallback(const boost::system::error_code& error, size_t bytes_sent)
 {
-	if (!error)
+	/*if (!error)
 		std::cout << "Response sent correctly.\n\n";
 
 	else
-		std::cout << "Failed to respond to connection\n\n";
+		std::cout << "Failed to respond to connection\n\n";*/
 
-	/*Once the answer was sent, it frees acceptor for a new connection.*/
-	waitForConnection();
-}
-
-/*Returns daytime string. If plusThirty is true, it returns
-current daytime + 30 seconds.*/
-std::string makeDaytimeString(bool plusThirty) {
-	using namespace std::chrono;
-	system_clock::time_point theTime = system_clock::now();
-
-	if (plusThirty)
-		theTime += seconds(30);
-
-	time_t now = system_clock::to_time_t(theTime);
-
-	return ctime(&now);
+		/*Once the answer was sent, it frees acceptor for a new connection.*/
+	asyncConnection();
 }
 
 /*Responds to input.*/
 void Server::answer(bool isInputOk) {
-	//Opens file.
-	std::fstream page(FILENAME, std::ios::in | std::ios::binary);
-
-	/*Checks if file was correctly open.*/
-	if (!page.is_open()) {
-		std::cout << "Failed to open file\n";
-		return;
-	}
-
-	size = getFileSize(page);
-
 	/*Generates text response, according to validity of input.*/
-	response = generateTextResponse(isInputOk);
-
-	/*If input was correct, appends text from file.*/
-	if (isInputOk) {
-		std::ostringstream ss;
-		ss << page.rdbuf();
-		response += ss.str();
+	switch (state) {
+	case Connections::GET:
+		GETResponse(isInputOk);
+		break;
+	case Connections::POST:
+		POSTResponse(isInputOk);
+		break;
+	case Connections::NONE:
+		errorResponse();
+		break;
+	default:
+		break;
 	}
+
 	response += "\r\n\r\n";
 
 	/*Sets socket to write (send to client).*/
@@ -182,37 +171,28 @@ void Server::answer(bool isInputOk) {
 
 	/*Closes socket*/
 	closeConnection();
-
-	//Closes file.
-	page.close();
 }
 
-/*Generates http response, according to validity of input.*/
-std::string Server::generateTextResponse(bool isInputOk) {
-	std::string date = makeDaytimeString(false);
-	std::string datePlusThirty = makeDaytimeString(true);
-	std::string response;
-	if (isInputOk) {
-		response =
-			"HTTP/1.1 200 OK\r\nDate:" + date + "Location: " + TOT + "\r\nCache-Control: max-age=30\r\nExpires:" +
-			datePlusThirty + "Content-Length:" + std::to_string(size) +
-			"\r\nContent-Type: " + TYPE + "; charset=iso-8859-1\r\n\r\n";
-	}
-	else {
-		response =
-			"HTTP/1.1 404 Not Found\r\nDate:" + date + "Location: " + TOT +
-			"\r\nCache-Control: public, max-age=30 \r\nExpires:" + datePlusThirty +
-			"Content-Length: 0" + " \r\nContent-Type: " + TYPE + "; charset=iso-8859-1\r\n\r\n";
-	}
-
-	return response;
-}
-/*Gets file length.*/
-size_t Server::getFileSize(std::fstream& file) {
-	file.seekg(0, file.end);
-
-	size_t length = file.tellg();
-
-	file.seekg(0, file.beg);
-	return length;
-}
+///*Generates http response, according to validity of input.*/
+//void Server::GETResponse(bool isInputOk) {
+//	/*if (isInputOk) {
+//		response =
+//			"HTTP/1.1 200 OK\r\nDate:" + date + "Location: " + TOT + "\r\nCache-Control: max-age=30\r\nExpires:" +
+//			datePlusThirty + "Content-Length:" + std::to_string(size) +
+//			"\r\nContent-Type: " + TYPE + "; charset=iso-8859-1\r\n\r\n";
+//	}
+//	else {
+//		response =
+//			"HTTP/1.1 404 Not Found\r\nDate:" + date + "Location: " + TOT +
+//			"\r\nCache-Control: public, max-age=30 \r\nExpires:" + datePlusThirty +
+//			"Content-Length: 0" + " \r\nContent-Type: " + TYPE + "; charset=iso-8859-1\r\n\r\n";
+//	}*/
+//}
+//
+//void Server::POSTResponse(bool isInputOk) {
+//
+//}
+//
+//void Server::errorReponse() {
+//
+//}
