@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include <iostream>
 #include "Nodes/FULL_Node.h"
 #include "Nodes/SVP_Node.h"
 
@@ -32,7 +33,10 @@ void Simulation::dispatch(const Events& code) {
 	case Events::END:
 		running = false;
 		break;
+	case Events::NOTHING:
+		break;
 	default:
+		std::cout << (unsigned int)code << std::endl;
 		break;
 	}
 

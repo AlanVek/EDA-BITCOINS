@@ -8,17 +8,12 @@
 const enum class Events : unsigned int {
 	NOTHING = 0,
 	END,
-	SEE_MROOT,
-	VALIDATE_MROOT,
-	ALL_MERKLE,
-	BLOCKID,
-	PREVIOUS_BLOCKID,
-	NTX,
-	BLOCK_NUMBER,
-	NONCE,
-	NEW_FILE,
-	PRINT_TREE,
-	LOADED
+	FILTER,
+	MERKLEBLOCK,
+	GET_BLOCKS,
+	GET_HEADERS,
+	TRANSACTION,
+	POST_BLOCK
 };
 /********************************/
 const enum class NodeTypes {
@@ -50,24 +45,16 @@ public:
 
 	bool nodeSelectionScreen(void);
 
-	const unsigned int getBlockIndex() const;
-
-	const std::string& getFilename(void);
-
-	void setInfoShower(const std::string&);
-
-	void setChainLength(unsigned int);
-	void actionSolved(void);
-
 private:
 	const enum class States {
 		INIT = 0,
 		NODE_SELECTION,
 		NODE_CONNECTION,
 		NODE_CREATION,
-		WAITING,
-		FILE_OK,
-		BLOCK_OK
+		INIT_DONE,
+		SENDER_SELECTION,
+		RECEIVER_SELECTION,
+		MESSAGE_SELECTION
 	};
 
 	/*Initial setup.*/
@@ -79,10 +66,6 @@ private:
 	/*Window displayers.*/
 	/*************************************************************************************************/
 	inline void newWindow() const;
-	inline void displayPath();
-	inline void displayActions();
-	//bool displayFiles();
-	void displayBlocks();
 
 	template <class Widget, class F1, class F2 = void(*)(void)>
 	inline auto displayWidget(const Widget&, const F1& f1, const F2 & = []() {}) -> decltype(f1());
@@ -91,13 +74,23 @@ private:
 	inline auto displayWidget(const char*, const F1& f1, const F2 & = []() {})->decltype(f1());
 
 	inline void render() const;
-	inline void setAllFalse(const States&, bool = false);
+	//inline void setAllFalse(const States&, bool = false);
 	/*************************************************************************************************/
 
-	/*Info update*/
+	/*Node creation and connection*/
+	/***********************/
 	void newNode(void);
 	void connections(void);
 	void creation(void);
+	void showConnections(void);
+	/***********************/
+
+	/*Messages*/
+	/**********************/
+	void selectSender();
+	void selectReceiver();
+	void selectMessage();
+	/**********************/
 
 	/*Exit and resize events.*/
 	bool eventManager(void);
@@ -111,23 +104,13 @@ private:
 
 	/*Flag data members.*/
 	/******************************/
-	bool force;
-	unsigned int chainLength;
-	std::string action_msg, shower;
 	Events action;
 	States state;
 	/******************************/
 
 	/*Data members modifiable by user.*/
 	/**********************************/
-	std::string path, selected;
-	unsigned int index;
 	std::vector <NewNode> nodes;
+	const NewNode* sender, * receiver;
 	/**********************************/
-
-	/*File handling.*/
-	/*************************************************************/
-	Filesystem fs;
-	const std::vector<std::string>& updateFiles(const char* = nullptr);
-	/*************************************************************/
 };

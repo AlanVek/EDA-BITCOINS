@@ -25,11 +25,7 @@ GUI::GUI(void) :
 	guiDisp(nullptr),
 	guiQueue(nullptr),
 	action(Events::NOTHING),
-	force(true),
-	state(States::INIT),
-	action_msg(messageNone),
-	index(data::notSelectedIndex),
-	chainLength(0)
+	state(States::INIT)
 {
 	setAllegro();
 }
@@ -117,7 +113,7 @@ bool GUI::nodeSelectionScreen() {
 
 	bool endOfSetup = false;
 	al_set_target_backbuffer(guiDisp);
-	if (state < States::WAITING) {
+	if (state < States::INIT_DONE) {
 		while (!endOfSetup) {
 			if (eventManager()) { endOfSetup = true; }
 
@@ -130,13 +126,13 @@ bool GUI::nodeSelectionScreen() {
 				if (state == States::NODE_SELECTION) { newNode(); }
 				else if (state == States::NODE_CONNECTION) { connections(); }
 				else if (state == States::NODE_CREATION) { creation(); }
-
-				ImGui::NewLine(); ImGui::NewLine();
-				displayWidget("Exit", [&endOfSetup]() {endOfSetup = true; });
-				ImGui::SameLine();
-				displayWidget("Go", [&endOfSetup, this, &result]() {
-					if (nodes.size()) { endOfSetup = true; result = true; state = States::WAITING; }});
-
+				else {
+					ImGui::NewLine(); ImGui::NewLine();
+					displayWidget("Exit", [&endOfSetup]() {endOfSetup = true; });
+					ImGui::SameLine();
+					displayWidget("Go", [&endOfSetup, this, &result]() {
+						if (nodes.size()) { endOfSetup = true; result = true; state = States::INIT_DONE; }});
+				}
 				ImGui::End();
 				render();
 			}
@@ -156,53 +152,24 @@ Events GUI::checkStatus(void) {
 	if (eventManager())
 		result = Events::END;
 
-	else {
+	else if (state >= States::INIT_DONE) {
 		/*Sets new ImGui window.*/
 		newWindow();
 
-		/*If it's not the first run after update...*/
-		if (state > States::INIT) {
-			ImGui::NewLine(); ImGui::NewLine();
+		ImGui::Text("Actions: ");
 
-			/*Shows files from path.*/
-			if (true) {
-				result = Events::NEW_FILE;
-				state = States::FILE_OK;
-			};
-
-			/*If a file has been loaded...*/
-			if (state > States::WAITING) {
-				ImGui::NewLine(); ImGui::NewLine();
-
-				/*Shows blocks in BlockChain.*/
-				//displayBlocks();
-
-				/*If a block was selected...*/
-				if (state > States::FILE_OK) {
-					ImGui::NewLine();
-
-					/*Shows actions to perform to a given block.*/
-					displayActions();
-					ImGui::NewLine(); ImGui::NewLine();
-
-					/*If an action has been selected...*/
-					if (index != data::notSelectedIndex) {
-						/*Shows result of action applied to block.*/
-						ImGui::Text("Result: ");
-						ImGui::NewLine();
-						ImGui::Text(shower.c_str());
-						ImGui::NewLine();
-						result = action;
-					}
-				}
-			}
-		}
 		ImGui::NewLine();
+		displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
 
-		/*Exit button.*/
-		displayWidget("Exit", [&result]() {result = Events::END; });
+		ImGui::NewLine(); ImGui::NewLine();
 
-		ImGui::SameLine();
+		if (state == States::SENDER_SELECTION) selectSender();
+		else if (state == States::RECEIVER_SELECTION) selectReceiver();
+		else if (state == States::MESSAGE_SELECTION) { selectMessage(); if ((bool)action) result = action; }
+		else {
+			ImGui::NewLine();
+			displayWidget("Exit", [&result] {result = Events::END; });
+		}
 
 		ImGui::End();
 
@@ -210,54 +177,6 @@ Events GUI::checkStatus(void) {
 		render();
 	}
 	return result;
-}
-
-void GUI::actionSolved(void) { action = Events::NOTHING; }
-
-/*Displays action buttons.*/
-inline void GUI::displayActions() {
-	ImGui::Text("Action to perform: ");
-
-	/*Button callback for both buttons.*/
-	const auto button_callback = [this](const Events code, const char* msg) {
-		action = code;
-		action_msg = msg;
-	};
-	/*Creates buttons for different functionalities.*/
-	displayWidget("Block ID", std::bind(button_callback, Events::BLOCKID, "Block ID"));
-	ImGui::SameLine();
-	displayWidget("Previous ID", std::bind(button_callback, Events::PREVIOUS_BLOCKID, "Previous ID"));
-	ImGui::SameLine();
-	displayWidget("nTx", std::bind(button_callback, Events::NTX, "Number of transactions"));
-	ImGui::SameLine();
-	displayWidget("Block Number", std::bind(button_callback, Events::BLOCK_NUMBER, "Block Number"));
-	ImGui::SameLine();
-	displayWidget("Nonce", std::bind(button_callback, Events::NONCE, "Nonce"));
-	ImGui::SameLine();
-	displayWidget("Calculate MR", std::bind(button_callback, Events::SEE_MROOT, "Merkle Root calculation"));
-	ImGui::SameLine();
-	displayWidget("Validate MR", std::bind(button_callback, Events::VALIDATE_MROOT, "Merkle Root validation"));
-	ImGui::SameLine();
-	displayWidget("Print tree", std::bind(button_callback, Events::PRINT_TREE, "Tree printing"));
-
-	/*Message with selected option.*/
-	ImGui::Text(("Selected: " + action_msg).c_str());
-}
-/*Displays text input for path.*/
-inline void GUI::displayPath() {
-	ImGui::Text("Path: ");
-	ImGui::SameLine();
-	ImGui::InputText(" ", &path);
-
-	ImGui::SameLine();
-
-	/*Button to go to the written path (if it exists).*/
-	displayWidget("Go", [this]() {if (Filesystem::exists(path.c_str())) { fs.newPath(path); state = States::WAITING; }});
-
-	ImGui::SameLine();
-
-	/*Button to go to the original path.*/
-	displayWidget("Reset", [this]() {path.clear(); setAllFalse(States::INIT, true); });
 }
 
 void GUI::newNode() {
@@ -294,6 +213,11 @@ void GUI::connections() {
 			ImGui::SameLine();
 		}
 	}
+
+	showConnections();
+}
+
+void GUI::showConnections() {
 	ImGui::NewLine(); ImGui::NewLine();
 	ImGui::Text("Connected with: ");
 	ImGui::SameLine();
@@ -303,6 +227,54 @@ void GUI::connections() {
 	}
 	ImGui::NewLine(); ImGui::NewLine();
 	displayWidget("Done", [this]() {state = States::NODE_CREATION; });
+}
+
+void GUI::selectSender() {
+	ImGui::Text("Select Sender: ");
+	for (const auto& node : nodes) {
+		displayWidget(("Node " + std::to_string(node.index)).c_str(),
+			[this, &node]() {sender = &node; state = States::RECEIVER_SELECTION; });
+		ImGui::SameLine();
+	}
+}
+
+void GUI::selectReceiver() {
+	ImGui::Text("Select Receiver: ");
+
+	for (const auto& neighbor : sender->neighbors) {
+		displayWidget(("Node " + std::to_string(neighbor->index)).c_str(),
+			[this, &neighbor]() {receiver = neighbor; state = States::MESSAGE_SELECTION; });
+		ImGui::SameLine();
+	}
+}
+
+void GUI::selectMessage() {
+	action = Events::NOTHING;
+	ImGui::Text("Select Message Type: ");
+	ImGui::NewLine();
+
+	auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::INIT_DONE; }); };
+	auto get_blocks = [this]() {displayWidget("Block (GET)", [this]() {action = Events::GET_BLOCKS; state = States::INIT_DONE; }); };
+	auto get_headers = [this]() {displayWidget("Headers (GET)", [this]() {action = Events::GET_HEADERS;  state = States::INIT_DONE; }); };
+	auto merkleblock = [this]() {displayWidget("Merkleblock (POST)", [this]() {action = Events::MERKLEBLOCK; state = States::INIT_DONE; }); };
+	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::INIT_DONE; }); };
+	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::INIT_DONE; }); };
+
+	if (sender->type == NodeTypes::NEW_FULL) {
+		if (receiver->type == NodeTypes::NEW_FULL) {
+			get_blocks();  ImGui::SameLine();
+			post_block();  ImGui::SameLine();
+			transaction(); ImGui::NewLine();
+		}
+		else { merkleblock(); ImGui::NewLine(); }
+	}
+	else {
+		if (receiver->type == NodeTypes::NEW_FULL) {
+			filter(); ImGui::SameLine();
+			get_headers(); ImGui::SameLine();
+			transaction(); ImGui::NewLine();
+		}
+	}
 }
 
 void GUI::creation() {
@@ -343,14 +315,6 @@ inline void GUI::render() const {
 	al_flip_display();
 }
 
-/*Getters.*/
-const std::string& GUI::getFilename(void) { return selected; }
-const unsigned int GUI::getBlockIndex(void) const { return index; }
-
-/*Setters.*/
-void GUI::setChainLength(unsigned int chainLength) { this->chainLength = chainLength; }
-void GUI::setInfoShower(const std::string& shower) { this->shower = shower; }
-
 /*Cleanup. Frees resources.*/
 GUI::~GUI() {
 	ImGui_ImplAllegro5_Shutdown();
@@ -381,24 +345,3 @@ inline auto GUI::displayWidget(const char* txt, const F1& f1, const F2& f2)->dec
 }
 
 const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
-
-///*Binding fs.pathContent with this->force and specified file format.
-//Helps to determine when to update file info.*/
-//const std::vector<std::string>& GUI::updateFiles(const char* path) {
-//	bool shouldForce = force;
-//
-//	force = false;
-//
-//	return fs.pathContent(path, shouldForce, { data::fixedFormat });
-//}
-
-///*Sets all parameters to false or null, except (maybe) the ones given as arguments.*/
-//inline void GUI::setAllFalse(const States& revert, bool alsoFile) {
-//	action = Events::NOTHING;
-//	index = data::notSelectedIndex;
-//	state = revert;
-//	shower = "";
-//	action_msg = messageNone;
-//	if (alsoFile)
-//		selected = "";
-//}
