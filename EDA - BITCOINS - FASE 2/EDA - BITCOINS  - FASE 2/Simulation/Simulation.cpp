@@ -3,7 +3,7 @@
 #include "Nodes/SVP_Node.h"
 
 //Simulation constructor.
-Simulation::Simulation(void) : running(true)
+Simulation::Simulation(void) : running(true), ev(Events::NOTHING)
 {
 	/*Attempts to create new GUI variable.*/
 	gui = new GUI;
@@ -47,6 +47,7 @@ void Simulation::dispatch(const Events& code) {
 
 		/*Filter (POST).*/
 	case Events::FILTER:
+		ev = Events::FILTER;
 		setClient();
 		break;
 
@@ -83,6 +84,7 @@ void Simulation::dispatch(const Events& code) {
 		ev = Events::TRANSACTION;
 		setClient();
 		break;
+
 	default:
 		break;
 	}

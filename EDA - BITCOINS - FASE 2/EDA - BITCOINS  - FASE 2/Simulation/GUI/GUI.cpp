@@ -340,7 +340,6 @@ void GUI::selectMessage() {
 		}
 	}
 }
-#include <iostream>
 
 /*Node setup of IP and port.*/
 void GUI::creation() {
@@ -361,17 +360,7 @@ void GUI::creation() {
 	ImGui::NewLine();
 
 	/*'Done' button for finishing setup.*/
-	displayWidget("Done", [this]() {state = States::INIT;
-	for (const auto& node : nodes) {
-		std::cout << "Node " << node.index << std::endl;
-		std::cout << "\tIP: " + node.ip << std::endl;
-		std::cout << "\tPort: " << node.port << std::endl;
-		std::cout << "\tNeighbors: ";
-		for (const auto& neighbor : node.neighbors)
-			std::cout << nodes[neighbor].index << ' ';
-
-		std::cout << std::endl;
-	}});
+	displayWidget("Done", [this]() {state = States::INIT; });
 }
 
 /*Sets a new ImGUI frame and window.*/
