@@ -222,8 +222,8 @@ void GUI::newNode() {
 void GUI::connections() {
 	/*Validates node (no repeated neighbors).*/
 	auto nodeValidation = [this](unsigned int index) {
-		for (const auto& node : nodes.back().neighbors)
-			if (node->index == index)
+		for (const auto& id : nodes.back().neighbors)
+			if (nodes[id].index == index)
 				return false;
 		return true;
 	};
@@ -243,8 +243,8 @@ void GUI::connections() {
 				/*If pressed, it sets the new neighbor in each of the nodes' 'neighbors' vector.*/
 				[this, i, &nodeValidation]() {
 					if (nodeValidation(nodes[i].index)) {
-						nodes.back().neighbors.push_back(&nodes[i]);
-						nodes[i].neighbors.push_back(&nodes.back());
+						nodes.back().neighbors.push_back(i);
+						nodes[i].neighbors.push_back(nodes.size() - 1);
 					}
 				}
 			);
@@ -271,7 +271,7 @@ void GUI::showConnections() {
 	/*Loops through every node in the current node's 'neighbors' vector.*/
 	for (const auto& neighbor : nodes.back().neighbors) {
 		/*Shows the node's index.*/
-		ImGui::Text(("Node " + std::to_string(neighbor->index)).c_str());
+		ImGui::Text(("Node " + std::to_string(neighbor)).c_str());
 		ImGui::SameLine();
 	}
 }
@@ -284,7 +284,7 @@ void GUI::selectSender() {
 	for (const auto& node : nodes) {
 		/*Sets a button with the node's index.*/
 		displayWidget(("Node " + std::to_string(node.index)).c_str(),
-			[this, &node]() {sender = &node; state = States::RECEIVER_SELECTION; });
+			[this, &node]() {sender = node.index; state = States::RECEIVER_SELECTION; });
 		ImGui::SameLine();
 	}
 }
@@ -293,9 +293,9 @@ void GUI::selectReceiver() {
 	ImGui::Text("Select Receiver: ");
 
 	/*Loops through every node within the sender's neighbors.*/
-	for (const auto& neighbor : sender->neighbors) {
+	for (const auto& neighbor : nodes[sender].neighbors) {
 		/*Sets a button with the node's index.*/
-		displayWidget(("Node " + std::to_string(neighbor->index)).c_str(),
+		displayWidget(("Node " + std::to_string(neighbor)).c_str(),
 			[this, &neighbor]() {receiver = neighbor; state = States::MESSAGE_SELECTION; });
 		ImGui::SameLine();
 	}
@@ -316,9 +316,9 @@ void GUI::selectMessage() {
 	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::INIT_DONE; }); };
 
 	/*If sender is a Full Node...*/
-	if (sender->type == NodeTypes::NEW_FULL) {
+	if (nodes[sender].type == NodeTypes::NEW_FULL) {
 		/*If receiver is a Full Node...*/
-		if (receiver->type == NodeTypes::NEW_FULL) {
+		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
 			/*Displays allowed messages.*/
 			get_blocks();  ImGui::SameLine();
 			post_block();  ImGui::SameLine();
@@ -332,7 +332,7 @@ void GUI::selectMessage() {
 	/*If sender is an SVP Node...*/
 	else {
 		/*If receiver is a Full Node...*/
-		if (receiver->type == NodeTypes::NEW_FULL) {
+		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
 			/*Displays allowed messages.*/
 			filter(); ImGui::SameLine();
 			get_headers(); ImGui::SameLine();
@@ -340,6 +340,7 @@ void GUI::selectMessage() {
 		}
 	}
 }
+#include <iostream>
 
 /*Node setup of IP and port.*/
 void GUI::creation() {
@@ -347,12 +348,12 @@ void GUI::creation() {
 	ImGui::SameLine();
 
 	/*Text input for IP.*/
-	ImGui::InputText("", &nodes.back().ip);
+	ImGui::InputText("", &(nodes.back().ip));
 	ImGui::Text("Enter Port: ");
 	ImGui::SameLine();
 
 	/*Int input for port.*/
-	if (ImGui::InputInt("~  ", &nodes.back().port), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
+	if (ImGui::InputInt("~  ", &(nodes.back().port)), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
 		/*Checks that port>0 or sets it to 0 otherwise.*/
 		if (nodes.back().port < 0) nodes.back().port = 0;
 	}
@@ -360,7 +361,17 @@ void GUI::creation() {
 	ImGui::NewLine();
 
 	/*'Done' button for finishing setup.*/
-	displayWidget("Done", [this]() {state = States::INIT; });
+	displayWidget("Done", [this]() {state = States::INIT;
+	for (const auto& node : nodes) {
+		std::cout << "Node " << node.index << std::endl;
+		std::cout << "\tIP: " + node.ip << std::endl;
+		std::cout << "\tPort: " << node.port << std::endl;
+		std::cout << "\tNeighbors: ";
+		for (const auto& neighbor : node.neighbors)
+			std::cout << nodes[neighbor].index << ' ';
+
+		std::cout << std::endl;
+	}});
 }
 
 /*Sets a new ImGUI frame and window.*/
@@ -415,7 +426,8 @@ inline auto GUI::displayWidget(const char* txt, const F1& f1, const F2& f2)->dec
 	return f2();
 }
 
-/*Getter.*/
+/*Getters.*/
 const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
-const unsigned int& GUI::getSenderID() { return sender->index; }
-const unsigned int& GUI::getReceiverID() { return receiver->index; }
+const unsigned int& GUI::getSenderID() { return nodes[sender].index; }
+const unsigned int& GUI::getReceiverID() { return nodes[receiver].index; }
+const GUI::NewNode& GUI::getNode(unsigned int index) { return nodes[index]; }

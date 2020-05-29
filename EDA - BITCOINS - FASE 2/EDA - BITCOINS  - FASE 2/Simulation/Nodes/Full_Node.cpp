@@ -54,5 +54,5 @@ Full_Node::~Full_Node() {
 
 void Full_Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port)
 {
-	neighbors.insert(std::pair<const unsigned int, Node::Neighbor>(id, { ip,port }));
+	neighbors[id] = { ip, port };
 }

@@ -11,32 +11,14 @@
     <Filter Include="Header Files\Node Headers">
       <UniqueIdentifier>{4f92aa4b-52b8-4fd1-ad5e-a1435b8beb11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\FSM Headers">
-      <UniqueIdentifier>{f40691af-3ab3-4ffb-a073-30b52bef38fc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\ImGui Headers">
-      <UniqueIdentifier>{30fbdf72-9e50-48c1-a385-901de31f18ed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Node Headers\Client Headers">
       <UniqueIdentifier>{6cfc5da7-92cf-4a08-a169-975fb796ba3d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Node Headers\BlockChain Headers">
       <UniqueIdentifier>{cd6974c0-f14a-4039-9a60-b25933b41f7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\FSM Headers\GUI Headers">
-      <UniqueIdentifier>{63f7d97a-6a19-48d8-85a0-e8fd898d23a7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\FSM Sources">
-      <UniqueIdentifier>{7252f745-317d-4812-846f-9cfaba76b19e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ImGui Sources">
-      <UniqueIdentifier>{64822b04-d8c2-42af-94f5-bc81fed622c8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Node Sources">
       <UniqueIdentifier>{ed5f08b2-bc2e-425d-ac28-1d5d4f804765}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\FSM Sources\GUI Sources">
-      <UniqueIdentifier>{f51a80bb-911b-4d7b-9244-05fb8c962106}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Node Sources\Client Sources">
       <UniqueIdentifier>{a258245d-8dc4-48b1-981f-6e18a46a2afe}</UniqueIdentifier>
@@ -50,6 +32,12 @@
     <Filter Include="Header Files\Node Headers\Client Headers\POST Clients">
       <UniqueIdentifier>{619533ba-cd06-4d2e-b43c-e1ed4f82c830}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ImGui Headers">
+      <UniqueIdentifier>{664992f3-6563-4ca5-ad0e-5abc7641308d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImGui Sources">
+      <UniqueIdentifier>{a3c26338-125e-4d2f-9921-412851f49a61}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -57,30 +45,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\GUI.cpp">
-      <Filter>Source Files\FSM Sources\GUI Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.cpp">
-      <Filter>Source Files\FSM Sources\GUI Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui.cpp">
-      <Filter>Source Files\ImGui Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_demo.cpp">
-      <Filter>Source Files\ImGui Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_draw.cpp">
-      <Filter>Source Files\ImGui Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_impl_allegro5.cpp">
-      <Filter>Source Files\ImGui Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_stdlib.cpp">
-      <Filter>Source Files\ImGui Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_widgets.cpp">
-      <Filter>Source Files\ImGui Sources</Filter>
     </ClCompile>
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp">
       <Filter>Source Files\Node Sources</Filter>
@@ -106,32 +70,29 @@
     <ClCompile Include="Simulation\Simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_demo.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_draw.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\GUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imconfig.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_impl_allegro5.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_internal.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_stdlib.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_rectpack.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_textedit.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_truetype.h">
-      <Filter>Header Files\ImGui Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\Full_Node.h">
       <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
@@ -143,12 +104,6 @@
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
       <Filter>Header Files\Node Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\GUI.h">
-      <Filter>Header Files\FSM Headers\GUI Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.h">
-      <Filter>Header Files\FSM Headers\GUI Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h">
       <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
@@ -188,6 +143,33 @@
     </ClInclude>
     <ClInclude Include="Simulation\Simulation.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\GUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imconfig.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui_impl_allegro5.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui_internal.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui_stdlib.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h">
+      <Filter>Header Files\ImGui Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

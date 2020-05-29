@@ -24,8 +24,10 @@ void Simulation::mainScreen() {
 				nodes.push_back(new SVP_Node(io_context, node.ip, node.port, node.index));
 
 			/*Sets neighbors.*/
-			for (const auto& neighbor : node.neighbors)
-				nodes.back()->newNeighbor(neighbor->index, neighbor->ip, neighbor->port);
+			for (const auto& neighbor : node.neighbors) {
+				auto& ngh = gui->getNode(neighbor);
+				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+			}
 		}
 	}
 }

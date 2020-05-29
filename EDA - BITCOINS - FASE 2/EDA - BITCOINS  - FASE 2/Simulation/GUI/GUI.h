@@ -1,7 +1,7 @@
 #pragma once
-
 #include <allegro5/allegro.h>
-#include "Filesystem/Filesystem.h"
+#include <vector>
+#include <string>
 
 /*GUI event codes.*/
 /********************************/
@@ -35,7 +35,7 @@ private:
 		std::string ip;
 		int port;
 		unsigned int index;
-		std::vector<NewNode*> neighbors;
+		std::vector<unsigned int> neighbors;
 		/*********************************/
 	};
 
@@ -56,6 +56,8 @@ public:
 
 	const unsigned int& getSenderID();
 	const unsigned int& getReceiverID();
+
+	const NewNode& getNode(unsigned int index);
 private:
 
 	/*GUI states.*/
@@ -125,6 +127,6 @@ private:
 	/*Data members modifiable by user.*/
 	/**********************************/
 	std::vector <NewNode> nodes;
-	const NewNode* sender, * receiver;
+	unsigned int sender, receiver;
 	/**********************************/
 };

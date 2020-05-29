@@ -13,17 +13,17 @@ const enum class ConnectionType : unsigned int {
 	POSTFILTER
 };
 
+struct Neighbor {
+	std::string ip;
+	unsigned int port;
+};
+
 class Node {
 protected:
 	const enum class States : unsigned int {
 		FREE,
 		CLIENTMODE,
 		SERVERMODE
-	};
-
-	struct Neighbor {
-		std::string ip;
-		unsigned int port;
 	};
 
 public:

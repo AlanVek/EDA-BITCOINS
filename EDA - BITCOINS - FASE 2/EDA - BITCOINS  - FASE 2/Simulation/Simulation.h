@@ -1,5 +1,5 @@
 #pragma once
-#include "FSMFramework/GUI/GUI.h"
+#include "GUI/GUI.h"
 #include "Nodes/Node/Node.h"
 
 class Simulation {

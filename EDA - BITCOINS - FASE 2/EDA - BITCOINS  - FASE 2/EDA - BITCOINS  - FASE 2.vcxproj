@@ -153,14 +153,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\GUI.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_demo.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_draw.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_impl_allegro5.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_stdlib.cpp" />
-    <ClCompile Include="Simulation\FSMFramework\GUI\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Simulation\GUI\GUI.cpp" />
+    <ClCompile Include="Simulation\GUI\imgui\imgui.cpp" />
+    <ClCompile Include="Simulation\GUI\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Simulation\GUI\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp" />
+    <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp" />
+    <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
@@ -171,16 +170,15 @@
     <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\FSMFramework\GUI\Filesystem\Filesystem.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\GUI.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imconfig.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_impl_allegro5.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_internal.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imgui_stdlib.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_rectpack.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_textedit.h" />
-    <ClInclude Include="Simulation\FSMFramework\GUI\imgui\imstb_truetype.h" />
+    <ClInclude Include="Simulation\GUI\GUI.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imconfig.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imgui.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imgui_impl_allegro5.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imgui_internal.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imgui_stdlib.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h" />
+    <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\Full_Node.h" />

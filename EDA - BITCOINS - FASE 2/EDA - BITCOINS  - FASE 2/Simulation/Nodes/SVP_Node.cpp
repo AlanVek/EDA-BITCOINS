@@ -11,7 +11,7 @@ void SVP_Node::NEWPOST(const unsigned int& id, const ConnectionType type, const 
 
 void SVP_Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port)
 {
-	neighbors.insert(std::pair<const unsigned int, Node::Neighbor>(id, { ip,port }));
+	neighbors[id] = { ip, port };
 }
 
 void SVP_Node::perform() {
