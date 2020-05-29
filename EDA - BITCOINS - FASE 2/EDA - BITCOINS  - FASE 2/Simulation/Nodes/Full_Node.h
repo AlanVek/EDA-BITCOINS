@@ -4,7 +4,7 @@
 
 class Full_Node : public Node {
 public:
-	Full_Node(boost::asio::io_context&);
+	Full_Node(boost::asio::io_context&, const std::string&, const unsigned int);
 	~Full_Node();
 
 	virtual void newNeighbor(const std::string& ip, const unsigned int port);

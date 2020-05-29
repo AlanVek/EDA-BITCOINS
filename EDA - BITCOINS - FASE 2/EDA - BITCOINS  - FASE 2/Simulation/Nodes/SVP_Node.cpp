@@ -1,6 +1,7 @@
 #include "SVP_Node.h"
 
-SVP_Node::SVP_Node(boost::asio::io_context& io_context) : Node(io_context) {}
+SVP_Node::SVP_Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port) 
+	: Node(io_context, ip, port) {}
 
 void SVP_Node::NEWGET(const std::string& ip, const ConnectionType type, const std::string& id, const unsigned int count) {
 }

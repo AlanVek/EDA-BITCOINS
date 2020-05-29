@@ -15,7 +15,8 @@ const enum class ConnectionType : unsigned int {
 
 class Node {
 public:
-	Node(boost::asio::io_context& io_context) : server(io_context), state(States::FREE) {};
+	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port) 
+		: server(io_context), state(States::FREE), ip(ip), port(port) {};
 	virtual ~Node() {}
 
 	virtual void newNeighbor(const std::string&, const unsigned int) = 0;

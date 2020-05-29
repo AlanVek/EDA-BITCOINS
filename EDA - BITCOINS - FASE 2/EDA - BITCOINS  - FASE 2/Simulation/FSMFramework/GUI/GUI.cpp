@@ -108,31 +108,52 @@ bool GUI::eventManager(void) {
 	return result;
 }
 
+/*Initial data input for node selection.
+Returns true if setup was done successfully or
+false if user asked to leave.*/
 bool GUI::nodeSelectionScreen() {
 	bool result = false;
 
 	bool endOfSetup = false;
 	al_set_target_backbuffer(guiDisp);
+
+	/*If GUI is still in initializing state...*/
 	if (state < States::INIT_DONE) {
+		/*While setup isn't finished...*/
 		while (!endOfSetup) {
+			/*If user asked to leave, breaks loop.*/
 			if (eventManager()) { endOfSetup = true; }
 
 			else {
+				/*New ImGui window.*/
 				newWindow();
 				ImGui::Text("Initial Setup: ");
 				ImGui::NewLine();
+
+				/*New Node button.*/
 				displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
 
+				/*Select node type.*/
 				if (state == States::NODE_SELECTION) { newNode(); }
+
+				/*Select neighbors.*/
 				else if (state == States::NODE_CONNECTION) { connections(); }
+
+				/*Select IP and port.*/
 				else if (state == States::NODE_CREATION) { creation(); }
 				else {
 					ImGui::NewLine(); ImGui::NewLine();
+
+					/*Exit button.*/
 					displayWidget("Exit", [&endOfSetup]() {endOfSetup = true; });
 					ImGui::SameLine();
+
+					/*Go button. Breaks setup loop.*/
 					displayWidget("Go", [&endOfSetup, this, &result]() {
 						if (nodes.size()) { endOfSetup = true; result = true; state = States::INIT_DONE; }});
 				}
+
+				/*Rendering.*/
 				ImGui::End();
 				render();
 			}
@@ -152,6 +173,7 @@ Events GUI::checkStatus(void) {
 	if (eventManager())
 		result = Events::END;
 
+	/*If GUI has been initialized...*/
 	else if (state >= States::INIT_DONE) {
 		/*Sets new ImGui window.*/
 		newWindow();
@@ -159,37 +181,50 @@ Events GUI::checkStatus(void) {
 		ImGui::Text("Actions: ");
 
 		ImGui::NewLine();
+
+		/*New Message button.*/
 		displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
 
 		ImGui::NewLine(); ImGui::NewLine();
 
+		/*Sender selection.*/
 		if (state == States::SENDER_SELECTION) selectSender();
+
+		/*Receiver selection.*/
 		else if (state == States::RECEIVER_SELECTION) selectReceiver();
+
+		/*Message selection.*/
 		else if (state == States::MESSAGE_SELECTION) { selectMessage(); if ((bool)action) result = action; }
 		else {
 			ImGui::NewLine();
+
+			/*Exit button.*/
 			displayWidget("Exit", [&result] {result = Events::END; });
 		}
 
-		ImGui::End();
-
 		/*Rendering.*/
+		ImGui::End();
 		render();
 	}
 	return result;
 }
 
+/*New node type selection.*/
 void GUI::newNode() {
 	ImGui::Text("Select type: ");
 	ImGui::SameLine();
+
+	/*SVP button.*/
 	displayWidget("SVP", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SVP, nodes.size())); state = States::NODE_CONNECTION; });
 	ImGui::SameLine();
+
+	/*FULL button.*/
 	displayWidget("FULL", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size())); state = States::NODE_CONNECTION; });
-	ImGui::SameLine();
-	displayWidget("Delete Last", [this]() {if (nodes.size()) nodes.pop_back(); state = States::INIT; });
 }
 
+/*Makes connections in new node.*/
 void GUI::connections() {
+	/*Validates node (no repeated neighbors).*/
 	auto nodeValidation = [this](unsigned int index) {
 		for (const auto& node : nodes.back().neighbors)
 			if (node->index == index)
@@ -199,10 +234,16 @@ void GUI::connections() {
 
 	ImGui::NewLine();
 	ImGui::Text("Choose connected nodes: ");
+
+	/*For every node available...*/
 	for (unsigned int i = 0; i < nodes.size() - 1; i++) {
+		/*If at least one is FULL (no SVP-SVP neighbors)...*/
 		if (nodes[i].type == NodeTypes::NEW_FULL || nodes.back().type == NodeTypes::NEW_FULL) {
+			/*Sets a button with the node's index.*/
 			displayWidget(
 				("Node " + std::to_string(i)).c_str(),
+
+				/*If pressed, it sets the new neighbor in each of the nodes' 'neighbors' vector.*/
 				[this, i, &nodeValidation]() {
 					if (nodeValidation(nodes[i].index)) {
 						nodes.back().neighbors.push_back(&nodes[i]);
@@ -214,45 +255,60 @@ void GUI::connections() {
 		}
 	}
 
+	/*Shows node's current connections.*/
 	showConnections();
-}
 
-void GUI::showConnections() {
-	ImGui::NewLine(); ImGui::NewLine();
-	ImGui::Text("Connected with: ");
-	ImGui::SameLine();
-	for (const auto& neighbor : nodes.back().neighbors) {
-		ImGui::Text(("Node " + std::to_string(neighbor->index)).c_str());
-		ImGui::SameLine();
-	}
+	/*Button for finishing connections setup..*/
 	ImGui::NewLine(); ImGui::NewLine();
 	displayWidget("Done", [this]() {state = States::NODE_CREATION; });
 }
 
+/*Shows node's connections.*/
+void GUI::showConnections() {
+	ImGui::NewLine(); ImGui::NewLine();
+	ImGui::Text("Connected with: ");
+	ImGui::SameLine();
+
+	/*Loops through every node in the current node's 'neighbors' vector.*/
+	for (const auto& neighbor : nodes.back().neighbors) {
+		/*Shows the node's index.*/
+		ImGui::Text(("Node " + std::to_string(neighbor->index)).c_str());
+		ImGui::SameLine();
+	}
+}
+
+/*Sender selection.*/
 void GUI::selectSender() {
 	ImGui::Text("Select Sender: ");
+
+	/*Loops through every node...*/
 	for (const auto& node : nodes) {
+		/*Sets a button with the node's index.*/
 		displayWidget(("Node " + std::to_string(node.index)).c_str(),
 			[this, &node]() {sender = &node; state = States::RECEIVER_SELECTION; });
 		ImGui::SameLine();
 	}
 }
-
+/*Receiver selection.*/
 void GUI::selectReceiver() {
 	ImGui::Text("Select Receiver: ");
 
+	/*Loops through every node within the sender's neighbors.*/
 	for (const auto& neighbor : sender->neighbors) {
+		/*Sets a button with the node's index.*/
 		displayWidget(("Node " + std::to_string(neighbor->index)).c_str(),
 			[this, &neighbor]() {receiver = neighbor; state = States::MESSAGE_SELECTION; });
 		ImGui::SameLine();
 	}
 }
 
+/*Message selection.*/
 void GUI::selectMessage() {
 	action = Events::NOTHING;
 	ImGui::Text("Select Message Type: ");
 	ImGui::NewLine();
 
+	/*Sets button setters for every type of message.*/
 	auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::INIT_DONE; }); };
 	auto get_blocks = [this]() {displayWidget("Block (GET)", [this]() {action = Events::GET_BLOCKS; state = States::INIT_DONE; }); };
 	auto get_headers = [this]() {displayWidget("Headers (GET)", [this]() {action = Events::GET_HEADERS;  state = States::INIT_DONE; }); };
@@ -260,16 +316,25 @@ void GUI::selectMessage() {
 	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::INIT_DONE; }); };
 	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::INIT_DONE; }); };
 
+	/*If sender is a Full Node...*/
 	if (sender->type == NodeTypes::NEW_FULL) {
+		/*If receiver is a Full Node...*/
 		if (receiver->type == NodeTypes::NEW_FULL) {
+			/*Displays allowed messages.*/
 			get_blocks();  ImGui::SameLine();
 			post_block();  ImGui::SameLine();
 			transaction(); ImGui::NewLine();
 		}
+
+		/*If receiver is an SVP Node, displays allowed messages.*/
 		else { merkleblock(); ImGui::NewLine(); }
 	}
+
+	/*If sender is an SVP Node...*/
 	else {
+		/*If receiver is a Full Node...*/
 		if (receiver->type == NodeTypes::NEW_FULL) {
+			/*Displays allowed messages.*/
 			filter(); ImGui::SameLine();
 			get_headers(); ImGui::SameLine();
 			transaction(); ImGui::NewLine();
@@ -277,18 +342,25 @@ void GUI::selectMessage() {
 	}
 }
 
+/*Node setup of IP and port.*/
 void GUI::creation() {
 	ImGui::Text("Enter IP:   ", ImGuiInputTextFlags_CharsDecimal);
 	ImGui::SameLine();
+
+	/*Text input for IP.*/
 	ImGui::InputText("", &nodes.back().ip);
 	ImGui::Text("Enter Port: ");
 	ImGui::SameLine();
+
+	/*Int input for port.*/
 	if (ImGui::InputInt("~  ", &nodes.back().port), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
-		if (nodes.back().port < 0)
-			nodes.back().port = 0;
+		/*Checks that port>0 or sets it to 0 otherwise.*/
+		if (nodes.back().port < 0) nodes.back().port = 0;
 	}
 
 	ImGui::NewLine();
+
+	/*'Done' button for finishing setup.*/
 	displayWidget("Done", [this]() {state = States::INIT; });
 }
 
@@ -344,4 +416,5 @@ inline auto GUI::displayWidget(const char* txt, const F1& f1, const F2& f2)->dec
 	return f2();
 }
 
+/*Getter.*/
 const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }

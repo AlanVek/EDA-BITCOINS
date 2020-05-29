@@ -1,7 +1,8 @@
 #include "Full_Node.h"
 #include "Node/Client/AllClients.h"
 
-Full_Node::Full_Node(boost::asio::io_context& io_context) : Node(io_context) {}
+Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port) 
+	: Node(io_context, ip ,port) {}
 
 void Full_Node::NEWGET(const std::string& ip, const ConnectionType type, const std::string& id, const unsigned int count)
 {

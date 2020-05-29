@@ -4,7 +4,7 @@
 
 class SVP_Node : public Node {
 public:
-	SVP_Node(boost::asio::io_context&);
+	SVP_Node(boost::asio::io_context&, const std::string&, const unsigned int);
 	~SVP_Node();
 
 	virtual void newNeighbor(const std::string& ip, const unsigned int port);
