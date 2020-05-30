@@ -94,12 +94,6 @@
     <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.cpp">
       <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Server\SVP_Server.cpp">
-      <Filter>Source Files\Node Sources\Server Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Server\Full_Server.cpp">
-      <Filter>Source Files\Node Sources\Server Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
       <Filter>Source Files\Node Sources\Server Sources</Filter>
     </ClCompile>
@@ -180,13 +174,7 @@
     <ClInclude Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.h">
       <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Server\SVP_Server.h">
-      <Filter>Header Files\Node Headers\Server Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
-      <Filter>Header Files\Node Headers\Server Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Server\Full_Server.h">
       <Filter>Header Files\Node Headers\Server Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,7 +27,12 @@ protected:
 
 public:
 	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-		: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {};
+		: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {
+		server = new Server(io_context, ip,
+			[this](const std::string& request) {return GETResponse(request); },
+			[this](const std::string& request) {return POSTResponse(request); }
+		);
+	};
 	virtual ~Node() {
 		if (client) {
 			delete client;
@@ -51,6 +56,9 @@ public:
 	virtual const States getState() = 0;
 
 protected:
+
+	virtual const std::string GETResponse(const std::string&) = 0;
+	virtual const std::string POSTResponse(const std::string&) = 0;
 
 	Client* client;
 	Server* server;

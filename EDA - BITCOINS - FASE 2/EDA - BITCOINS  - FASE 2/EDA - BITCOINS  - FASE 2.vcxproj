@@ -165,9 +165,7 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Server\Full_Server.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Server\SVP_Server.cpp" />
     <ClCompile Include="Simulation\Nodes\SVP_Node.cpp" />
     <ClCompile Include="Simulation\Simulation.cpp" />
   </ItemGroup>
@@ -195,9 +193,7 @@
     <ClInclude Include="Simulation\Nodes\Node\Node.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.h" />
-    <ClInclude Include="Simulation\Nodes\Node\Server\Full_Server.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
-    <ClInclude Include="Simulation\Nodes\Node\Server\SVP_Server.h" />
     <ClInclude Include="Simulation\Nodes\SVP_Node.h" />
     <ClInclude Include="Simulation\Simulation.h" />
   </ItemGroup>

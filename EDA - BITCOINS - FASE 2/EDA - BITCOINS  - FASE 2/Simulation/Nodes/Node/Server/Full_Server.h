@@ -6,6 +6,8 @@ class Full_Server : public Server
 public:
 	Full_Server(boost::asio::io_context&, const std::string&);
 
+	const BlockChain& getBlockChain() {}
+
 protected:
 	virtual void GETResponse(bool);
 	virtual void POSTResponse(bool);

@@ -11,10 +11,13 @@ namespace {
 
 /*Server constructor. Initializes io_context, acceptor and socket.
 Calls asyncConnection to accept connections.*/
-Server::Server(boost::asio::io_context& io_context_, const std::string& host) :
-	host(host), io_context(io_context_), acceptor(io_context_,
-		tcp::endpoint(tcp::v4(), 80)), socket(io_context_)
+Server::Server(boost::asio::io_context& io_context_, const std::string& host, const Response& GET,
+	const Response& POST) : host(host), io_context(io_context_),
+	acceptor(io_context_, tcp::endpoint(tcp::v4(), 80)), socket(io_context_)
 {
+	GETResponse = GET;
+	POSTResponse = POST;
+
 	if (socket.is_open()) {
 		socket.shutdown(tcp::socket::shutdown_both);
 		socket.close();
@@ -73,16 +76,22 @@ void Server::inputValidation(const boost::system::error_code& error, size_t byte
 		std::string host_validator = " HTTP/1.1\r\nHost: " + host + "\r\n";
 		bool isInputOk = false;
 
+		unsigned int startIndex;
+		unsigned int endIndex;
+
+		unsigned int tempIndex;
+
 		//If there's been a match at the beggining of the request...
-		if (!message.find(validator_GET))
+		if (!(startIndex = message.find(validator_GET)))
 			state = Connections::GET;
-		else if (!message.find(validator_POST))
+		else if (!(startIndex = message.find(validator_POST)))
 			state = Connections::POST;
-		else
+		else {
 			state = Connections::NONE;
+		}
 
 		if (state != Connections::NONE) {
-			if (message.find(host_validator) == std::string::npos)
+			if ((endIndex = message.find(host_validator)) == std::string::npos)
 				state = Connections::NONE;
 
 			else {
@@ -97,7 +106,9 @@ void Server::inputValidation(const boost::system::error_code& error, size_t byte
 			std::cout << "Client sent wrong input.\n";
 
 		//Generates response (according to validity of input).
-		answer(isInputOk);
+
+		if (isInputOk)
+			answer(message.substr(startIndex, endIndex - startIndex));
 	}
 
 	//If there's been an error, prints the message.
@@ -138,14 +149,16 @@ void Server::messageCallback(const boost::system::error_code& error, size_t byte
 }
 
 /*Responds to input.*/
-void Server::answer(bool isInputOk) {
+void Server::answer(const std::string& message) {
 	/*Generates text response, according to validity of input.*/
 	switch (state) {
 	case Connections::GET:
-		GETResponse(isInputOk);
+		response = GETResponse(message);
+		if (!response.length()) errorResponse();
 		break;
 	case Connections::POST:
-		POSTResponse(isInputOk);
+		response = POSTResponse(message);
+		if (!response.length()) errorResponse();
 		break;
 	case Connections::NONE:
 		errorResponse();
@@ -196,3 +209,6 @@ void Server::answer(bool isInputOk) {
 //void Server::errorReponse() {
 //
 //}
+
+void Server::errorResponse(void) {
+}

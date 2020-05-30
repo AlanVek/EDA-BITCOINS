@@ -1,13 +1,16 @@
 #pragma once
 #include <boost/asio.hpp>
 #include <string>
+#include <functional>
 
 #define MAXSIZE 10000
-
+namespace {
+	using Response = std::function<const std::string(const std::string&)>;
+}
 class Server
 {
 public:
-	Server(boost::asio::io_context&, const std::string&);
+	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&);
 	virtual ~Server();
 protected:
 
@@ -22,10 +25,10 @@ protected:
 	void asyncConnection(void);
 	void closeConnection(void);
 
-	void answer(bool);
-	virtual void GETResponse(bool) = 0;
-	virtual void POSTResponse(bool) = 0;
-	virtual void errorResponse(void) = 0;
+	void answer(const std::string&);
+	Response GETResponse;
+	Response POSTResponse;
+	virtual void errorResponse(void);
 	/*******************************************/
 
 	/*Callbacks and callback-related.*/

@@ -1,5 +1,6 @@
 #pragma once
 #include "Node/Node.h"
+#include "Node/Server/json.hpp"
 
 class SVP_Node : public Node {
 public:
@@ -15,4 +16,11 @@ public:
 	virtual void NEWGET(const unsigned int&, const ConnectionType, const std::string&, const unsigned int);
 	virtual void NEWPOST(const unsigned int&, const ConnectionType, const json&);
 	virtual const States getState(void);
+
+private:
+
+	virtual const std::string GETResponse(const std::string&);
+	virtual const std::string POSTResponse(const std::string&);
+
+	nlohmann::json headers;
 };

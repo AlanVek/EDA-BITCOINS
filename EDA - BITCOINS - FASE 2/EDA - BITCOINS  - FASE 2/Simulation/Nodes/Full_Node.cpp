@@ -1,11 +1,17 @@
 #include "Full_Node.h"
 #include "Node/Client/AllClients.h"
-#include "Node/Server/Full_Server.h"
+
+namespace {
+	const char* BLOCKPOST = "send_block";
+	const char* TRANSPOST = "send_tx";
+	const char* FILTERPOST = "send_filter";
+	const char* BLOCKSGET = "get_blocks";
+	const char* HEADERGET = "get_block_header";
+}
 
 Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier)
 {
-	server = new Full_Server(io_context, ip);
 }
 
 void Full_Node::NEWGET(const unsigned int& id, const ConnectionType type, const std::string& blockID, const unsigned int count)
@@ -65,4 +71,28 @@ Full_Node::~Full_Node() {
 void Full_Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port)
 {
 	neighbors[id] = { ip, port };
+}
+
+const std::string Full_Node::GETResponse(const std::string& request) {
+	std::string result("");
+
+	if (request.find(BLOCKSGET)) {
+	}
+	else if (request.find(HEADERGET)) {
+	}
+
+	return result;
+}
+
+const std::string Full_Node::POSTResponse(const std::string& request) {
+	std::string result("");
+
+	if (request.find(BLOCKPOST) != std::string::npos) {
+	}
+	else if (request.find(TRANSPOST) != std::string::npos) {
+	}
+	else if (request.find(FILTERPOST) != std::string::npos) {
+	}
+
+	return result;
 }
