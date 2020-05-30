@@ -23,7 +23,6 @@ Node::~Node() {
 /*Adds new neighbor to 'neighbors' vector.*/
 void Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port) {
 	neighbors[id] = { ip, port };
-	server->newNeighbor();
 }
 
 /*Performs client mode. */
