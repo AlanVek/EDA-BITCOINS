@@ -9,12 +9,6 @@ SVP_Node::SVP_Node(boost::asio::io_context& io_context, const std::string& ip,
 {
 }
 
-void SVP_Node::perform() {
-}
-
-const unsigned int& SVP_Node::getID() { return identifier; }
-const SVP_Node::States SVP_Node::getState(void) { return state; }
-
 const std::string SVP_Node::GETResponse(const std::string& request) {
 	return "";
 }

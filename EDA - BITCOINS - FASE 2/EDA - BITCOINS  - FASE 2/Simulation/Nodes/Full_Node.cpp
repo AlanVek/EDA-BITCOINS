@@ -42,19 +42,6 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 //	return temp;
 //}
 
-void Full_Node::perform() {
-	if (client && state == States::CLIENTMODE) {
-		if (!client->perform()) {
-			delete client;
-			client = nullptr;
-			state = States::FREE;
-		}
-	}
-}
-
-const unsigned int& Full_Node::getID() { return identifier; }
-const Full_Node::States Full_Node::getState(void) { return state; }
-
 Full_Node::~Full_Node() {
 	if (client) {
 		delete client;
@@ -66,25 +53,50 @@ Full_Node::~Full_Node() {
 	}
 }
 const std::string Full_Node::GETResponse(const std::string& request) {
-	std::string result("");
+	json result;
 
-	if (request.find(BLOCKSGET)) {
+	result["status"] = true;
+	bool block;
+	if ((block = request.find(BLOCKSGET)) || request.find(HEADERGET)) {
+		if (request.find("block_id=") != std::string::npos && request.find("count=") != std::string::npos) {
+			json response;
+			std::string id = request.substr(request.find_first_of("=") + 1, request.find("count"));
+			int count = std::stoi(request.substr(request.find_last_of("=") + 1, request.length()));
+			int abs = blockChain.getBlockIndex(id);
+			abs++;
+
+			while (abs < blockChain.getBlockAmount() && count) {
+				if (block) {
+					response.push_back(blockChain.getBlock(abs));
+				}
+				else {
+					response.push_back(blockChain.getHeader(abs));
+				}
+				count--;
+			}
+
+			result["result"] = response;
+		}
+		else
+			result["result"] = 1;
 	}
-	else if (request.find(HEADERGET)) {
-	}
+	else
+		result["result"] = 2;
 
 	return result;
 }
 
 const std::string Full_Node::POSTResponse(const std::string& request) {
-	std::string result("");
-
+	json result;
+	result["status"] = true;
+	result["result"] = "null";
 	if (request.find(BLOCKPOST) != std::string::npos) {
+		blockChain.addBlock(json::parse(request.substr(request.find("data"), request.length())));
 	}
 	else if (request.find(TRANSPOST) != std::string::npos) {
 	}
 	else if (request.find(FILTERPOST) != std::string::npos) {
 	}
 
-	return result;
+	return result.dump();
 }

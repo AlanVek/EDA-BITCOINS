@@ -7,12 +7,6 @@ public:
 	SVP_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int);
 	~SVP_Node();
 
-	//virtual void newNeighbor(const unsigned int, const std::string& ip, const unsigned int port);
-
-	virtual void perform();
-
-	virtual const unsigned int& getID();
-
 	//virtual void transaction(const unsigned int, c)
 
 	virtual void postBlock(const unsigned int, const std::string& blockID) {};
@@ -23,8 +17,6 @@ public:
 
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) {};
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) {};
-
-	virtual const States getState(void);
 
 private:
 

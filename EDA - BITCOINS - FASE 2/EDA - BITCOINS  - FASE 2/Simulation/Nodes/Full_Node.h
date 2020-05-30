@@ -7,15 +7,9 @@ public:
 	Full_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int);
 	~Full_Node();
 
-	//virtual void newNeighbor(const unsigned int, const std::string& ip, const unsigned int port);
-
-	virtual void perform();
-	virtual const unsigned int& getID();
-
 	virtual const std::string GETResponse(const std::string&);
 	virtual const std::string POSTResponse(const std::string&);
 
-	virtual const States getState(void);
 private:
 
 	const json& getBlock(const std::string& blockID);

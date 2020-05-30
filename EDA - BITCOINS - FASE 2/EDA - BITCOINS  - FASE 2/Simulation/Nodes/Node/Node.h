@@ -17,40 +17,22 @@ struct Neighbor {
 	unsigned int port;
 };
 
+const enum class States : unsigned int {
+	FREE,
+	CLIENTMODE,
+	SERVERMODE
+};
+
 class Node {
-protected:
-	const enum class States : unsigned int {
-		FREE,
-		CLIENTMODE,
-		SERVERMODE
-	};
-
 public:
-	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-		: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {
-		server = new Server(io_context, ip,
-			std::bind(&Node::GETResponse, this, std::placeholders::_1),
-			std::bind(&Node::POSTResponse, this, std::placeholders::_1));
-	};
-	virtual ~Node() {
-		if (client) {
-			delete client;
-			client = nullptr;
-		}
-		if (server) {
-			delete server;
-			server = nullptr;
-		}
-	}
+	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
+		const unsigned int identifier);
+	virtual ~Node();
 
-	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port) {
-		neighbors[id] = { ip, port };
-		server->newNeighbor();
-	}
+	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port);
 
-	virtual void perform() = 0;
-
-	virtual const unsigned int& getID() = 0;
+	virtual void perform();
+	virtual const unsigned int getID();
 
 	//virtual void transaction(const unsigned int, c)
 
@@ -63,7 +45,7 @@ public:
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 
-	virtual const States getState() = 0;
+	virtual const States getState();
 
 protected:
 

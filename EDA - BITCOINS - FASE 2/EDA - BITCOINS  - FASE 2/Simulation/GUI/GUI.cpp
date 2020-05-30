@@ -178,9 +178,6 @@ Events GUI::checkStatus(void) {
 
 		ImGui::NewLine();
 
-		/*New Message button.*/
-		displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
-
 		ImGui::NewLine();
 
 		/*Sender selection.*/
@@ -190,12 +187,20 @@ Events GUI::checkStatus(void) {
 		else if (state == States::RECEIVER_SELECTION) selectReceiver();
 
 		/*Message selection.*/
-		else if (state == States::MESSAGE_SELECTION) { selectMessage(); if ((bool)action) result = action; }
-		else {
-			ImGui::NewLine();
+		else if (state == States::MESSAGE_SELECTION) { selectMessage(); }
 
+		/*Parameter(s) selection.*/
+		else if (state == States::PARAM_SELECTION) { selectParameters(); }
+		else {
 			/*Exit button.*/
 			displayWidget("Exit", [&result] {result = Events::END; });
+
+			ImGui::SameLine();
+
+			/*New Message button.*/
+			displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
+
+			if ((bool)action) result = action;
 		}
 
 		/*Rendering.*/
@@ -308,12 +313,12 @@ void GUI::selectMessage() {
 	ImGui::NewLine();
 
 	/*Sets button setters for every type of message.*/
-	auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::INIT_DONE; }); };
-	auto get_blocks = [this]() {displayWidget("Block (GET)", [this]() {action = Events::GET_BLOCKS; state = States::INIT_DONE; }); };
-	auto get_headers = [this]() {displayWidget("Headers (GET)", [this]() {action = Events::GET_HEADERS;  state = States::INIT_DONE; }); };
-	auto merkleblock = [this]() {displayWidget("Merkleblock (POST)", [this]() {action = Events::MERKLEBLOCK; state = States::INIT_DONE; }); };
-	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::INIT_DONE; }); };
-	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::INIT_DONE; }); };
+	auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::PARAM_SELECTION; }); };
+	auto get_blocks = [this]() {displayWidget("Block (GET)", [this]() {action = Events::GET_BLOCKS; state = States::PARAM_SELECTION; }); };
+	auto get_headers = [this]() {displayWidget("Headers (GET)", [this]() {action = Events::GET_HEADERS;  state = States::PARAM_SELECTION; }); };
+	auto merkleblock = [this]() {displayWidget("Merkleblock (POST)", [this]() {action = Events::MERKLEBLOCK; state = States::PARAM_SELECTION; }); };
+	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::PARAM_SELECTION; }); };
+	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
 
 	/*If sender is a Full Node...*/
 	if (nodes[sender].type == NodeTypes::NEW_FULL) {
@@ -339,6 +344,65 @@ void GUI::selectMessage() {
 			transaction(); ImGui::NewLine();
 		}
 	}
+}
+
+void GUI::selectParameters() {
+	bool wildcard = false;
+
+	switch (action) {
+		/*Filter (POST).*/
+	case Events::FILTER:
+		break;
+
+		/*Blocks (GET).*/
+	case Events::GET_BLOCKS:
+		ImGui::Text("Enter Block ID: ");
+		ImGui::SameLine();
+		ImGui::InputText("_", &blockID);
+		ImGui::Text("Enter count:    ");
+		ImGui::SameLine();
+		if (ImGui::InputInt(".", &count)) { if (count < 0) count = 0; }
+		break;
+
+		/*Headers (GET).*/
+	case Events::GET_HEADERS:
+		ImGui::Text("Enter Block ID: ");
+		ImGui::SameLine();
+		ImGui::InputText("_", &blockID);
+		ImGui::Text("Enter count:    ");
+		ImGui::SameLine();
+		if (ImGui::InputInt(".", &count)) { if (count < 0) count = 0; }
+		break;
+
+		/*Merkleblock (POST).*/
+	case Events::MERKLEBLOCK:
+		wildcard = true;
+
+		break;
+
+		/*Block (POST).*/
+	case Events::POST_BLOCK:
+		wildcard = true;
+		break;
+
+		/*Transaction (POST).*/
+	case Events::TRANSACTION:
+		ImGui::Text("Enter amount:        ");
+		ImGui::SameLine();
+		ImGui::InputInt("..", &amount);
+		ImGui::Text("Enter public wallet: ");
+		ImGui::SameLine();
+		ImGui::InputText("_.", &key);
+		break;
+	default:
+		break;
+	}
+
+	ImGui::NewLine();
+	displayWidget("Done", [this, wildcard]() {
+		if ((key.length() && amount) || (blockID.length() && count || wildcard))
+			state = States::INIT_DONE;
+		});
 }
 
 /*Node setup of IP and port.*/
@@ -420,3 +484,12 @@ const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
 const unsigned int& GUI::getSenderID() { return nodes[sender].index; }
 const unsigned int& GUI::getReceiverID() { return nodes[receiver].index; }
 const GUI::NewNode& GUI::getNode(unsigned int index) { return nodes[index]; }
+
+const std::string& GUI::getBlockID() { return blockID; }
+const int GUI::getAmount() { return amount; }
+const unsigned int GUI::getCount() { return count; }
+const std::string& GUI::getKey() { return key; }
+
+void GUI::infoGotten() {
+	key.clear(); amount = 0; count = 0; blockID.clear(); action = Events::NOTHING;
+}

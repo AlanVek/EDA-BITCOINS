@@ -56,6 +56,13 @@ public:
 	const unsigned int& getSenderID();
 	const unsigned int& getReceiverID();
 	const NewNode& getNode(unsigned int index);
+
+	const std::string& getBlockID();
+	const int getAmount();
+	const unsigned int getCount();
+	const std::string& getKey();
+
+	void infoGotten();
 private:
 
 	/*GUI states.*/
@@ -68,7 +75,8 @@ private:
 		INIT_DONE,
 		SENDER_SELECTION,
 		RECEIVER_SELECTION,
-		MESSAGE_SELECTION
+		MESSAGE_SELECTION,
+		PARAM_SELECTION
 	};
 	/****************************/
 
@@ -104,6 +112,7 @@ private:
 	void selectSender();
 	void selectReceiver();
 	void selectMessage();
+	void selectParameters();
 	/**********************/
 
 	/*Exit and resize events.*/
@@ -126,5 +135,8 @@ private:
 	/**********************************/
 	std::vector <NewNode> nodes;
 	unsigned int sender, receiver;
+	std::string blockID, key;
+	int count, nodeID;
+	int amount;
 	/**********************************/
 };

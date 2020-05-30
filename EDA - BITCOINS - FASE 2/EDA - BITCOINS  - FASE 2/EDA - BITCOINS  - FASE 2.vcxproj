@@ -163,6 +163,7 @@
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />

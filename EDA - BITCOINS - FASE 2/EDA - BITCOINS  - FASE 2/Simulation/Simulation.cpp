@@ -48,41 +48,47 @@ void Simulation::dispatch(const Events& code) {
 		/*Filter (POST).*/
 	case Events::FILTER:
 		ev = Events::FILTER;
-		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTFILTER,)
+		//nodes[getIndex()]->postFilter(gui->getReceiverID(), gui->getKey(), gui->getNode());
+		gui->infoGotten();
+
 		break;
 
 		/*Blocks (GET).*/
 	case Events::GET_BLOCKS:
 		ev = Events::GET_BLOCKS;
-		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::GETBLOCK,)
+		//nodes[getIndex()]->GETBlocks(gui->getReceiverID(), gui->getBlockID(), gui->getCount());
+		gui->infoGotten();
 
 		break;
 
 		/*Headers (GET).*/
 	case Events::GET_HEADERS:
 		ev = Events::GET_HEADERS;
-		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::GETHEADER,)
+		//nodes[getIndex()]->GETBlockHeaders(gui->getReceiverID(), gui->getBlockID();gui->getCount());
+		gui->infoGotten();
 
 		break;
 
 		/*Merkleblock (POST).*/
 	case Events::MERKLEBLOCK:
 		ev = Events::MERKLEBLOCK;
-		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTMERKLE,)
-
+		//nodes[getIndex()]->postMerkleBlock(gui->getReceiverID(), gui->getBlockID(), gui->getTransactionID());
+		gui->infoGotten();
 		break;
 
 		/*Block (POST).*/
 	case Events::POST_BLOCK:
 		ev = Events::POST_BLOCK;
-		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTBLOCK,)
-
+		//nodes[getIndex()]->postBlock(gui->getReceiverID(), gui->getBlockID());
+		gui->infoGotten();
 		break;
 
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
 		ev = Events::TRANSACTION;
-		//nodes[getIndex()]->NEWPOST(gui->getReceiverID(), ConnectionType::POSTTRANS,)
+		//nodes[getIndex()]->po
+		gui->infoGotten();
+
 		break;
 
 	default:
@@ -125,6 +131,5 @@ const unsigned int Simulation::getIndex() {
 		if (nodes[i]->getID() == senderID)
 			currentIndex = i;
 	}
-
 	return currentIndex;
 }
