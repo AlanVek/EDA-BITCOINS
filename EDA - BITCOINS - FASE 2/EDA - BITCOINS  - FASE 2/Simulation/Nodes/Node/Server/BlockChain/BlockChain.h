@@ -14,6 +14,8 @@ public:
 
 	const unsigned int getBlockAmount() const;
 
+	const json& getBlock(unsigned int);
+
 private:
 	std::vector <Block> blocks;
 	json JSON;

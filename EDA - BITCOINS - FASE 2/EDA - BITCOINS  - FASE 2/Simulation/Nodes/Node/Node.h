@@ -29,9 +29,8 @@ public:
 	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
 		: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {
 		server = new Server(io_context, ip,
-			[this](const std::string& request) {return GETResponse(request); },
-			[this](const std::string& request) {return POSTResponse(request); }
-		);
+			std::bind(&Node::GETResponse, this, std::placeholders::_1),
+			std::bind(&Node::POSTResponse, this, std::placeholders::_1));
 	};
 	virtual ~Node() {
 		if (client) {
@@ -44,14 +43,25 @@ public:
 		}
 	}
 
-	virtual void newNeighbor(const unsigned int, const std::string&, const unsigned int) = 0;
+	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port) {
+		neighbors[id] = { ip, port };
+		server->newNeighbor();
+	}
 
 	virtual void perform() = 0;
 
 	virtual const unsigned int& getID() = 0;
 
-	virtual void NEWGET(const unsigned int&, const ConnectionType, const std::string&, const unsigned int) = 0;
-	virtual void NEWPOST(const unsigned int&, const ConnectionType, const json&) = 0;
+	//virtual void transaction(const unsigned int, c)
+
+	virtual void postBlock(const unsigned int, const std::string& blockID) = 0;
+	virtual void postMerkleBlock(const unsigned int,
+		const std::string& blockID, const std::string& transID) = 0;
+
+	virtual void postFilter(const unsigned int, const std::string& key, const unsigned int node) = 0;
+
+	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
+	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 
 	virtual const States getState() = 0;
 

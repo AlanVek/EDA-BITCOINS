@@ -1,7 +1,8 @@
 #include "Block.h"
 
 Block::Block(const json& JSON) {
-	header = JSON;
+	block = JSON;
+	header = block;
 	tx = header["tx"];
 	header.erase("tx");
 	transformData();

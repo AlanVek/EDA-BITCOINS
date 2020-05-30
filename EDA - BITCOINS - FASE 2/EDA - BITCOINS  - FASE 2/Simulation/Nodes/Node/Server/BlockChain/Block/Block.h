@@ -34,7 +34,7 @@ private:
 	const std::list < std::string> getIDs();
 
 	/*Block data.*/
-	json header, tx;
+	json header, tx, block;
 
 	void transformData();
 

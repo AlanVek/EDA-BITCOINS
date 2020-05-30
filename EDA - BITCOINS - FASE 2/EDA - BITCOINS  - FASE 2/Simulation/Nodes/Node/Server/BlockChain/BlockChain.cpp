@@ -33,3 +33,5 @@ const unsigned int BlockChain::getBlockAmount() const { return blocks.size(); }
 const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) {
 	return blocks[index].getData(member);
 }
+
+const json& BlockChain::getBlock(unsigned int index) { return blocks[index].block; }

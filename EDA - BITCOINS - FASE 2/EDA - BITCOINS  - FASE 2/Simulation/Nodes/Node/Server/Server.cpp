@@ -13,24 +13,31 @@ namespace {
 Calls asyncConnection to accept connections.*/
 Server::Server(boost::asio::io_context& io_context_, const std::string& host, const Response& GET,
 	const Response& POST) : host(host), io_context(io_context_),
-	acceptor(io_context_, tcp::endpoint(tcp::v4(), 80)), socket(io_context_)
+	acceptor(io_context_, tcp::endpoint(tcp::v4(), 80))
 {
 	GETResponse = GET;
 	POSTResponse = POST;
+}
 
-	if (socket.is_open()) {
-		socket.shutdown(tcp::socket::shutdown_both);
-		socket.close();
+void Server::newNeighbor() {
+	sockets.push_back(boost::asio::ip::tcp::socket(io_context));
+	responses.push_back(std::string());
+	if (sockets.back().is_open()) {
+		sockets.back().shutdown(tcp::socket::shutdown_both);
+		sockets.back().close();
 	}
-	asyncConnection();
+	asyncConnection(sockets.back(), sockets.size() - 1);
 }
 
 //Destructor. Closes open socket and acceptor.
 Server::~Server() {
 	std::cout << "\nClosing server.\n";
-	if (socket.is_open()) {
-		socket.shutdown(tcp::socket::shutdown_both);
-		socket.close();
+
+	for (auto& socket : sockets) {
+		if (socket.is_open()) {
+			socket.shutdown(tcp::socket::shutdown_both);
+			socket.close();
+		}
 	}
 
 	if (acceptor.is_open())
@@ -40,35 +47,34 @@ Server::~Server() {
 }
 
 /*Sets acceptor to accept (asynchronously).*/
-void Server::asyncConnection() {
-	state = Connections::NONE;
-	if (socket.is_open()) {
-		//std::cout << "Error: Can't accept new connection from an open socket" << std::endl;
-		return;
-	}
+void Server::asyncConnection(boost::asio::ip::tcp::socket& socket, unsigned int index) {
 	if (acceptor.is_open()) {
 		std::cout << "Waiting for connection.\n";
-		acceptor.async_accept(socket, boost::bind(&Server::connectionCallback, this, boost::asio::placeholders::error));
+		if (!socket.is_open()) {
+			acceptor.async_accept(
+				socket, boost::bind(&Server::connectionCallback,
+					this, boost::ref(socket), index, boost::asio::placeholders::error)
+			);
+		}
+		responses[index].clear();
 	}
-	response.clear();
 }
 
 //Closes socket and clears message holder.
-void Server::closeConnection() {
+void Server::closeConnection(boost::asio::ip::tcp::socket& socket, unsigned int index) {
 	socket.shutdown(tcp::socket::shutdown_both);
 	socket.close();
 	int i = 0;
-	while (mess[i] != NULL) {
-		mess[i] = NULL;
-		i++;
+	for (unsigned int i = 0; i < MAXSIZE; i++) {
+		mess[index][i] = NULL;
 	}
 }
 
 /*Validates input given in GET request.*/
-void Server::inputValidation(const boost::system::error_code& error, size_t bytes) {
+void Server::inputValidation(boost::asio::ip::tcp::socket& socket, unsigned int index, const boost::system::error_code& error, size_t bytes) {
 	if (!error) {
 		//Creates string message from request.
-		std::string message(mess);
+		std::string message(mess[index]);
 
 		//Validator has the http protocol form.
 		std::string validator_GET = "GET /" + fixed + '/';
@@ -108,7 +114,7 @@ void Server::inputValidation(const boost::system::error_code& error, size_t byte
 		//Generates response (according to validity of input).
 
 		if (isInputOk)
-			answer(message.substr(startIndex, endIndex - startIndex));
+			answer(socket, index, message.substr(startIndex, endIndex - startIndex));
 	}
 
 	//If there's been an error, prints the message.
@@ -117,16 +123,16 @@ void Server::inputValidation(const boost::system::error_code& error, size_t byte
 }
 
 /*Called when there's been a connection.*/
-void Server::connectionCallback(const boost::system::error_code& error) {
+void Server::connectionCallback(boost::asio::ip::tcp::socket& socket, unsigned int index, const boost::system::error_code& error) {
 	if (!error) {
 		//Sets socket to read request.
 		socket.async_read_some
 		(
-			boost::asio::buffer(mess, MAXSIZE),
+			boost::asio::buffer(mess[index], MAXSIZE),
 			boost::bind
 			(
 				&Server::inputValidation,
-				this, boost::asio::placeholders::error,
+				this, boost::ref(socket), index, boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
 		);
@@ -138,27 +144,20 @@ void Server::connectionCallback(const boost::system::error_code& error) {
 /*Called when a message has been sent to client.*/
 void Server::messageCallback(const boost::system::error_code& error, size_t bytes_sent)
 {
-	/*if (!error)
-		std::cout << "Response sent correctly.\n\n";
-
-	else
-		std::cout << "Failed to respond to connection\n\n";*/
-
-		/*Once the answer was sent, it frees acceptor for a new connection.*/
-	asyncConnection();
+	//asyncConnection();
 }
 
 /*Responds to input.*/
-void Server::answer(const std::string& message) {
+void Server::answer(boost::asio::ip::tcp::socket& socket, unsigned int index, const std::string& message) {
 	/*Generates text response, according to validity of input.*/
 	switch (state) {
 	case Connections::GET:
-		response = GETResponse(message);
-		if (!response.length()) errorResponse();
+		responses[index] = GETResponse(message);
+		if (!responses[index].length()) errorResponse();
 		break;
 	case Connections::POST:
-		response = POSTResponse(message);
-		if (!response.length()) errorResponse();
+		responses[index] = POSTResponse(message);
+		if (!responses[index].length()) errorResponse();
 		break;
 	case Connections::NONE:
 		errorResponse();
@@ -167,12 +166,12 @@ void Server::answer(const std::string& message) {
 		break;
 	}
 
-	response += "\r\n\r\n";
+	responses[index] += "\r\n\r\n";
 
 	/*Sets socket to write (send to client).*/
 	socket.async_write_some
 	(
-		boost::asio::buffer(response),
+		boost::asio::buffer(responses[index]),
 		boost::bind
 		(
 			&Server::messageCallback,
@@ -183,7 +182,9 @@ void Server::answer(const std::string& message) {
 	);
 
 	/*Closes socket*/
-	closeConnection();
+	closeConnection(socket, index);
+
+	asyncConnection(socket, index);
 }
 
 ///*Generates http response, according to validity of input.*/

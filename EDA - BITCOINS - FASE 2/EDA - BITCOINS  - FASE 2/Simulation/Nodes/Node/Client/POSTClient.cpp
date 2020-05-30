@@ -39,7 +39,7 @@ void POSTClient::configurateClient(void) {
 	curl_easy_setopt(handler, CURLOPT_PROTOCOLS, CURLPROTO_HTTP);
 
 	//Sets header with token.
-	list = curl_slist_append(list, data.dump().c_str());
+	list = curl_slist_append(list, ("Data: " + data.dump()).c_str());
 	curl_easy_setopt(handler, CURLOPT_HTTPHEADER, list);
 
 	//Sets callback and userData.

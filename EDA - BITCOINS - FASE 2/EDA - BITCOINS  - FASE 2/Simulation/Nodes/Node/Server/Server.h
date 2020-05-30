@@ -4,6 +4,7 @@
 #include <functional>
 
 #define MAXSIZE 10000
+#define MAXNEIGHBORS 10
 namespace {
 	using Response = std::function<const std::string(const std::string&)>;
 }
@@ -12,6 +13,9 @@ class Server
 public:
 	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&);
 	virtual ~Server();
+
+	void newNeighbor(void);
+
 protected:
 
 	const enum class Connections {
@@ -22,10 +26,10 @@ protected:
 
 	/*Connection methods.*/
 	/*******************************************/
-	void asyncConnection(void);
-	void closeConnection(void);
+	void asyncConnection(boost::asio::ip::tcp::socket&, unsigned int);
+	void closeConnection(boost::asio::ip::tcp::socket&, unsigned int);
 
-	void answer(const std::string&);
+	void answer(boost::asio::ip::tcp::socket&, unsigned int, const std::string&);
 	Response GETResponse;
 	Response POSTResponse;
 	virtual void errorResponse(void);
@@ -33,23 +37,24 @@ protected:
 
 	/*Callbacks and callback-related.*/
 	/*********************************************************************************/
-	void connectionCallback(const boost::system::error_code& error);
+	void connectionCallback(boost::asio::ip::tcp::socket&, unsigned int, const boost::system::error_code& error);
 	void messageCallback(const boost::system::error_code& error, size_t bytes_sent);
-	void inputValidation(const boost::system::error_code& error, size_t bytes);
+	void inputValidation(boost::asio::ip::tcp::socket&, unsigned int, const boost::system::error_code& error, size_t bytes);
 	/*********************************************************************************/
 
 	/*Boost::asio data members.*/
 	/****************************************/
 	boost::asio::io_context& io_context;
 	boost::asio::ip::tcp::acceptor acceptor;
-	boost::asio::ip::tcp::socket socket;
+	std::vector<boost::asio::ip::tcp::socket> sockets;
 	/****************************************/
 
 	/*Connection data members.*/
 	/*********************************************/
 	size_t size;
-	char mess[MAXSIZE];
-	std::string response, host;
+	char mess[MAXNEIGHBORS][MAXSIZE];
+	std::vector<std::string> responses;
+	std::string host;
 	Connections state;
 	/*********************************************/
 };

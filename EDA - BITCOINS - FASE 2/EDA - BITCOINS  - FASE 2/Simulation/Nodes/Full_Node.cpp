@@ -14,35 +14,33 @@ Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 {
 }
 
-void Full_Node::NEWGET(const unsigned int& id, const ConnectionType type, const std::string& blockID, const unsigned int count)
-{
+void Full_Node::GETBlocks(const unsigned int id, const std::string& blockID, const unsigned int count) {
 	if (state == States::FREE && !client) {
-		if (neighbors.find(id) != neighbors.end() && count && type == ConnectionType::GETBLOCK) {
+		if (neighbors.find(id) != neighbors.end() && count) {
 			client = new GETBlockClient(neighbors[id].ip, neighbors[id].port, blockID, count);
 			state = States::CLIENTMODE;
 		}
 	}
 }
 
-void Full_Node::NEWPOST(const unsigned int& id, const ConnectionType type, const json& header) {
-	if (!client && state == States::FREE && neighbors.find(id) != neighbors.end() && !header.is_null()) {
-		state = States::CLIENTMODE;
-		switch (type) {
-		case ConnectionType::POSTBLOCK:
-			client = new BlockClient(neighbors[id].ip, neighbors[id].port, header);
-			break;
-		case ConnectionType::POSTFILTER:
-			client = new FilterClient(neighbors[id].ip, neighbors[id].port, header);
-			break;
-		case ConnectionType::POSTTRANS:
-			client = new TransactionClient(neighbors[id].ip, neighbors[id].port, header);
-			break;
-		default:
-			state = States::FREE;
-			break;
-		}
+void Full_Node::postBlock(const unsigned int id, const std::string& blockID) {
+	client = new BlockClient(neighbors[id].ip, neighbors[id].port, getBlock(blockID));
+}
+
+void Full_Node::postMerkleBlock(const unsigned int id, const std::string& blockID, const std::string& transID) {
+	//client = new MerkleClient(neighbors[id].ip, neighbors[id].port, getMerkleBlock(blockID, transID));
+}
+const json& Full_Node::getBlock(const std::string& blockID) {
+	for (unsigned int i = 0; i < blockChain.getBlockAmount(); i++) {
+		if (blockChain.getBlockInfo(i, BlockInfo::BLOCKID) == blockID)
+			return blockChain.getBlock(i);
 	}
 }
+
+//const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
+//	json temp;
+//	return temp;
+//}
 
 void Full_Node::perform() {
 	if (client && state == States::CLIENTMODE) {
@@ -67,12 +65,6 @@ Full_Node::~Full_Node() {
 		server = nullptr;
 	}
 }
-
-void Full_Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port)
-{
-	neighbors[id] = { ip, port };
-}
-
 const std::string Full_Node::GETResponse(const std::string& request) {
 	std::string result("");
 
