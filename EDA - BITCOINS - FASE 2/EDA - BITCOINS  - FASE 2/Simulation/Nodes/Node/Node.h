@@ -47,6 +47,8 @@ public:
 
 	virtual const States getState();
 
+	virtual std::string makeDaytimeString(bool);
+
 protected:
 
 	virtual const std::string GETResponse(const std::string&) = 0;

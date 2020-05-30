@@ -56,13 +56,10 @@ bool GETClient::perform(void) {
 
 		if (!step) {
 			//Sets easy and multi modes with error checker.
-			handler = curl_easy_init();
-			if (!handler)
+			if (!(handler = curl_easy_init()))
 				throw std::exception("Failed to initialize easy handler.");
 
-			multiHandler = curl_multi_init();
-
-			if (!multiHandler)
+			if (!(multiHandler = curl_multi_init()))
 				throw std::exception("Failed to initialize multi handler.");
 
 			//If it's the first time in this run, it sets the request parameters.
@@ -90,6 +87,7 @@ bool GETClient::perform(void) {
 			stillRunning = 1;
 
 			//Parses answer.
+
 			answer = json::parse(unparsedAnswer);
 
 			//Sets result to 'FALSE', to end loop.

@@ -96,7 +96,7 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 		//Validator has the http protocol form.
 		std::string validator_GET = "GET /" + fixed + '/';
 		std::string validator_POST = "POST /" + fixed + '/';
-		std::string host_validator = " HTTP/1.1\r\nHost: " + host + "\r\n";
+		std::string host_validator = " HTTP/1.1\r\nHost: " + host + ':' + std::to_string(port);
 
 		std::string message = (connector).reader;
 
@@ -162,7 +162,7 @@ void Server::messageCallback(iterator connector, const boost::system::error_code
 	if (error)
 		std::cout << error.message() << std::endl;
 	else
-		std::cout << "Answered: ";
+		std::cout << "Answered." << std::endl;
 
 	/*Closes socket*/
 	closeConnection(connector);

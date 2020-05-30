@@ -42,6 +42,20 @@ void Node::perform() {
 	}
 }
 
+/*Returns daytime string. If plusThirty is true, it returns
+current daytime + 30 seconds.*/
+std::string Node::makeDaytimeString(bool plusThirty) {
+	using namespace std::chrono;
+	system_clock::time_point theTime = system_clock::now();
+
+	if (plusThirty)
+		theTime += seconds(30);
+
+	time_t now = system_clock::to_time_t(theTime);
+
+	return ctime(&now);
+}
+
 /*Getters*/
 const unsigned int Node::getID() { return identifier; }
 const States Node::getState() { return state; }

@@ -85,7 +85,7 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 
 			/*Parses input for id.*/
 			int pos_id = request.find_first_of("=");
-			std::string id = request.substr(pos_id + 1, request.find("&") - pos_id - 1);
+			std::string id = request.substr(pos_id + 1, request.find_last_of("&") - pos_id - 1);
 
 			/*Parses input for count.*/
 			int pos_count = request.find_last_of("=");
@@ -132,7 +132,9 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 		result["result"] = 2;
 	}
 
-	return result.dump();
+	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + request + "\r\nCache-Control: max-age=30\r\nExpires:" +
+		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
+		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
 }
 
 /*POST callback for server.*/
