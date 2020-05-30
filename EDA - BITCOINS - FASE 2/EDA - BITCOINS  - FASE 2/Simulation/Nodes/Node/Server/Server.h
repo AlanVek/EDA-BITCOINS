@@ -26,10 +26,10 @@ protected:
 
 	/*Connection methods.*/
 	/*******************************************/
-	void asyncConnection(boost::asio::ip::tcp::socket&, unsigned int);
-	void closeConnection(boost::asio::ip::tcp::socket&, unsigned int);
+	void asyncConnection(unsigned int);
+	void closeConnection(unsigned int);
 
-	void answer(boost::asio::ip::tcp::socket&, unsigned int, const std::string&);
+	void answer(unsigned int, const std::string&);
 	Response GETResponse;
 	Response POSTResponse;
 	virtual void errorResponse(void);
@@ -37,9 +37,9 @@ protected:
 
 	/*Callbacks and callback-related.*/
 	/*********************************************************************************/
-	void connectionCallback(boost::asio::ip::tcp::socket&, unsigned int, const boost::system::error_code& error);
+	void connectionCallback(unsigned int, const boost::system::error_code& error);
 	void messageCallback(const boost::system::error_code& error, size_t bytes_sent);
-	void inputValidation(boost::asio::ip::tcp::socket&, unsigned int, const boost::system::error_code& error, size_t bytes);
+	void inputValidation(unsigned int, const boost::system::error_code& error, size_t bytes);
 	/*********************************************************************************/
 
 	/*Boost::asio data members.*/

@@ -484,12 +484,12 @@ const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
 const unsigned int& GUI::getSenderID() { return nodes[sender].index; }
 const unsigned int& GUI::getReceiverID() { return nodes[receiver].index; }
 const GUI::NewNode& GUI::getNode(unsigned int index) { return nodes[index]; }
-
 const std::string& GUI::getBlockID() { return blockID; }
 const int GUI::getAmount() { return amount; }
 const unsigned int GUI::getCount() { return count; }
 const std::string& GUI::getKey() { return key; }
 
+/*Sets flags to initial state.*/
 void GUI::infoGotten() {
 	key.clear(); amount = 0; count = 0; blockID.clear(); action = Events::NOTHING;
 }
