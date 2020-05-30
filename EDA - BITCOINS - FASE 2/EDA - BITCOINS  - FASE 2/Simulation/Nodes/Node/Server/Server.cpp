@@ -125,14 +125,6 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 			/*Checks for error in the host header.*/
 			if ((endIndex = message.find(host_validator)) == std::string::npos)
 				state = Connections::NONE;
-
-			else {
-				//If the request has CRLF at end, then input was valid.
-				if (message.length() >= (validator_GET.length() + host_validator.length())
-					&& message.substr(message.length() - 2, 2) == "\r\n")
-
-					state = Connections::NONE;
-			}
 		}
 		else
 			std::cout << "Client sent wrong input.\n";

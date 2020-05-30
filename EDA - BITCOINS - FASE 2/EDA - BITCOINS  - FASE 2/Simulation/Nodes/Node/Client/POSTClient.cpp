@@ -20,7 +20,7 @@ POSTClient::POSTClient(const std::string& ip, const unsigned int port, const jso
 	url = ip + '/' + begURL;
 }
 
-//Configurates client for tweet request.
+//Configurates client.
 void POSTClient::configurateClient(void) {
 	unparsedAnswer.clear();
 
@@ -47,7 +47,7 @@ void POSTClient::configurateClient(void) {
 	curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer);
 }
 
-//Gets tweets.
+//Performs request.
 bool POSTClient::perform(void) {
 	if (ip.length() && port) {
 		static bool step = false;

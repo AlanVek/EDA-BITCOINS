@@ -18,7 +18,7 @@ GETClient::GETClient(const std::string& ip, const unsigned int port, const std::
 	url = ip + '/' + begURL;
 }
 
-//Configurates client for tweet request.
+//Configurates client.
 void GETClient::configurateClient(void) {
 	unparsedAnswer.clear();
 
@@ -39,7 +39,7 @@ void GETClient::configurateClient(void) {
 	curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer);
 }
 
-//Gets tweets.
+//Performs request.
 bool GETClient::perform(void) {
 	if (ip.length() && port) {
 		static bool step = false;
