@@ -3,20 +3,20 @@
 #include <string>
 #include <functional>
 
-#define MAXSIZE 10000
-#define MAXNEIGHBORS 10
+#define MAXSIZE 1000
 
 struct Connection {
+	Connection(boost::asio::io_context& io_context) : socket(io_context) {}
 	boost::asio::ip::tcp::socket socket;
-	//char message[MAXSIZE];
+	char reader[MAXSIZE];
 	std::string response;
-	std::string reader;
+	std::list<Connection>::iterator pos;
 };
 
 namespace {
 	using Response = std::function<const std::string(const std::string&)>;
 
-	using iterator = const std::list<Connection>::iterator&;
+	using iterator = Connection&;
 }
 class Server
 {
@@ -47,7 +47,7 @@ protected:
 	/*Callbacks and callback-related.*/
 	/*********************************************************************************/
 	void connectionCallback(iterator, const boost::system::error_code& error);
-	void messageCallback(const boost::system::error_code& error, size_t bytes_sent);
+	void messageCallback(iterator, const boost::system::error_code& error, size_t bytes_sent);
 	void inputValidation(iterator, const boost::system::error_code& error, size_t bytes);
 	/*********************************************************************************/
 

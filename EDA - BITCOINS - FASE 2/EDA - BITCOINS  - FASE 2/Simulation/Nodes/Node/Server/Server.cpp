@@ -7,7 +7,7 @@
 using boost::asio::ip::tcp;
 
 namespace {
-	const std::string fixed = "eda_coin";
+	const std::string fixed = "eda_coins";
 }
 
 /*Server constructor. Initializes io_context, acceptor and socket.
@@ -26,16 +26,20 @@ Server::Server(boost::asio::io_context& io_context_, const std::string& host, co
 /*If there's a new neighbor, it sets a new socket.*/
 void Server::newConnector() {
 	/*Pushes a new socket.*/
-	sockets.push_back({ boost::asio::ip::tcp::socket(io_context), std::string() });
+
+	sockets.push_back(Connection(io_context));
+	sockets.back().pos = std::prev(sockets.end());
 
 	/*Closes socket (in case it's open).*/
 	if (sockets.back().socket.is_open()) {
 		sockets.back().socket.shutdown(tcp::socket::shutdown_both);
 		sockets.back().socket.close();
 	}
+	for (unsigned int i = 0; i < MAXSIZE; i++)
+		sockets.back().reader[i] = NULL;
 
 	/*Connects socket with acceptor.*/
-	asyncConnection(std::prev(sockets.end()));
+	asyncConnection(sockets.back());
 }
 
 //Destructor. Closes open sockets and acceptor.
@@ -61,46 +65,54 @@ Server::~Server() {
 void Server::asyncConnection(iterator connector) {
 	if (acceptor.is_open()) {
 		std::cout << "Waiting for connection.\n";
-		if (!(*connector).socket.is_open()) {
+		if (!(connector).socket.is_open()) {
 			acceptor.async_accept(
-				(*connector).socket, boost::bind(&Server::connectionCallback,
-					this, connector, boost::asio::placeholders::error)
+				(connector).socket, boost::bind(&Server::connectionCallback,
+					this, boost::ref(connector), boost::asio::placeholders::error)
 			);
 		}
-		(*connector).response.clear();
 	}
 }
 
 //Closes socket and clears message holder.
 void Server::closeConnection(iterator connector) {
-	(*connector).socket.shutdown(tcp::socket::shutdown_both);
-	(*connector).socket.close();
+	(connector).socket.shutdown(tcp::socket::shutdown_both);
+	(connector).socket.close();
 
+	/*If there are more sockets, it erases the current one.*/
 	if (sockets.size() > 1)
-		sockets.erase(connector);
+		sockets.erase(connector.pos);
+
+	/*Otherwise...*/
+	else {
+		/*It clears the reader and reconnects.*/
+		for (unsigned int i = 0; i < MAXSIZE; i++)
+			(connector).reader[i] = NULL;
+
+		asyncConnection(connector);
+	}
 }
 
 /*Validates input given in GET request.*/
 void Server::inputValidation(iterator connector, const boost::system::error_code& error, size_t bytes) {
 	if (!error) {
-		//Creates string message from request.
-		//std::string message(mess[index]);
-
 		//Validator has the http protocol form.
 		std::string validator_GET = "GET /" + fixed + '/';
 		std::string validator_POST = "POST /" + fixed + '/';
 		std::string host_validator = " HTTP/1.1\r\nHost: " + host + "\r\n";
 
+		std::string message = (connector).reader;
+
 		/*Sets indexes to cut message.*/
-		unsigned int startIndex = 0;
-		unsigned int endIndex = (*connector).reader.length();
+		int startIndex = 0;
+		int endIndex = message.length();
 
 		//If it's a GET request, sets state to GET.
-		if (!(startIndex = (*connector).reader.find(validator_GET)))
+		if (!(startIndex = message.find(validator_GET)))
 			state = Connections::GET;
 
 		//If it's a POST request, sets state to POST.
-		else if (!(startIndex = (*connector).reader.find(validator_POST)))
+		else if (!(startIndex = message.find(validator_POST)))
 			state = Connections::POST;
 
 		/*Otherwise, it's an error.*/
@@ -111,13 +123,13 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 		/*If input was ok...*/
 		if (state != Connections::NONE) {
 			/*Checks for error in the host header.*/
-			if ((endIndex = (*connector).reader.find(host_validator)) == std::string::npos)
+			if ((endIndex = message.find(host_validator)) == std::string::npos)
 				state = Connections::NONE;
 
 			else {
 				//If the request has CRLF at end, then input was valid.
-				if ((*connector).reader.length() >= (validator_GET.length() + host_validator.length())
-					&& (*connector).reader.substr((*connector).reader.length() - 2, 2) == "\r\n")
+				if (message.length() >= (validator_GET.length() + host_validator.length())
+					&& message.substr(message.length() - 2, 2) == "\r\n")
 
 					state = Connections::NONE;
 			}
@@ -125,8 +137,8 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 		else
 			std::cout << "Client sent wrong input.\n";
 
-		//Answers request..
-		answer(connector, (*connector).reader.substr(startIndex, endIndex - startIndex));
+		//Answers request.
+		answer(connector, message.substr(startIndex >= 0 ? startIndex : 0, endIndex - startIndex));
 	}
 
 	//If there's been an error, prints the message.
@@ -140,13 +152,13 @@ void Server::connectionCallback(iterator connector, const boost::system::error_c
 
 	if (!error) {
 		//Sets socket to read request.
-		(*connector).socket.async_read_some
+		(connector).socket.async_read_some
 		(
-			boost::asio::buffer((*connector).reader),
+			boost::asio::buffer((connector).reader, MAXSIZE),
 			boost::bind
 			(
 				&Server::inputValidation,
-				this, connector, boost::asio::placeholders::error,
+				this, boost::ref(connector), boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
 		);
@@ -156,9 +168,15 @@ void Server::connectionCallback(iterator connector, const boost::system::error_c
 		std::cout << error.message() << std::endl;
 }
 /*Called when a message has been sent to client.*/
-void Server::messageCallback(const boost::system::error_code& error, size_t bytes_sent)
+void Server::messageCallback(iterator connector, const boost::system::error_code& error, size_t bytes_sent)
 {
-	//asyncConnection();
+	if (error)
+		std::cout << error.message() << std::endl;
+	else
+		std::cout << "Answered" << std::endl;
+
+	/*Closes socket*/
+	closeConnection(connector);
 }
 
 /*Responds to input.*/
@@ -167,44 +185,36 @@ void Server::answer(iterator connector, const std::string& message) {
 	switch (state) {
 		/*GET request. Calls GET callback.*/
 	case Connections::GET:
-		(*connector).response = GETResponse(message);
-		if (!(*connector).response.length())
-			break;
+		(connector).response = GETResponse(message);
+		break;
 
 		/*POST request. Calls POST callback.*/
 	case Connections::POST:
-		(*connector).response = POSTResponse(message);
-		if (!(*connector).response.length())
-			break;
+		(connector).response = POSTResponse(message);
+		break;
 
 		/*Error. Calls error callback.*/
 	case Connections::NONE:
-		(*connector).response = errorResponse();
+		(connector).response = errorResponse();
 		break;
 	default:
 		break;
 	}
 
-	(*connector).response += "\r\n\r\n";
+	(connector).response += "\r\n\r\n";
 
 	/*Sets socket to write (send to client).*/
-	(*connector).socket.async_write_some
+	(connector).socket.async_write_some
 	(
-		boost::asio::buffer((*connector).response),
+		boost::asio::buffer((connector).response),
 		boost::bind
 		(
 			&Server::messageCallback,
-			this,
+			this, boost::ref(connector),
 			boost::asio::placeholders::error,
 			boost::asio::placeholders::bytes_transferred
 		)
 	);
-
-	/*Closes socket*/
-	closeConnection(connector);
-
-	/*Reconnects socket with acceptor.*/
-	asyncConnection(connector);
 }
 
 /*Generates http response, according to validity of input.*/

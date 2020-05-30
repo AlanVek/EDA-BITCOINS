@@ -96,8 +96,8 @@ void Simulation::dispatch(const Events& code) {
 	}
 }
 
-/*Generates event from GUI.*/
-const Events Simulation::eventGenerator() { return gui->checkStatus(); }
+/*Generates event from GUI and polls io_context.*/
+const Events Simulation::eventGenerator() { io_context.poll(); return gui->checkStatus(); }
 
 /*Getter.*/
 bool Simulation::isRunning(void) { return running; }
