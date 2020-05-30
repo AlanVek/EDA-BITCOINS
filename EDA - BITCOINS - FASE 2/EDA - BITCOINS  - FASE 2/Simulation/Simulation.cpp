@@ -56,7 +56,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Blocks (GET).*/
 	case Events::GET_BLOCKS:
 		ev = Events::GET_BLOCKS;
-		//nodes[getIndex()]->GETBlocks(gui->getReceiverID(), gui->getBlockID(), gui->getCount());
+		nodes[getIndex()]->GETBlocks(gui->getReceiverID(), gui->getBlockID(), gui->getCount());
 		gui->infoGotten();
 
 		break;

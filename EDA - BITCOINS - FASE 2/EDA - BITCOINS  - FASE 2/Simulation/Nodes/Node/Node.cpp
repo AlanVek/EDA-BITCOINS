@@ -5,7 +5,8 @@ Node::Node(boost::asio::io_context& io_context, const std::string& ip, const uns
 	: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {
 	server = new Server(io_context, ip,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1),
-		std::bind(&Node::POSTResponse, this, std::placeholders::_1));
+		std::bind(&Node::POSTResponse, this, std::placeholders::_1),
+		port);
 };
 
 /*Desctructor. Frees resources.*/

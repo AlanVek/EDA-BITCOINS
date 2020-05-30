@@ -1,7 +1,8 @@
 #include "GETClient.h"
+#include <iostream>
 
 namespace {
-	const char* begURL = "eda_coin";
+	const char* begURL = "eda_coins";
 
 	//Callback with string as userData.
 	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
@@ -23,20 +24,27 @@ void GETClient::configurateClient(void) {
 	unparsedAnswer.clear();
 
 	//Sets handler and multihandler.
-	curl_multi_add_handle(multiHandler, handler);
+	if (curl_multi_add_handle(multiHandler, handler) != CURLE_OK)
+		throw std::exception("Failed to set add handler en cURL");
 
 	//Sets URL to read from.
-	curl_easy_setopt(handler, CURLOPT_URL, url.c_str());
-
-	//Tells cURL to redirect if requested.
-	curl_easy_setopt(handler, CURLOPT_FOLLOWLOCATION, 1L);
+	else if (curl_easy_setopt(handler, CURLOPT_URL, url.c_str()) != CURLE_OK)
+		throw std::exception("Failed to set URL in cURL");
 
 	//Sets protocols (HTTP and HTTPS).
-	curl_easy_setopt(handler, CURLOPT_PROTOCOLS, CURLPROTO_HTTP);
+	else if (curl_easy_setopt(handler, CURLOPT_PROTOCOLS, CURLPROTO_HTTP) != CURLE_OK)
+		throw std::exception("Failed to set HTTP protocol");
+
+	/*Sets port.*/
+	else if (curl_easy_setopt(handler, CURLOPT_PORT, port) != CURLE_OK)
+		throw std::exception("Failed to set port");
 
 	//Sets callback and userData.
-	curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback);
-	curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer);
+	else if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback) != CURLE_OK)
+		throw std::exception("Failed to set callback");
+
+	else if (curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer) != CURLE_OK)
+		throw std::exception("Failed to set userData");
 }
 
 //Performs request.
@@ -64,8 +72,7 @@ bool GETClient::perform(void) {
 
 		//Should be an if. Performs one request and checks for errors.
 		if (stillRunning) {
-			errorMulti = curl_multi_perform(multiHandler, &stillRunning);
-			if (errorMulti != CURLE_OK) {
+			if (curl_multi_perform(multiHandler, &stillRunning) != CURLE_OK) {
 				curl_easy_cleanup(handler);
 				curl_multi_cleanup(multiHandler);
 				throw std::exception("Failed to perform cURL.");

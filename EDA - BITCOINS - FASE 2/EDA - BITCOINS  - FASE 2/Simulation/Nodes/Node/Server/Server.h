@@ -21,7 +21,7 @@ namespace {
 class Server
 {
 public:
-	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&);
+	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&, unsigned int);
 	virtual ~Server();
 
 protected:
@@ -63,5 +63,6 @@ protected:
 	size_t size;
 	std::string host;
 	Connections state;
+	unsigned int port;
 	/*********************************************/
 };

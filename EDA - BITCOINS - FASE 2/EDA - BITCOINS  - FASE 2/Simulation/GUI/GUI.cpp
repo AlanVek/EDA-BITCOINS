@@ -198,7 +198,8 @@ Events GUI::checkStatus(void) {
 			ImGui::SameLine();
 
 			/*New Message button.*/
-			displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
+			if (nodes.size() > 1)
+				displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
 
 			if ((bool)action) result = action;
 		}

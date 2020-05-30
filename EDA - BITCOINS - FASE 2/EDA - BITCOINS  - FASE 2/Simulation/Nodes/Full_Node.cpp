@@ -74,7 +74,7 @@ Full_Node::~Full_Node() {}
 const std::string Full_Node::GETResponse(const std::string& request) {
 	json result;
 
-	result["status"] = true;
+	result["status"] = "true";
 	bool block;
 
 	/*Checks for correct data input (one of the strings must be in the request).*/
@@ -84,44 +84,51 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 			json response;
 
 			/*Parses input for id.*/
-			std::string id = request.substr(request.find_first_of("=") + 1, request.find("count"));
+			int pos_id = request.find_first_of("=");
+			std::string id = request.substr(pos_id + 1, request.find("&") - pos_id - 1);
 
 			/*Parses input for count.*/
-			int count = std::stoi(request.substr(request.find_last_of("=") + 1, request.length()));
+			int pos_count = request.find_last_of("=");
+			int count = std::stoi(request.substr(pos_count + 1, request.length()));
 
 			/*Sets block's position in blockchain.*/
 			int abs = blockChain.getBlockIndex(id);
 
 			/*Goes to next block.*/
-			abs++;
-
-			/*Loops through blockchain ('count' blocks or until end of blockchain).*/
-			while (abs < blockChain.getBlockAmount() && count) {
-				/*If it's a POST block...*/
-				if (block) {
-					/*Attaches full block to response.*/
-					response.push_back(blockChain.getBlock(abs));
-				}
-				/*Otherwise...*/
-				else {
-					/*Attaches header to response.*/
-					response.push_back(blockChain.getHeader(abs));
-				}
-				count--;
+			if (!(++abs)) {
+				result["status"] = "false";
+				result["result"] = 2;
 			}
 
-			/*Appends response to result.*/
-			result["result"] = response;
+			else {
+				/*Loops through blockchain ('count' blocks or until end of blockchain).*/
+				while (abs < blockChain.getBlockAmount() && count) {
+					/*If it's a POST block...*/
+					if (block) {
+						/*Attaches full block to response.*/
+						response.push_back(blockChain.getBlock(abs));
+					}
+					/*Otherwise...*/
+					else {
+						/*Attaches header to response.*/
+						response.push_back(blockChain.getHeader(abs));
+					}
+					count--;
+				}
+
+				/*Appends response to result.*/
+				result["result"] = response;
+			}
 		}
 		/*Format error.*/
 		else {
-			result["status"] = false;
+			result["status"] = "false";
 			result["result"] = 1;
 		}
 	}
 	/*Content error.*/
 	else {
-		result["status"] = false;
+		result["status"] = "false";
 		result["result"] = 2;
 	}
 
@@ -131,7 +138,7 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 /*POST callback for server.*/
 const std::string Full_Node::POSTResponse(const std::string& request) {
 	json result;
-	result["status"] = true;
+	result["status"] = "true";
 	result["result"] = "null";
 
 	/*If it's POST block...*/

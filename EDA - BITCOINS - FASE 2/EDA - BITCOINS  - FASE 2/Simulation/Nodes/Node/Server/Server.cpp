@@ -13,8 +13,8 @@ namespace {
 /*Server constructor. Initializes io_context, acceptor and socket.
 Calls asyncConnection to accept connections.*/
 Server::Server(boost::asio::io_context& io_context_, const std::string& host, const Response& GET,
-	const Response& POST) : host(host), io_context(io_context_),
-	acceptor(io_context_, tcp::endpoint(tcp::v4(), 80))
+	const Response& POST, unsigned int port) : host(host), port(port), io_context(io_context_),
+	acceptor(io_context_, tcp::endpoint(tcp::v4(), port))
 {
 	/*Sets GET and POST callbacks.*/
 	GETResponse = GET;
@@ -44,8 +44,6 @@ void Server::newConnector() {
 
 //Destructor. Closes open sockets and acceptor.
 Server::~Server() {
-	std::cout << "\nClosing server.\n";
-
 	/*Closes open sockets.*/
 	for (auto& socket : sockets) {
 		if (socket.socket.is_open()) {
@@ -64,7 +62,6 @@ Server::~Server() {
 /*Sets acceptor to accept (asynchronously) with specific socket.*/
 void Server::asyncConnection(iterator connector) {
 	if (acceptor.is_open()) {
-		std::cout << "Waiting for connection.\n";
 		if (!(connector).socket.is_open()) {
 			acceptor.async_accept(
 				(connector).socket, boost::bind(&Server::connectionCallback,
@@ -165,7 +162,7 @@ void Server::messageCallback(iterator connector, const boost::system::error_code
 	if (error)
 		std::cout << error.message() << std::endl;
 	else
-		std::cout << "Answered" << std::endl;
+		std::cout << "Answered: ";
 
 	/*Closes socket*/
 	closeConnection(connector);
@@ -213,7 +210,7 @@ void Server::answer(iterator connector, const std::string& message) {
 const std::string Server::errorResponse(void) {
 	nlohmann::json temp;
 
-	temp["status"] = false;
+	temp["status"] = "false";
 	temp["result"] = 1;
 
 	return temp.dump();
