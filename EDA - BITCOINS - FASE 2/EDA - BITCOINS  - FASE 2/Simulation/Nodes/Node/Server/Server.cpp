@@ -93,12 +93,28 @@ void Server::closeConnection(iterator connector) {
 /*Validates input given in GET request.*/
 void Server::inputValidation(iterator connector, const boost::system::error_code& error, size_t bytes) {
 	if (!error) {
+		std::string message = (connector).reader;
+		/*	if (message.find("POST") != std::string::npos{*/
+		if (message.find("POST") != std::string::npos) {
+			if (message.find("Content-Length=") == std::string::npos)
+				answer(connector, message);
+			else {
+				int size, pos;
+				std::string temp;
+				pos = message.find("Content-Length=");
+				while (message[pos + 15] != '\r') {
+					temp.append(1, message[pos + 15]);
+					pos++;
+				}
+				if (message.substr(message.find("Data=") + 5, message.length()).length() < std::stoi(temp))
+					return;
+			}
+		}
+
 		//Validator has the http protocol form.
 		std::string validator_GET = "GET /" + fixed + '/';
 		std::string validator_POST = "POST /" + fixed + '/';
 		std::string host_validator = " HTTP/1.1\r\nHost: " + host + ':' + std::to_string(port);
-
-		std::string message = (connector).reader;
 
 		/*Sets indexes to cut message.*/
 		int startIndex = 0;
@@ -122,12 +138,19 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 			/*Checks for error in the host header.*/
 			if ((endIndex = message.find(host_validator)) == std::string::npos)
 				state = Connections::NONE;
+			else if (state == Connections::POST) {
+				if (message.find("Data") != std::string::npos) {
+					endIndex = message.length();
+				}
+				else
+					state = Connections::NONE;
+			}
 		}
 		else
 			std::cout << "Client sent wrong input.\n";
 
 		//Answers request.
-		answer(connector, message.substr(startIndex >= 0 ? startIndex : 0, endIndex - startIndex));
+		answer(connector, message.substr(startIndex >= 0 ? startIndex : 0, endIndex >= 0 ? endIndex : message.length()));
 	}
 
 	//If there's been an error, prints the message.
@@ -141,7 +164,7 @@ void Server::connectionCallback(iterator connector, const boost::system::error_c
 
 	if (!error) {
 		//Sets socket to read request.
-		(connector).socket.async_read_some
+		connector.socket.async_read_some
 		(
 			boost::asio::buffer((connector).reader, MAXSIZE),
 			boost::bind

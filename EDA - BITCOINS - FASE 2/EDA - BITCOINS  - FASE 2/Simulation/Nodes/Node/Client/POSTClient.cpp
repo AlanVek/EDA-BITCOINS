@@ -1,9 +1,9 @@
 #include "POSTClient.h"
-
+#include <iostream>
 using json = nlohmann::json;
 
 namespace {
-	const char* begURL = "eda_coin";
+	const char* begURL = "eda_coins";
 
 	//Callback with string as userData.
 	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
@@ -16,90 +16,63 @@ namespace {
 }
 
 //POSTClient constructor.
-POSTClient::POSTClient(const std::string& ip, const unsigned int port, const json& data) : Client(ip, port), data(data) {
+POSTClient::POSTClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port,
+	const json& data) : Client(ip, self_port, out_port), data(data) {
 	url = ip + '/' + begURL;
 }
 
 //Configurates client.
 void POSTClient::configurateClient(void) {
 	unparsedAnswer.clear();
-
 	struct curl_slist* list = nullptr;
+	//Sets header with token.
+	std::string res = "Content-Length=" + std::to_string(data.dump().length()) + "\r\nData=" + data.dump();
+	if (strData) {
+		free(strData);
+		strData = nullptr;
+	}
+	strData = (char*)malloc(sizeof(res[0]) * res.length());
+	if (!strData) throw std::exception("Failed to allocate memory for message.");
+	res.copy(strData, res.length() * sizeof(res[0]));
+
+	list = curl_slist_append(list, strData);
+
+	if (curl_easy_setopt(handler, CURLOPT_POST, 1) != CURLE_OK)
+		throw std::exception("Failed to set POST request.");
 
 	//Sets handler and multihandler.
-	curl_multi_add_handle(multiHandler, handler);
+	else if (curl_multi_add_handle(multiHandler, handler) != CURLE_OK)
+		throw std::exception("Failed to set add handler en cURL");
 
 	//Sets URL to read from.
-	curl_easy_setopt(handler, CURLOPT_URL, url.c_str());
-
-	//Tells cURL to redirect if requested.
-	curl_easy_setopt(handler, CURLOPT_FOLLOWLOCATION, 1L);
+	else if (curl_easy_setopt(handler, CURLOPT_URL, url.c_str()) != CURLE_OK)
+		throw std::exception("Failed to set URL in cURL");
 
 	//Sets protocols (HTTP and HTTPS).
-	curl_easy_setopt(handler, CURLOPT_PROTOCOLS, CURLPROTO_HTTP);
+	else if (curl_easy_setopt(handler, CURLOPT_PROTOCOLS, CURLPROTO_HTTP) != CURLE_OK)
+		throw std::exception("Failed to set HTTP protocol");
 
-	//Sets header with token.
-	list = curl_slist_append(list, ("Data: " + data.dump()).c_str());
-	curl_easy_setopt(handler, CURLOPT_HTTPHEADER, list);
+	/*Sets port that receives request.*/
+	else if (curl_easy_setopt(handler, CURLOPT_PORT, out_port) != CURLE_OK)
+		throw std::exception("Failed to set receiving port");
+
+	/*Sets port that sends request.*/
+	else if (curl_easy_setopt(handler, CURLOPT_LOCALPORT, self_port) != CURLE_OK)
+		throw std::exception("Failed to set sending port");
+
+	else if (curl_easy_setopt(handler, CURLOPT_HTTPHEADER, list) != CURLE_OK)
+		throw std::exception("Failed to set header.");
 
 	//Sets callback and userData.
-	curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback);
-	curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer);
+	else if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback) != CURLE_OK)
+		throw std::exception("Failed to set callback");
+
+	else if (curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer) != CURLE_OK)
+		throw std::exception("Failed to set userData");
 }
-
-//Performs request.
-bool POSTClient::perform(void) {
-	if (ip.length() && port) {
-		static bool step = false;
-
-		bool stillOn = true;
-
-		if (!step) {
-			//Sets easy and multi modes with error checker.
-			handler = curl_easy_init();
-			if (!handler)
-				throw std::exception("Failed to initialize easy handler.");
-
-			multiHandler = curl_multi_init();
-
-			if (!multiHandler)
-				throw std::exception("Failed to initialize multi handler.");
-
-			//If it's the first time in this run, it sets the request parameters.
-			configurateClient();
-			step = true;
-		}
-
-		//Should be an if. Performs one request and checks for errors.
-		if (stillRunning) {
-			errorMulti = curl_multi_perform(multiHandler, &stillRunning);
-			if (errorMulti != CURLE_OK) {
-				curl_easy_cleanup(handler);
-				curl_multi_cleanup(multiHandler);
-				throw std::exception("Failed to perform cURL.");
-			}
-		}
-		else {
-			//Cleans used variables.
-			curl_easy_cleanup(handler);
-			curl_multi_cleanup(multiHandler);
-
-			//Resets step to false.
-			step = false;
-
-			//Resets stillRunning to 1;
-			stillRunning = 1;
-
-			//Parses answer.
-			answer = json::parse(unparsedAnswer);
-
-			//Sets result to 'FALSE', to end loop.
-			stillOn = false;
-		}
-		return stillOn;
+POSTClient::~POSTClient() {
+	if (strData) {
+		free(strData);
+		strData = nullptr;
 	}
-	else
-		throw std::exception("Invalid data.");
 }
-
-POSTClient::~POSTClient() {}

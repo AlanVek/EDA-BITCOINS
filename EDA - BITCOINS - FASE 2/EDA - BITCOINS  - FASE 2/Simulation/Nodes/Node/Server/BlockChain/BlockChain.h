@@ -5,7 +5,9 @@ using json = nlohmann::json;
 class BlockChain
 {
 public:
-	BlockChain();
+	BlockChain(const std::string&);
+
+	void loadBlockChain(const std::string&);
 
 	void addBlock(const json&);
 

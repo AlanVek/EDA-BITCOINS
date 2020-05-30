@@ -3,7 +3,8 @@
 
 class TransactionClient : public POSTClient {
 public:
-	TransactionClient(const std::string& ip, const unsigned int port, const json& data) : POSTClient(ip, port, data) {
+	TransactionClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port,
+		const json& data) : POSTClient(ip, self_port, out_port, data) {
 		url += '/' + indURL;
 	}
 private:

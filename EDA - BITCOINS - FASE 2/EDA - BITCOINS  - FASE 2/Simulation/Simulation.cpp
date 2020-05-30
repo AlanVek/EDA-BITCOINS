@@ -79,7 +79,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Block (POST).*/
 	case Events::POST_BLOCK:
 		ev = Events::POST_BLOCK;
-		//nodes[getIndex()]->postBlock(gui->getReceiverID(), gui->getBlockID());
+		nodes[getIndex()]->postBlock(gui->getReceiverID(), gui->getBlockID());
 		gui->infoGotten();
 		break;
 

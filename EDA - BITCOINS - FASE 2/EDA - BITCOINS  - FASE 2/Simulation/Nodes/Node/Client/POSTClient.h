@@ -2,14 +2,14 @@
 #include "Client.h"
 class POSTClient : public Client {
 public:
-	POSTClient(const std::string&, const unsigned int, const json&);
+	POSTClient(const std::string&, const unsigned int, const unsigned int, const json&);
 
 	virtual ~POSTClient(void);
-
-	virtual bool perform();
 
 protected:
 	virtual void configurateClient(void);
 
 	json data;
+
+	char* strData;
 };

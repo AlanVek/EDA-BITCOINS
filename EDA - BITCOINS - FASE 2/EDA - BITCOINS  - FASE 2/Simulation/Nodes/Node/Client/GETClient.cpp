@@ -13,8 +13,8 @@ namespace {
 		return size * nmemb;
 	}
 }
-GETClient::GETClient(const std::string& ip, const unsigned int port, const std::string& id,
-	const unsigned int count) : Client(ip, port), id(id), count(count)
+GETClient::GETClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port, const std::string& id,
+	const unsigned int count) : Client(ip, self_port, out_port), id(id), count(count)
 {
 	url = ip + '/' + begURL;
 }
@@ -35,9 +35,13 @@ void GETClient::configurateClient(void) {
 	else if (curl_easy_setopt(handler, CURLOPT_PROTOCOLS, CURLPROTO_HTTP) != CURLE_OK)
 		throw std::exception("Failed to set HTTP protocol");
 
-	/*Sets port.*/
-	else if (curl_easy_setopt(handler, CURLOPT_PORT, port) != CURLE_OK)
-		throw std::exception("Failed to set port");
+	/*Sets port that receives request.*/
+	else if (curl_easy_setopt(handler, CURLOPT_PORT, out_port) != CURLE_OK)
+		throw std::exception("Failed to set receiving port");
+
+	/*Sets port that sends request.*/
+	else if (curl_easy_setopt(handler, CURLOPT_LOCALPORT, self_port) != CURLE_OK)
+		throw std::exception("Failed to set sending port");
 
 	//Sets callback and userData.
 	else if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback) != CURLE_OK)
@@ -45,56 +49,4 @@ void GETClient::configurateClient(void) {
 
 	else if (curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer) != CURLE_OK)
 		throw std::exception("Failed to set userData");
-}
-
-//Performs request.
-bool GETClient::perform(void) {
-	if (ip.length() && port) {
-		static bool step = false;
-
-		bool stillOn = true;
-
-		if (!step) {
-			//Sets easy and multi modes with error checker.
-			if (!(handler = curl_easy_init()))
-				throw std::exception("Failed to initialize easy handler.");
-
-			if (!(multiHandler = curl_multi_init()))
-				throw std::exception("Failed to initialize multi handler.");
-
-			//If it's the first time in this run, it sets the request parameters.
-			configurateClient();
-			step = true;
-		}
-
-		//Should be an if. Performs one request and checks for errors.
-		if (stillRunning) {
-			if (curl_multi_perform(multiHandler, &stillRunning) != CURLE_OK) {
-				curl_easy_cleanup(handler);
-				curl_multi_cleanup(multiHandler);
-				throw std::exception("Failed to perform cURL.");
-			}
-		}
-		else {
-			//Cleans used variables.
-			curl_easy_cleanup(handler);
-			curl_multi_cleanup(multiHandler);
-
-			//Resets step to false.
-			step = false;
-
-			//Resets stillRunning to 1;
-			stillRunning = 1;
-
-			//Parses answer.
-
-			answer = json::parse(unparsedAnswer);
-
-			//Sets result to 'FALSE', to end loop.
-			stillOn = false;
-		}
-		return stillOn;
-	}
-	else
-		throw std::exception("Invalid data.");
 }

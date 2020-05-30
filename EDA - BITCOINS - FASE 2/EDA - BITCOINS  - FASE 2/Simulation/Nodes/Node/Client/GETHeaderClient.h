@@ -3,8 +3,8 @@
 class GETHeaderClient : public GETClient {
 public:
 
-	GETHeaderClient(const std::string& ip, const unsigned int port, const std::string id, const unsigned int count)
-		: GETClient(ip, port, id, count) {
+	GETHeaderClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port, const std::string id, const unsigned int count)
+		: GETClient(ip, self_port, out_port, id, count) {
 		url += '/' + indURL + "?block_id=" + id + "&count=" + std::to_string(count);
 	}
 	~GETHeaderClient() {};

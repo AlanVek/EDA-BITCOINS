@@ -3,7 +3,7 @@
 #include <string>
 #include <functional>
 
-#define MAXSIZE 1000
+#define MAXSIZE 100000
 
 struct Connection {
 	Connection(boost::asio::io_context& io_context) : socket(io_context) {}

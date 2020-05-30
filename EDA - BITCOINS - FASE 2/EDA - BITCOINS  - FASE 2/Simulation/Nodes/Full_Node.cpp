@@ -1,5 +1,6 @@
 #include "Full_Node.h"
 #include "Node/Client/AllClients.h"
+#include <iostream>
 
 /*Text constants in requests.*/
 /************************************************/
@@ -12,9 +13,12 @@ namespace {
 }
 /************************************************/
 
+const json error = { "error" };
+
 /*Constructor. Uses Node constructor.*/
 Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
-	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier)
+	const unsigned int port, const unsigned int identifier)
+	: Node(io_context, ip, port, identifier), blockChain("Tests/blockChain.json")
 {
 }
 
@@ -25,7 +29,7 @@ void Full_Node::GETBlocks(const unsigned int id, const std::string& blockID, con
 		/*If id is a neighbor and count isn't null...*/
 		if (neighbors.find(id) != neighbors.end() && count) {
 			/*Sets new GETBlockClient.*/
-			client = new GETBlockClient(neighbors[id].ip, neighbors[id].port, blockID, count);
+			client = new GETBlockClient(neighbors[id].ip, port + 1, neighbors[id].port, blockID, count);
 
 			/*Toggles state.*/
 			state = States::CLIENTMODE;
@@ -38,16 +42,20 @@ void Full_Node::postBlock(const unsigned int id, const std::string& blockID) {
 	/*If node is in client mode...*/
 	if (state == States::FREE && !client) {
 		/*If id is a neighbor and count isn't null...*/
-		if (neighbors.find(id) != neighbors.end())
+		if (neighbors.find(id) != neighbors.end()) {
+			/*json temp = getBlock(blockID);
+			if (temp == error) return;*/
 
 			/*Sets new BlockClient for POST request.*/
-			client = new BlockClient(neighbors[id].ip, neighbors[id].port, getBlock(blockID));
+			client = new BlockClient(neighbors[id].ip, port + 1, neighbors[id].port, getBlock("84CB2573"));
+			state = States::CLIENTMODE;
+		}
 	}
 }
 
 /*POST merkleblock connection.*/
 void Full_Node::postMerkleBlock(const unsigned int id, const std::string& blockID, const std::string& transID) {
-	//client = new MerkleClient(neighbors[id].ip, neighbors[id].port, getMerkleBlock(blockID, transID));
+	//client = new MerkleClient(neighbors[id].ip,  port+1,neighbors[id].port,getMerkleBlock(blockID, transID));
 }
 
 /*Gets block from blockChain by ID.*/
@@ -59,7 +67,7 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 			return blockChain.getBlock(i);
 	}
 
-	return json();
+	return error;
 }
 
 //const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
@@ -146,7 +154,11 @@ const std::string Full_Node::POSTResponse(const std::string& request) {
 	/*If it's POST block...*/
 	if (request.find(BLOCKPOST) != std::string::npos) {
 		/*Adds block to blockchain.*/
-		blockChain.addBlock(json::parse(request.substr(request.find("data"), request.length())));
+		std::string temp = request.substr(request.find("Data=") + 5, request.length());
+		int pos = temp.length() - 1;
+		while (temp[pos] != '}' && temp[pos] != ']')
+			pos--;
+		blockChain.addBlock(json::parse(temp.substr(0, pos + 1)));
 	}
 
 	/*If it's a transaction...*/
@@ -157,6 +169,9 @@ const std::string Full_Node::POSTResponse(const std::string& request) {
 	else if (request.find(FILTERPOST) != std::string::npos) {
 	}
 
-	/*R*/
-	return result.dump();
+	std::cout << result << std::endl;
+
+	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
+		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
+		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
 }

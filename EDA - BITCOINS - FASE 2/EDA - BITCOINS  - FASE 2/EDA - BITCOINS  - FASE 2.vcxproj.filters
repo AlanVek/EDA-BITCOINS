@@ -100,6 +100,9 @@
     <ClCompile Include="Simulation\Nodes\Node\Node.cpp">
       <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp">
+      <Filter>Source Files\Node Sources\Client Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\Nodes\Full_Node.h">

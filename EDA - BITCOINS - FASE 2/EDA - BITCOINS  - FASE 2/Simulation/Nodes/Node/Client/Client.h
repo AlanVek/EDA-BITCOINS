@@ -9,17 +9,12 @@ class Client {
 public:
 
 	/*Constructor*/
-	Client(const std::string& ip, const unsigned int port) : ip(ip), port(port), multiHandler(nullptr), handler(nullptr) {
-		if (ip.length() && port)
-			stillRunning = 1;
-		else
-			throw std::exception("Wrong input in client.");
-	};
+	Client(const std::string& ip, const unsigned int self_port, const unsigned int out_port);
 
 	/*Destructor*/
-	virtual ~Client(void) {};
+	virtual ~Client(void);
 
-	virtual bool perform() = 0;
+	virtual bool perform();
 
 protected:
 	virtual void configurateClient(void) = 0;
@@ -34,7 +29,7 @@ protected:
 	/********************************/
 	std::string ip, unparsedAnswer, url;
 	json data, answer;
-	unsigned int port;
+	unsigned int self_port, out_port;
 	int stillRunning;
 	/********************************/
 };
