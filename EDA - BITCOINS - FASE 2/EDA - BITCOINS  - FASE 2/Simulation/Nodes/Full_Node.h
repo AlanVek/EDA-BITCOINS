@@ -25,7 +25,7 @@ private:
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count);
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) {};
 
-	//const json getMerkleBlock(const std::string&, const std::string&);
+	const json getMerkleBlock(const std::string&, const std::string&);
 
 	BlockChain blockChain;
 };

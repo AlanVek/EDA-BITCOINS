@@ -43,11 +43,8 @@ void Full_Node::postBlock(const unsigned int id, const std::string& blockID) {
 	if (state == States::FREE && !client) {
 		/*If id is a neighbor and count isn't null...*/
 		if (neighbors.find(id) != neighbors.end()) {
-			/*json temp = getBlock(blockID);
-			if (temp == error) return;*/
-
 			/*Sets new BlockClient for POST request.*/
-			client = new BlockClient(neighbors[id].ip, port + 1, neighbors[id].port, getBlock("84CB2573"));
+			client = new BlockClient(neighbors[id].ip, port + 1, neighbors[id].port, blockChain.getBlock(0)/*getBlock(blockID)*/);
 			state = States::CLIENTMODE;
 		}
 	}
@@ -70,10 +67,31 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 	return error;
 }
 
-//const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
-//	json temp;
-//	return temp;
-//}
+const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
+	int k = blockChain.getBlockIndex(blockID);
+	auto tree = blockChain.getTree(k);
+
+	for (unsigned int i = 0; i < tree.size(); i++) {
+		if (tree[i] == transID)
+			k = i;
+	}
+	json result;
+	int size = log2(tree.size() + 1);
+	std::vector<std::string> merklePath;
+	while (k < (tree.size() - 1)) {
+		if (k % 2) merklePath.push_back(tree[--k]);
+		else merklePath.push_back(tree[k + 1]);
+
+		k = k / 2 + pow(2, size - 1);
+	}
+
+	result["blockid"] = blockID;
+	//result["tx"] =
+	//result["txPos"] =
+	result["merklePath"] = merklePath;
+
+	return result;
+}
 
 /*Destructor. Uses Node destructor.*/
 Full_Node::~Full_Node() {}
@@ -168,8 +186,6 @@ const std::string Full_Node::POSTResponse(const std::string& request) {
 	/*If it's a filter...*/
 	else if (request.find(FILTERPOST) != std::string::npos) {
 	}
-
-	std::cout << result << std::endl;
 
 	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
 		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +

@@ -114,7 +114,7 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 		//Validator has the http protocol form.
 		std::string validator_GET = "GET /" + fixed + '/';
 		std::string validator_POST = "POST /" + fixed + '/';
-		std::string host_validator = " HTTP/1.1\r\nHost: " + host + ':' + std::to_string(port);
+		std::string host_validator = " HTTP/1.1\r\nHost: " + host /*+ ':' + std::to_string(port)*/;
 
 		/*Sets indexes to cut message.*/
 		int startIndex = 0;

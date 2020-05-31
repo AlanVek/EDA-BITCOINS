@@ -13,8 +13,6 @@ out_port(out_port), multiHandler(nullptr), handler(nullptr) {
 bool Client::perform(void) {
 	if (ip.length() && self_port && out_port) {
 		static bool step = false;
-		std::cout << "Performing." << std::endl;
-
 		bool stillOn = true;
 
 		if (!step) {
@@ -54,7 +52,6 @@ bool Client::perform(void) {
 			stillRunning = 1;
 
 			//Parses answer.
-
 			answer = json::parse(unparsedAnswer);
 
 			//Sets result to 'FALSE', to end loop.

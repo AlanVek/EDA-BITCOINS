@@ -31,7 +31,7 @@ void POSTClient::configurateClient(void) {
 		free(strData);
 		strData = nullptr;
 	}
-	strData = (char*)malloc(sizeof(res[0]) * res.length());
+	strData = (char*)malloc(sizeof(res[0]) * res.size());
 	if (!strData) throw std::exception("Failed to allocate memory for message.");
 	res.copy(strData, res.length() * sizeof(res[0]));
 
