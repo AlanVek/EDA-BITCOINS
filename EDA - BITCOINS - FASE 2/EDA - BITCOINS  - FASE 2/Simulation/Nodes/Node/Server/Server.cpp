@@ -45,18 +45,16 @@ void Server::newConnector() {
 //Destructor. Closes open sockets and acceptor.
 Server::~Server() {
 	/*Closes open sockets.*/
-	for (auto& socket : sockets) {
-		if (socket.socket.is_open()) {
-			socket.socket.shutdown(tcp::socket::shutdown_both);
-			socket.socket.close();
+	for (auto& connector : sockets) {
+		if (connector.socket.is_open()) {
+			connector.socket.shutdown(tcp::socket::shutdown_both);
+			connector.socket.close();
 		}
 	}
 
 	/*Closes acceptor.*/
 	if (acceptor.is_open())
 		acceptor.close();
-
-	std::cout << "Server is closed.\n";
 }
 
 /*Sets acceptor to accept (asynchronously) with specific socket.*/
@@ -155,7 +153,7 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 
 	//If there's been an error, prints the message.
 	else
-		std::cout << error.message() << std::endl;
+		std::cout << "Failed to respond. Error: " << error.message() << std::endl;
 }
 
 /*Called when there's been a connection.*/
@@ -177,17 +175,17 @@ void Server::connectionCallback(iterator connector, const boost::system::error_c
 	}
 
 	else
-		std::cout << error.message() << std::endl;
+		std::cout << "Failed to respond. Error: " << error.message() << std::endl;
 }
 /*Called when a message has been sent to client.*/
 void Server::messageCallback(iterator connector, const boost::system::error_code& error, size_t bytes_sent)
 {
 	if (error)
-		std::cout << error.message() << std::endl;
-	else
-		std::cout << "Answered." << std::endl;
+		std::cout << "Failed to respond. Error: " << error.message() << std::endl;
+	/*else
+		std::cout << "Answered." << std::endl;*/
 
-	/*Closes socket*/
+		/*Closes socket*/
 	closeConnection(connector);
 }
 

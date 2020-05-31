@@ -12,6 +12,7 @@
 namespace data {
 	const unsigned int width = 1000;
 	const unsigned int height = 500;
+	const int notSelectedIndex = -1;
 }
 /***************************************/
 
@@ -20,7 +21,8 @@ GUI::GUI(void) :
 	guiDisp(nullptr),
 	guiQueue(nullptr),
 	action(Events::NOTHING),
-	state(States::INIT)
+	state(States::INIT),
+	extraWindow(-1)
 {
 	setAllegro();
 }
@@ -121,7 +123,7 @@ bool GUI::nodeSelectionScreen() {
 
 			else {
 				/*New ImGui window.*/
-				newWindow();
+				newWindow("Initial Setup");
 				ImGui::Text("Initial Setup: ");
 				ImGui::NewLine();
 
@@ -172,7 +174,7 @@ Events GUI::checkStatus(void) {
 	/*If GUI has been initialized...*/
 	else if (state >= States::INIT_DONE) {
 		/*Sets new ImGui window.*/
-		newWindow();
+		newWindow("BitCoin network");
 
 		ImGui::Text("Connection info: ");
 
@@ -192,17 +194,7 @@ Events GUI::checkStatus(void) {
 		/*Parameter(s) selection.*/
 		else if (state == States::PARAM_SELECTION) { selectParameters(); }
 		else {
-			ImGui::Text("Actions: ");
-			ImGui::NewLine();
-			displayWidget("Clear", [this]() {msg.clear(); });
-			ImGui::SameLine();
-			/*New Message button.*/
-			if (nodes.size() > 1)
-				displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
-			/*Exit button.*/
-			ImGui::NewLine();
-			displayWidget("Exit", [&result] {result = Events::END; });
-
+			generalScreen();
 			if ((bool)action) result = action;
 		}
 
@@ -350,42 +342,43 @@ void GUI::selectMessage() {
 }
 
 void GUI::selectParameters() {
-	bool wildcard = false;
-
 	switch (action) {
 		/*Filter (POST).*/
 	case Events::FILTER:
+		state = States::INIT_DONE;
 		break;
 
 		/*Blocks (GET).*/
 	case Events::GET_BLOCKS:
-		ImGui::Text("Enter Block ID: ");
+		state = States::INIT_DONE;
+		/*ImGui::Text("Enter Block ID: ");
 		ImGui::SameLine();
 		ImGui::InputText("_", &blockID);
 		ImGui::Text("Enter count:    ");
 		ImGui::SameLine();
-		if (ImGui::InputInt(".", &count)) { if (count < 0) count = 0; }
+		if (ImGui::InputInt(".", &count)) { if (count < 0) count = 0; }*/
 		break;
 
 		/*Headers (GET).*/
 	case Events::GET_HEADERS:
-		ImGui::Text("Enter Block ID: ");
+		state = States::INIT_DONE;
+		/*ImGui::Text("Enter Block ID: ");
 		ImGui::SameLine();
 		ImGui::InputText("_", &blockID);
 		ImGui::Text("Enter count:    ");
 		ImGui::SameLine();
-		if (ImGui::InputInt(".", &count)) { if (count < 0) count = 0; }
+		if (ImGui::InputInt(".", &count)) { if (count < 0) count = 0; }*/
 		break;
 
 		/*Merkleblock (POST).*/
 	case Events::MERKLEBLOCK:
-		wildcard = true;
+		state = States::INIT_DONE;
 
 		break;
 
 		/*Block (POST).*/
 	case Events::POST_BLOCK:
-		wildcard = true;
+		state = States::INIT_DONE;
 		break;
 
 		/*Transaction (POST).*/
@@ -396,16 +389,12 @@ void GUI::selectParameters() {
 		ImGui::Text("Enter public wallet: ");
 		ImGui::SameLine();
 		ImGui::InputText("_.", &wallet);
+		ImGui::NewLine();
+		displayWidget("Done", [this]() {if (wallet.length() && amount) state = States::INIT_DONE; });
 		break;
 	default:
 		break;
 	}
-
-	ImGui::NewLine();
-	displayWidget("Done", [this, wildcard]() {
-		if ((wallet.length() && amount) || (blockID.length() && count || wildcard))
-			state = States::INIT_DONE;
-		});
 }
 
 /*Node setup of IP and port.*/
@@ -430,8 +419,92 @@ void GUI::creation() {
 	displayWidget("Done", [this]() {if (nodes.back().ip.length()) state = States::INIT; });
 }
 
+void GUI::generalScreen() {
+	/*ImGui::Text("Nodes");
+	for (const auto& node : nodes) {
+		displayWidget(("Node " + std::to_string(node.index)).c_str(),
+			[this, &node]() { extraWindow = node.index; });
+		ImGui::SameLine();
+	}
+	if (extraWindow != -1) nodeWindow();
+	ImGui::NewLine();*/
+	ImGui::Text("Actions: ");
+	ImGui::NewLine();
+	displayWidget("Clear", [this]() {msg.clear(); });
+	ImGui::SameLine();
+	/*New Message button.*/
+	if (nodes.size() > 1)
+		displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
+	/*Exit button.*/
+	ImGui::NewLine();
+	displayWidget("Exit", [this] {action = Events::END; });
+}
+
+void GUI::nodeWindow() {
+	/*Shows blocks in BlockChain.*/
+	displayBlocks();
+
+	ImGui::NewLine();
+
+	/*Shows actions to perform to a given block.*/
+	displayActions();
+	ImGui::NewLine(); ImGui::NewLine();
+
+	/*If an action has been selected...*/
+
+	ImGui::Text("Result: ");
+	ImGui::NewLine();
+	ImGui::Text(shower.c_str());
+	ImGui::NewLine();
+}
+/*Displays action buttons.*/
+inline void GUI::displayActions() {
+	ImGui::Text("Action to perform: ");
+
+	/*Button callback for both buttons.*/
+	const auto button_callback = [this](const Events code, const char* msg) {
+		action = code;
+		action_msg = msg;
+	};
+	/*Creates buttons for different functionalities.*/
+	displayWidget("Block ID", std::bind(button_callback, Events::BLOCKID, "Block ID"));
+	ImGui::SameLine();
+	displayWidget("Previous ID", std::bind(button_callback, Events::PREVIOUS_BLOCKID, "Previous ID"));
+	ImGui::SameLine();
+	displayWidget("nTx", std::bind(button_callback, Events::NTX, "Number of transactions"));
+	ImGui::SameLine();
+	displayWidget("Block Number", std::bind(button_callback, Events::BLOCK_NUMBER, "Block Number"));
+	ImGui::SameLine();
+	displayWidget("Nonce", std::bind(button_callback, Events::NONCE, "Nonce"));
+	ImGui::SameLine();
+	displayWidget("Calculate MR", std::bind(button_callback, Events::SEE_MROOT, "Merkle Root calculation"));
+	ImGui::SameLine();
+	displayWidget("Validate MR", std::bind(button_callback, Events::VALIDATE_MROOT, "Merkle Root validation"));
+	ImGui::SameLine();
+	displayWidget("Print tree", std::bind(button_callback, Events::PRINT_TREE, "Tree printing"));
+
+	/*Message with selected option.*/
+	ImGui::Text(("Selected: " + action_msg).c_str());
+}
+
+/*For every block in the vector, it shows it.*/
+void GUI::displayBlocks(void) {
+	bool checker;
+	for (unsigned int i = 0; i < chainLength; i++) {
+		checker = (index == i);
+		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i)).c_str(), &checker),
+
+			[this, i, &checker]() {
+				if (checker) { index = i; }
+				else setAllFalse();
+			});
+		ImGui::SameLine();
+	}
+	ImGui::NewLine();
+	ImGui::Text(("Selected: Block " + (index != data::notSelectedIndex ? std::to_string(index) : "none.")).c_str());
+}
 /*Sets a new ImGUI frame and window.*/
-inline void GUI::newWindow() const {
+inline void GUI::newWindow(const char* title) const {
 	//Sets new ImGUI frame.
 	ImGui_ImplAllegro5_NewFrame();
 	ImGui::NewFrame();
@@ -441,7 +514,7 @@ inline void GUI::newWindow() const {
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 
 	/*Begins window and sets title.*/
-	ImGui::Begin("EDA - TP7");
+	ImGui::Begin(title);
 }
 
 /*Rendering.*/
@@ -491,10 +564,20 @@ const std::string& GUI::getBlockID() { return blockID; }
 const int GUI::getAmount() { return amount; }
 const unsigned int GUI::getCount() { return count; }
 const std::string& GUI::getWallet() { return wallet; }
+int GUI::getCurrentNodeIndex() { return extraWindow; }
 
+void GUI::setInfoShower(const std::string& show) { shower = show; }
 /*Sets flags to initial state.*/
 void GUI::infoGotten() {
 	wallet.clear(); amount = 0; count = 0; blockID.clear(); action = Events::NOTHING;
+}
+
+void GUI::setAllFalse() {
+	action = Events::NOTHING;
+	index = data::notSelectedIndex;
+	state = States::INIT_DONE;
+	shower = "";
+	action_msg = "none.";
 }
 
 void GUI::setSendOk(const unsigned int id) {

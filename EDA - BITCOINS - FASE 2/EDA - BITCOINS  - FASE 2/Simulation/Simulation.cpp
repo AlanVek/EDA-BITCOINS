@@ -56,7 +56,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Blocks (GET).*/
 	case Events::GET_BLOCKS:
 		ev = Events::GET_BLOCKS;
-		nodes[getIndex()]->GETBlocks(gui->getReceiverID(), gui->getBlockID(), gui->getCount());
+		nodes[getIndex()]->GETBlocks(gui->getReceiverID(), "84CB2573", 1);
 		gui->infoGotten();
 
 		break;
@@ -64,7 +64,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Headers (GET).*/
 	case Events::GET_HEADERS:
 		ev = Events::GET_HEADERS;
-		nodes[getIndex()]->GETBlockHeaders(gui->getReceiverID(), gui->getBlockID(), gui->getCount());
+		nodes[getIndex()]->GETBlockHeaders(gui->getReceiverID(), "84CB2573", 1);
 		gui->infoGotten();
 
 		break;
@@ -72,14 +72,14 @@ void Simulation::dispatch(const Events& code) {
 		/*Merkleblock (POST).*/
 	case Events::MERKLEBLOCK:
 		ev = Events::MERKLEBLOCK;
-		nodes[getIndex()]->postMerkleBlock(gui->getReceiverID(), gui->getBlockID(), "7B857A14"/*gui->getTransactionID()*/);
+		nodes[getIndex()]->postMerkleBlock(gui->getReceiverID(), "84CB2573", "7B857A14"/*gui->getTransactionID()*/);
 		gui->infoGotten();
 		break;
 
 		/*Block (POST).*/
 	case Events::POST_BLOCK:
 		ev = Events::POST_BLOCK;
-		nodes[getIndex()]->postBlock(gui->getReceiverID(), gui->getBlockID());
+		nodes[getIndex()]->postBlock(gui->getReceiverID(),/* gui->getBlockID()*/"84CB2573");
 		gui->infoGotten();
 		break;
 
@@ -90,7 +90,31 @@ void Simulation::dispatch(const Events& code) {
 		gui->infoGotten();
 
 		break;
-
+		/*case Events::BLOCKID:
+			gui->setInfoShower(nodes[gui->getCurrentNodeIndex()]->getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCKID));
+			break;
+		case Events::SEE_MROOT:
+			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::SEE_MROOT));
+			break;
+		case Events::PREVIOUS_BLOCKID:
+			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::PREVIOUS_BLOCKID));
+			break;
+		case Events::NONCE:
+			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::NONCE));
+			break;
+		case Events::NTX:
+			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::NTX));
+			break;
+		case Events::BLOCK_NUMBER:
+			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCK_NUMBER));
+			break;
+		case Events::VALIDATE_MROOT:
+			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::VALIDATE_MROOT));
+			break;
+		case Events::PRINT_TREE:
+			gui->setInfoShower(blockChain.reprTree(gui->getBlockIndex()));
+		default:
+			break;*/
 	default:
 		break;
 	}

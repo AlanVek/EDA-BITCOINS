@@ -13,7 +13,16 @@ const enum class Events : unsigned int {
 	GET_BLOCKS,
 	GET_HEADERS,
 	TRANSACTION,
-	POST_BLOCK
+	POST_BLOCK,
+	SEE_MROOT,
+	VALIDATE_MROOT,
+	ALL_MERKLE,
+	BLOCKID,
+	PREVIOUS_BLOCKID,
+	NTX,
+	BLOCK_NUMBER,
+	NONCE,
+	PRINT_TREE
 };
 /********************************/
 const enum class NodeTypes {
@@ -66,6 +75,11 @@ public:
 	void setSendOk(const unsigned int);
 
 	void infoGotten();
+
+	void setInfoShower(const std::string&);
+
+	int getCurrentNodeIndex();
+
 private:
 
 	/*GUI states.*/
@@ -91,7 +105,7 @@ private:
 
 	/*Window displayers.*/
 	/*************************************************************************************************/
-	inline void newWindow() const;
+	inline void newWindow(const char*) const;
 
 	template <class Widget, class F1, class F2 = void(*)(void)>
 	inline auto displayWidget(const Widget&, const F1& f1, const F2 & = []() {}) -> decltype(f1());
@@ -120,6 +134,11 @@ private:
 
 	/*Exit and resize events.*/
 	bool eventManager(void);
+	void generalScreen(void);
+	void nodeWindow();
+	void displayBlocks();
+	void displayActions();
+	void setAllFalse();
 
 	/*Allegro data members.*/
 	/******************************/
@@ -140,6 +159,7 @@ private:
 	unsigned int sender, receiver;
 	std::string blockID, wallet;
 	int count, nodeID, amount, portOk;
-	std::string msg;
+	std::string msg, shower, action_msg;
+	int extraWindow, chainLength, index;
 	/**********************************/
 };
