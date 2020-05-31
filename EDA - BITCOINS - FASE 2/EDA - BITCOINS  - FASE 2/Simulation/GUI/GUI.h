@@ -66,7 +66,7 @@ public:
 	const unsigned int& getReceiverID();
 	const NewNode& getNode(unsigned int index);
 
-	const std::string& getBlockID();
+	//const std::string& getBlockID();
 	const int getAmount();
 	const unsigned int getCount();
 	const std::string& getWallet();
@@ -78,7 +78,7 @@ public:
 
 	void setInfoShower(const std::string&);
 
-	int getCurrentNodeIndex();
+	//int getCurrentNodeIndex();
 
 private:
 
@@ -118,6 +118,7 @@ private:
 
 	/*Node creation and connection*/
 	/***********************/
+	bool init(bool*);
 	void newNode(void);
 	void connections(void);
 	void creation(void);
@@ -136,9 +137,9 @@ private:
 	bool eventManager(void);
 	void generalScreen(void);
 	void nodeWindow();
-	void displayBlocks();
-	void displayActions();
-	void setAllFalse();
+	//void displayBlocks();
+	//void displayActions();
+	//void setAllFalse();
 
 	/*Allegro data members.*/
 	/******************************/
@@ -157,9 +158,13 @@ private:
 	/**********************************/
 	std::vector <NewNode> nodes;
 	unsigned int sender, receiver;
-	std::string blockID, wallet;
-	int count, nodeID, amount, portOk;
-	std::string msg, shower, action_msg;
-	int extraWindow, chainLength, index;
+	std::string wallet;
+	int count, amount, portOk;
+	std::string msg;
+
+	//std::string blockID;
+	/*int nodeID;*/
+	//std::string shower, action_msg;
+	//int extraWindow, chainLength, index;
 	/**********************************/
 };

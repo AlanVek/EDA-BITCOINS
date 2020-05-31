@@ -3,6 +3,10 @@
 #include "json.hpp"
 #include <string>
 
+namespace {
+	const char* begURL = "eda_coins";
+}
+
 using json = nlohmann::json;
 
 class Client {
@@ -32,4 +36,12 @@ protected:
 	unsigned int self_port, out_port;
 	int stillRunning;
 	/********************************/
+	//Callback with string as userData.
+	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
+		std::string* userDataPtr = (std::string*) userData;
+
+		userDataPtr->append(ptr, size * nmemb);
+
+		return size * nmemb;
+	}
 };

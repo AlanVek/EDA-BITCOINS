@@ -1,22 +1,9 @@
 #include "GETClient.h"
 #include <iostream>
 
-namespace {
-	const char* begURL = "eda_coins";
-
-	//Callback with string as userData.
-	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
-		std::string* userDataPtr = (std::string*) userData;
-
-		userDataPtr->append(ptr, size * nmemb);
-
-		return size * nmemb;
-	}
-}
 GETClient::GETClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port, const std::string& id,
 	const unsigned int count) : Client(ip, self_port, out_port), id(id), count(count)
 {
-	url = ip + '/' + begURL;
 }
 
 //Configurates client.
@@ -44,7 +31,8 @@ void GETClient::configurateClient(void) {
 		throw std::exception("Failed to set sending port");
 
 	//Sets callback and userData.
-	else if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback) != CURLE_OK)
+	using namespace std::placeholders;
+	if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, std::bind(&Client::writeCallback, this, _1, _2, _3, _4)) != CURLE_OK)
 		throw std::exception("Failed to set callback");
 
 	else if (curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer) != CURLE_OK)

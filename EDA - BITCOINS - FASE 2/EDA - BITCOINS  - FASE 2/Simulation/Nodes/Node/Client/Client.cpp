@@ -7,6 +7,8 @@ out_port(out_port), multiHandler(nullptr), handler(nullptr) {
 		stillRunning = 1;
 	else
 		throw std::exception("Wrong input in client.");
+
+	url = ip + '/' + begURL;
 };
 
 //Performs request.

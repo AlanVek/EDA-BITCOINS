@@ -1,24 +1,12 @@
 #include "POSTClient.h"
 #include <iostream>
+
 using json = nlohmann::json;
-
-namespace {
-	const char* begURL = "eda_coins";
-
-	//Callback with string as userData.
-	size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
-		std::string* userDataPtr = (std::string*) userData;
-
-		userDataPtr->append(ptr, size * nmemb);
-
-		return size * nmemb;
-	}
-}
 
 //POSTClient constructor.
 POSTClient::POSTClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port,
-	const json& data) : Client(ip, self_port, out_port), data(data) {
-	url = ip + '/' + begURL;
+	const json& data) : Client(ip, self_port, out_port), data(data)
+{
 }
 
 //Configurates client.
@@ -56,7 +44,8 @@ void POSTClient::configurateClient(void) {
 		throw std::exception("Failed to set header.");
 
 	//Sets callback and userData.
-	else if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, &writeCallback) != CURLE_OK)
+	using namespace std::placeholders;
+	if (curl_easy_setopt(handler, CURLOPT_WRITEFUNCTION, std::bind(&Client::writeCallback, this, _1, _2, _3, _4)) != CURLE_OK)
 		throw std::exception("Failed to set callback");
 
 	else if (curl_easy_setopt(handler, CURLOPT_WRITEDATA, &unparsedAnswer) != CURLE_OK)
