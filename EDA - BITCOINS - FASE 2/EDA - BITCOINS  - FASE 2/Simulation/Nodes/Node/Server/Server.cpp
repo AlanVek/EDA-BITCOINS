@@ -140,8 +140,6 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 					state = Connections::NONE;
 			}
 		}
-		else
-			std::cout << "Client sent wrong input.\n";
 
 		//Answers request.
 		answer(connector, message.substr(startIndex >= 0 ? startIndex : 0, endIndex >= 0 ? endIndex : message.length()));

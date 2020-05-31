@@ -26,16 +26,10 @@ void POSTClient::configurateClient(void) {
 	unparsedAnswer.clear();
 	struct curl_slist* list = nullptr;
 	//Sets header with token.
-	std::string res = "Content-Length=" + std::to_string(data.dump().length()) + "\r\nData=" + data.dump();
-	if (strData) {
-		free(strData);
-		strData = nullptr;
-	}
-	strData = (char*)malloc(sizeof(char) * res.size());
-	if (!strData) throw std::exception("Failed to allocate memory for message.");
-	res.copy(strData, res.size() * sizeof(char));
+	strData = "Content-Length=" + std::to_string(data.dump().length()) + "\r\nData=" + data.dump();
+	strData.append(1, 0);
 
-	list = curl_slist_append(list, strData);
+	list = curl_slist_append(list, strData.c_str());
 
 	if (curl_easy_setopt(handler, CURLOPT_POST, 1) != CURLE_OK)
 		throw std::exception("Failed to set POST request.");
@@ -71,8 +65,4 @@ void POSTClient::configurateClient(void) {
 		throw std::exception("Failed to set userData");
 }
 POSTClient::~POSTClient() {
-	if (strData) {
-		free(strData);
-		strData = nullptr;
-	}
 }

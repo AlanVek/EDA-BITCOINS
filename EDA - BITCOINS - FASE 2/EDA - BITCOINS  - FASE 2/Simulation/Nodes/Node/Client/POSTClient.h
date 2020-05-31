@@ -11,5 +11,5 @@ protected:
 
 	json data;
 
-	char* strData;
+	std::string strData;
 };
