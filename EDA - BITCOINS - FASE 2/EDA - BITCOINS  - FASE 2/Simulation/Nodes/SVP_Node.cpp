@@ -18,7 +18,7 @@ const std::string SVP_Node::GETResponse(const std::string& request, unsigned int
 
 	/*Content error.*/
 	result["result"] = 2;
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + request + "\r\nCache-Control: max-age=30\r\nExpires:" +
+	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
 		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
 		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
 }
@@ -32,15 +32,12 @@ const std::string SVP_Node::POSTResponse(const std::string& request, unsigned in
 
 	/*Checks if it's a POST for merkleblock.*/
 	if (request.find(MERKLEPOST) != std::string::npos) {
-		if (request.find("Data=") == std::string::npos)
+		int content = request.find/*_last_of*/("Content-Type");
+		int data = request.find/*_last_of*/("Data=");
+		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
-		else {
-			std::string temp = request.substr(request.find("Data=") + 5, request.length());
-			int pos = temp.length() - 1;
-			while (temp[pos] != '}' && temp[pos] != ']')
-				pos--;
-			headers.push_back(json::parse(temp.substr(0, pos + 1)));
-		}
+		else
+			headers.push_back(json::parse(request.substr(data + 5, content - data - 5)));
 	}
 	else {
 		result["status"] = false;

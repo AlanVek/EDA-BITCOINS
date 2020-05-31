@@ -133,21 +133,23 @@ const std::string Full_Node::GETResponse(const std::string& request, const unsig
 	receivedMsg = client_port;
 
 	result["status"] = true;
-	bool block;
+	int block;
 
 	/*Checks for correct data input (one of the strings must be in the request).*/
 	if ((block = request.find(BLOCKSGET)) || request.find(HEADERGET)) {
 		/*Checks for correct syntax within data input.*/
-		if (request.find("block_id=") != std::string::npos && request.find("count=") != std::string::npos) {
+
+		int pos_id = request.find("block_id=");
+		int pos_count = request.find("count=");
+
+		if (pos_id != std::string::npos && pos_count != std::string::npos) {
 			json response;
 
 			/*Parses input for id.*/
-			int pos_id = request.find_first_of("=");
-			std::string id = request.substr(pos_id + 1, request.find_last_of("&") - pos_id - 1);
+			std::string id = request.substr(pos_id + 9, request.find_last_of("&") - pos_id - 9);
 
 			/*Parses input for count.*/
-			int pos_count = request.find_last_of("=");
-			int count = std::stoi(request.substr(pos_count + 1, request.length()));
+			int count = std::stoi(request.substr(pos_count + 6, request.find("HTTP") - pos_count - 6));
 
 			/*Sets block's position in blockchain.*/
 			int abs = blockChain.getBlockIndex(id);
@@ -162,7 +164,7 @@ const std::string Full_Node::GETResponse(const std::string& request, const unsig
 				/*Loops through blockchain ('count' blocks or until end of blockchain).*/
 				while (abs < blockChain.getBlockAmount() && count) {
 					/*If it's a POST block...*/
-					if (block) {
+					if (block != std::string::npos) {
 						/*Attaches full block to response.*/
 						response.push_back(blockChain.getBlock(abs));
 					}
@@ -190,7 +192,7 @@ const std::string Full_Node::GETResponse(const std::string& request, const unsig
 		result["result"] = 2;
 	}
 
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + request + "\r\nCache-Control: max-age=30\r\nExpires:" +
+	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
 		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
 		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
 }
@@ -205,15 +207,12 @@ const std::string Full_Node::POSTResponse(const std::string& request, const unsi
 	/*If it's POST block...*/
 	if (request.find(BLOCKPOST) != std::string::npos) {
 		/*Adds block to blockchain.*/
-		if (request.find("Data=") == std::string::npos)
+		int content = request.find/*_last_of*/("Content-Type");
+		int data = request.find/*_last_of*/("Data=");
+		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
-		else {
-			std::string temp = request.substr(request.find("Data=") + 5, request.length());
-			int pos = temp.length() - 1;
-			while (temp[pos] != '}' && temp[pos] != ']')
-				pos--;
-			blockChain.addBlock(json::parse(temp.substr(0, pos + 1)));
-		}
+		else
+			blockChain.addBlock(json::parse(request.substr(data + 5, content - data - 5)));
 	}
 
 	/*If it's a transaction...*/

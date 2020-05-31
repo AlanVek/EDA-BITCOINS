@@ -26,9 +26,7 @@ void POSTClient::configurateClient(void) {
 	unparsedAnswer.clear();
 	struct curl_slist* list = nullptr;
 	//Sets header with token.
-	strData = "Content-Length=" + std::to_string(data.dump().length()) + "\r\nData=" + data.dump();
-	strData.append(1, 0);
-
+	strData = "Data=" + data.dump();
 	list = curl_slist_append(list, strData.c_str());
 
 	if (curl_easy_setopt(handler, CURLOPT_POST, 1) != CURLE_OK)
