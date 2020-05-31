@@ -117,8 +117,8 @@ const json Full_Node::getMerkleBlock(const std::string& blockID, const std::stri
 	}
 
 	result["blockid"] = blockID;
-	//result["tx"] =
-	//result["txPos"] =
+	result["tx"] = blockChain.getBlock(0)["tx"];
+	result["txPos"] = 0;
 	result["merklePath"] = merklePath;
 
 	return result;

@@ -13,13 +13,9 @@ namespace {
 /*Server constructor. Initializes io_context, acceptor and socket.
 Calls asyncConnection to accept connections.*/
 Server::Server(boost::asio::io_context& io_context_, const std::string& host, const Response& GET,
-	const Response& POST, unsigned int port) : host(host), port(port), io_context(io_context_),
-	acceptor(io_context_, tcp::endpoint(tcp::v4(), port))
+	const Response& POST, const errorResp& ERROR_RESP, unsigned int port) : host(host), port(port), io_context(io_context_),
+	acceptor(io_context_, tcp::endpoint(tcp::v4(), port)), GETResponse(GET), POSTResponse(POST), errorResponse(ERROR_RESP)
 {
-	/*Sets GET and POST callbacks.*/
-	GETResponse = GET;
-	POSTResponse = POST;
-
 	newConnector();
 }
 
@@ -97,7 +93,7 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 			if (message.find("Content-Length=") == std::string::npos)
 				answer(connector, message);
 			else {
-				int size, pos;
+				int pos;
 				std::string temp;
 				pos = message.find("Content-Length=");
 				while (message[pos + 15] != '\r') {
@@ -227,14 +223,4 @@ void Server::answer(iterator connector, const std::string& message) {
 			boost::asio::placeholders::bytes_transferred
 		)
 	);
-}
-
-/*Generates http response, according to validity of input.*/
-const std::string Server::errorResponse(void) {
-	nlohmann::json temp;
-
-	temp["status"] = false;
-	temp["result"] = 1;
-
-	return temp.dump();
 }

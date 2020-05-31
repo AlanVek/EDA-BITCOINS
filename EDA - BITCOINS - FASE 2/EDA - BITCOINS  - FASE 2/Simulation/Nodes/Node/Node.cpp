@@ -7,6 +7,7 @@ Node::Node(boost::asio::io_context& io_context, const std::string& ip, const uns
 	server = new Server(io_context, ip,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&Node::ERRORResponse, this),
 		port);
 };
 
@@ -56,6 +57,18 @@ std::string Node::makeDaytimeString(bool plusThirty) {
 	time_t now = system_clock::to_time_t(theTime);
 
 	return ctime(&now);
+}
+
+/*Generates http response, according to validity of input.*/
+const std::string Node::ERRORResponse() {
+	json result;
+
+	result["status"] = false;
+	result["result"] = 1;
+
+	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
+		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
+		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
 }
 
 /*Getters*/

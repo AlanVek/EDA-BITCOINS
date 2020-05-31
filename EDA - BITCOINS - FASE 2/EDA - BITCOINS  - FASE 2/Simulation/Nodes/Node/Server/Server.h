@@ -15,13 +15,14 @@ struct Connection {
 
 namespace {
 	using Response = std::function<const std::string(const std::string&, const unsigned int)>;
+	using errorResp = std::function<const std::string(void)>;
 
 	using iterator = Connection&;
 }
 class Server
 {
 public:
-	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&, unsigned int);
+	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&, const errorResp&, unsigned int);
 	virtual ~Server();
 
 protected:
@@ -41,7 +42,7 @@ protected:
 	void answer(iterator, const std::string&);
 	Response GETResponse;
 	Response POSTResponse;
-	const std::string errorResponse(void);
+	errorResp errorResponse;
 	/*******************************************/
 
 	/*Callbacks and callback-related.*/

@@ -54,6 +54,7 @@ protected:
 
 	virtual const std::string GETResponse(const std::string&, unsigned int node_id) = 0;
 	virtual const std::string POSTResponse(const std::string&, unsigned int node_id) = 0;
+	virtual const std::string ERRORResponse(void);
 
 	Client* client;
 	Server* server;
