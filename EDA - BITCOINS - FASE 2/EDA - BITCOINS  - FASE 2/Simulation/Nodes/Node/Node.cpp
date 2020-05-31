@@ -2,10 +2,11 @@
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-	: ip(ip), server(nullptr), client(nullptr), state(States::FREE), port(port), identifier(identifier) {
+	: ip(ip), server(nullptr), client(nullptr), state(States::FREE),
+	port(port), identifier(identifier), sentMsg(false), receivedMsg(-1) {
 	server = new Server(io_context, ip,
-		std::bind(&Node::GETResponse, this, std::placeholders::_1),
-		std::bind(&Node::POSTResponse, this, std::placeholders::_1),
+		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
 		port);
 };
 
@@ -35,6 +36,7 @@ void Node::perform() {
 			/*Deletes client and set pointer to null.*/
 			delete client;
 			client = nullptr;
+			sentMsg = true;
 
 			/*Toggles state.*/
 			state = States::FREE;
@@ -58,4 +60,15 @@ std::string Node::makeDaytimeString(bool plusThirty) {
 
 /*Getters*/
 const unsigned int Node::getID() { return identifier; }
-const States Node::getState() { return state; }
+bool Node::getClientState(void) { bool tempMsg = sentMsg; sentMsg = false; return tempMsg; }
+
+int Node::getClientPort(void) {
+	for (const auto& neighbor : neighbors) {
+		if (neighbor.second.port + 1 == receivedMsg)
+			receivedMsg = neighbor.first;
+	}
+
+	int temp = receivedMsg;
+	receivedMsg = -1;
+	return temp;
+}

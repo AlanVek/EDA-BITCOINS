@@ -5995,7 +5995,7 @@ void ImGui::PlotHistogram(const char* label, float (*values_getter)(void* data, 
 
 void ImGui::Value(const char* prefix, bool b)
 {
-    Text("%s: %s", prefix, (b ? "true" : "false"));
+    Text("%s: %s", prefix, (b ? true : false));
 }
 
 void ImGui::Value(const char* prefix, int v)

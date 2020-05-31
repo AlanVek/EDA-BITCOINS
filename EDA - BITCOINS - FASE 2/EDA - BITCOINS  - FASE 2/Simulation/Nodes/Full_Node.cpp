@@ -52,7 +52,14 @@ void Full_Node::postBlock(const unsigned int id, const std::string& blockID) {
 
 /*POST merkleblock connection.*/
 void Full_Node::postMerkleBlock(const unsigned int id, const std::string& blockID, const std::string& transID) {
-	//client = new MerkleClient(neighbors[id].ip,  port+1,neighbors[id].port,getMerkleBlock(blockID, transID));
+	if (state == States::FREE && !client) {
+		/*If id is a neighbor...*/
+		if (neighbors.find(id) != neighbors.end()) {
+			auto temp = getMerkleBlock(blockID, transID);
+			client = new MerkleClient(neighbors[id].ip, port + 1, neighbors[id].port, temp);
+			state = States::CLIENTMODE;
+		}
+	}
 }
 
 /*Gets block from blockChain by ID.*/
@@ -67,14 +74,38 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 	return error;
 }
 
+void Full_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
+	if (state == States::FREE && !client) {
+		/*If id is a neighbor...*/
+		if (neighbors.find(id) != neighbors.end()) {
+			json tempData;
+
+			tempData["nTxin"] = 0;
+			tempData["nTxout"] = 1;
+			tempData["txid"] = "ABCDE123";
+			tempData["vin"] = json();
+
+			json vout;
+			vout["amount"] = amount;
+			vout["publicid"] = wallet;
+
+			tempData["vout"] = vout;
+
+			client = new TransactionClient(neighbors[id].ip, port + 1, neighbors[id].port, tempData);
+			state = States::CLIENTMODE;
+		}
+	}
+}
+
 const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
-	int k = blockChain.getBlockIndex(blockID);
+	//int k = blockChain.getBlockIndex(blockID);
+	int k = 0;
 	auto tree = blockChain.getTree(k);
 
-	for (unsigned int i = 0; i < tree.size(); i++) {
+	/*for (unsigned int i = 0; i < tree.size(); i++) {
 		if (tree[i] == transID)
 			k = i;
-	}
+	}*/
 	json result;
 	int size = log2(tree.size() + 1);
 	std::vector<std::string> merklePath;
@@ -97,10 +128,11 @@ const json Full_Node::getMerkleBlock(const std::string& blockID, const std::stri
 Full_Node::~Full_Node() {}
 
 /*GET callback for server.*/
-const std::string Full_Node::GETResponse(const std::string& request) {
+const std::string Full_Node::GETResponse(const std::string& request, const unsigned int client_port) {
 	json result;
+	receivedMsg = client_port;
 
-	result["status"] = "true";
+	result["status"] = true;
 	bool block;
 
 	/*Checks for correct data input (one of the strings must be in the request).*/
@@ -122,7 +154,7 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 
 			/*Goes to next block.*/
 			if (!(++abs)) {
-				result["status"] = "false";
+				result["status"] = false;
 				result["result"] = 2;
 			}
 
@@ -148,13 +180,13 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 		}
 		/*Format error.*/
 		else {
-			result["status"] = "false";
+			result["status"] = false;
 			result["result"] = 1;
 		}
 	}
 	/*Content error.*/
 	else {
-		result["status"] = "false";
+		result["status"] = false;
 		result["result"] = 2;
 	}
 
@@ -164,19 +196,24 @@ const std::string Full_Node::GETResponse(const std::string& request) {
 }
 
 /*POST callback for server.*/
-const std::string Full_Node::POSTResponse(const std::string& request) {
+const std::string Full_Node::POSTResponse(const std::string& request, const unsigned int client_port) {
+	receivedMsg = client_port;
 	json result;
-	result["status"] = "true";
-	result["result"] = "null";
+	result["status"] = true;
+	result["result"] = NULL;
 
 	/*If it's POST block...*/
 	if (request.find(BLOCKPOST) != std::string::npos) {
 		/*Adds block to blockchain.*/
-		std::string temp = request.substr(request.find("Data=") + 5, request.length());
-		int pos = temp.length() - 1;
-		while (temp[pos] != '}' && temp[pos] != ']')
-			pos--;
-		blockChain.addBlock(json::parse(temp.substr(0, pos + 1)));
+		if (request.find("Data=") == std::string::npos)
+			result["status"] = false;
+		else {
+			std::string temp = request.substr(request.find("Data=") + 5, request.length());
+			int pos = temp.length() - 1;
+			while (temp[pos] != '}' && temp[pos] != ']')
+				pos--;
+			blockChain.addBlock(json::parse(temp.substr(0, pos + 1)));
+		}
 	}
 
 	/*If it's a transaction...*/

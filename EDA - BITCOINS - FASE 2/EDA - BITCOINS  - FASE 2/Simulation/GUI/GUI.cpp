@@ -174,11 +174,11 @@ Events GUI::checkStatus(void) {
 		/*Sets new ImGui window.*/
 		newWindow();
 
-		ImGui::Text("Actions: ");
+		ImGui::Text("Connection info: ");
 
-		ImGui::NewLine();
+		ImGui::Text(msg.c_str());
 
-		ImGui::NewLine();
+		ImGui::NewLine(); ImGui::NewLine();
 
 		/*Sender selection.*/
 		if (state == States::SENDER_SELECTION) selectSender();
@@ -192,14 +192,16 @@ Events GUI::checkStatus(void) {
 		/*Parameter(s) selection.*/
 		else if (state == States::PARAM_SELECTION) { selectParameters(); }
 		else {
-			/*Exit button.*/
-			displayWidget("Exit", [&result] {result = Events::END; });
-
+			ImGui::Text("Actions: ");
+			ImGui::NewLine();
+			displayWidget("Clear", [this]() {msg.clear(); });
 			ImGui::SameLine();
-
 			/*New Message button.*/
 			if (nodes.size() > 1)
 				displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
+			/*Exit button.*/
+			ImGui::NewLine();
+			displayWidget("Exit", [&result] {result = Events::END; });
 
 			if ((bool)action) result = action;
 		}
@@ -393,7 +395,7 @@ void GUI::selectParameters() {
 		ImGui::InputInt("..", &amount);
 		ImGui::Text("Enter public wallet: ");
 		ImGui::SameLine();
-		ImGui::InputText("_.", &key);
+		ImGui::InputText("_.", &wallet);
 		break;
 	default:
 		break;
@@ -401,7 +403,7 @@ void GUI::selectParameters() {
 
 	ImGui::NewLine();
 	displayWidget("Done", [this, wildcard]() {
-		if ((key.length() && amount) || (blockID.length() && count || wildcard))
+		if ((wallet.length() && amount) || (blockID.length() && count || wildcard))
 			state = States::INIT_DONE;
 		});
 }
@@ -488,9 +490,17 @@ const GUI::NewNode& GUI::getNode(unsigned int index) { return nodes[index]; }
 const std::string& GUI::getBlockID() { return blockID; }
 const int GUI::getAmount() { return amount; }
 const unsigned int GUI::getCount() { return count; }
-const std::string& GUI::getKey() { return key; }
+const std::string& GUI::getWallet() { return wallet; }
 
 /*Sets flags to initial state.*/
 void GUI::infoGotten() {
-	key.clear(); amount = 0; count = 0; blockID.clear(); action = Events::NOTHING;
+	wallet.clear(); amount = 0; count = 0; blockID.clear(); action = Events::NOTHING;
+}
+
+void GUI::setSendOk(const unsigned int id) {
+	msg += "\nNode " + std::to_string(id) + " sent a message.";
+}
+
+void GUI::setReceptionOk(const unsigned int id_rec, const unsigned int id_sent) {
+	msg += "\nNode " + std::to_string(id_rec) + " got a message from node " + std::to_string(id_sent);
 }

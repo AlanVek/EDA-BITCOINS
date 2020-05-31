@@ -48,7 +48,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Filter (POST).*/
 	case Events::FILTER:
 		ev = Events::FILTER;
-		//nodes[getIndex()]->postFilter(gui->getReceiverID(), gui->getKey(), gui->getNode());
+		//nodes[getIndex()]->postFilter(gui->getReceiverID(), gui->getKey(), gui->getAmount());
 		gui->infoGotten();
 
 		break;
@@ -64,7 +64,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Headers (GET).*/
 	case Events::GET_HEADERS:
 		ev = Events::GET_HEADERS;
-		//nodes[getIndex()]->GETBlockHeaders(gui->getReceiverID(), gui->getBlockID();gui->getCount());
+		nodes[getIndex()]->GETBlockHeaders(gui->getReceiverID(), gui->getBlockID(), gui->getCount());
 		gui->infoGotten();
 
 		break;
@@ -72,7 +72,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Merkleblock (POST).*/
 	case Events::MERKLEBLOCK:
 		ev = Events::MERKLEBLOCK;
-		//nodes[getIndex()]->postMerkleBlock(gui->getReceiverID(), gui->getBlockID(), gui->getTransactionID());
+		nodes[getIndex()]->postMerkleBlock(gui->getReceiverID(), gui->getBlockID(), "7B857A14"/*gui->getTransactionID()*/);
 		gui->infoGotten();
 		break;
 
@@ -86,7 +86,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
 		ev = Events::TRANSACTION;
-		//nodes[getIndex()]->po
+		nodes[getIndex()]->transaction(gui->getReceiverID(), gui->getWallet(), gui->getAmount());
 		gui->infoGotten();
 
 		break;
@@ -97,7 +97,21 @@ void Simulation::dispatch(const Events& code) {
 }
 
 /*Generates event from GUI and polls io_context.*/
-const Events Simulation::eventGenerator() { io_context.poll(); return gui->checkStatus(); }
+const Events Simulation::eventGenerator() {
+	io_context.poll();
+
+	for (const auto& node : nodes) {
+		if (node->getClientState()) {
+			gui->setSendOk(node->getID());
+		}
+		int port_rec = node->getClientPort();
+		if (port_rec != -1) {
+			gui->setReceptionOk(node->getID(), port_rec);
+		}
+	}
+
+	return gui->checkStatus();
+}
 
 /*Getter.*/
 bool Simulation::isRunning(void) { return running; }

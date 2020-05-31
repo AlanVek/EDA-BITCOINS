@@ -34,7 +34,7 @@ public:
 	virtual void perform();
 	virtual const unsigned int getID();
 
-	//virtual void transaction(const unsigned int, c)
+	virtual void transaction(const unsigned int, const std::string& wallet, const unsigned int amount) = 0;
 
 	virtual void postBlock(const unsigned int, const std::string& blockID) = 0;
 	virtual void postMerkleBlock(const unsigned int,
@@ -45,14 +45,15 @@ public:
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 
-	virtual const States getState();
-
 	virtual std::string makeDaytimeString(bool);
+
+	virtual bool getClientState(void);
+	virtual int getClientPort(void);
 
 protected:
 
-	virtual const std::string GETResponse(const std::string&) = 0;
-	virtual const std::string POSTResponse(const std::string&) = 0;
+	virtual const std::string GETResponse(const std::string&, unsigned int node_id) = 0;
+	virtual const std::string POSTResponse(const std::string&, unsigned int node_id) = 0;
 
 	Client* client;
 	Server* server;
@@ -61,4 +62,6 @@ protected:
 	std::string ip;
 	unsigned int port, identifier;
 	States state;
+	bool sentMsg;
+	int receivedMsg;
 };

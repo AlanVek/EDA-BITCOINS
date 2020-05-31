@@ -193,16 +193,18 @@ void Server::messageCallback(iterator connector, const boost::system::error_code
 
 /*Responds to input.*/
 void Server::answer(iterator connector, const std::string& message) {
+	const unsigned int client_port = connector.socket.remote_endpoint().port();
+
 	/*Generates text response, according to validity of input.*/
 	switch (state) {
 		/*GET request. Calls GET callback.*/
 	case Connections::GET:
-		(connector).response = GETResponse(message);
+		(connector).response = GETResponse(message, client_port);
 		break;
 
 		/*POST request. Calls POST callback.*/
 	case Connections::POST:
-		(connector).response = POSTResponse(message);
+		(connector).response = POSTResponse(message, client_port);
 		break;
 
 		/*Error. Calls error callback.*/
@@ -233,7 +235,7 @@ void Server::answer(iterator connector, const std::string& message) {
 const std::string Server::errorResponse(void) {
 	nlohmann::json temp;
 
-	temp["status"] = "false";
+	temp["status"] = false;
 	temp["result"] = 1;
 
 	return temp.dump();

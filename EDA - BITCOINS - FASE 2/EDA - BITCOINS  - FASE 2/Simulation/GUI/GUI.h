@@ -60,7 +60,10 @@ public:
 	const std::string& getBlockID();
 	const int getAmount();
 	const unsigned int getCount();
-	const std::string& getKey();
+	const std::string& getWallet();
+
+	void setReceptionOk(const unsigned int, const unsigned int);
+	void setSendOk(const unsigned int);
 
 	void infoGotten();
 private:
@@ -135,8 +138,8 @@ private:
 	/**********************************/
 	std::vector <NewNode> nodes;
 	unsigned int sender, receiver;
-	std::string blockID, key;
-	int count, nodeID;
-	int amount;
+	std::string blockID, wallet;
+	int count, nodeID, amount, portOk;
+	std::string msg;
 	/**********************************/
 };

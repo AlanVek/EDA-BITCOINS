@@ -53,6 +53,7 @@ bool Client::perform(void) {
 
 			//Parses answer.
 			answer = json::parse(unparsedAnswer);
+			std::cout << "Received: " << answer << std::endl;
 
 			//Sets result to 'FALSE', to end loop.
 			stillOn = false;

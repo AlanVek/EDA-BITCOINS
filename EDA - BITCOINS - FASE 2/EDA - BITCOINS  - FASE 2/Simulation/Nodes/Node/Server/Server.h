@@ -14,7 +14,7 @@ struct Connection {
 };
 
 namespace {
-	using Response = std::function<const std::string(const std::string&)>;
+	using Response = std::function<const std::string(const std::string&, const unsigned int)>;
 
 	using iterator = Connection&;
 }
