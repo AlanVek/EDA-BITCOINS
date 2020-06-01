@@ -1,5 +1,6 @@
 #include "SPV_Node.h"
 #include "Node/Client/AllClients.h"
+
 namespace {
 	const char* MERKLEPOST = "send_merkle_block";
 }
@@ -19,9 +20,7 @@ const std::string SPV_Node::GETResponse(const std::string& request, const boost:
 
 	/*Content error.*/
 	result["result"] = 2;
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
-		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
-		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
+	return headerFormat(result.dump());
 }
 
 /*POST callback for server.*/
@@ -46,15 +45,24 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 		result["result"] = 2;
 	}
 
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
-		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
-		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
+	return headerFormat(result.dump());
 }
 
 /*Destructor. Uses Node destructor.*/
 SPV_Node::~SPV_Node() {}
 
-void SPV_Node::postFilter(const unsigned int, const std::string& key, const unsigned int node) {
+void SPV_Node::postFilter(const unsigned int id, const std::string& key) {
+	if (client_state == ConnectionState::FREE && !client) {
+		/*If id is a neighbor...*/
+		if (neighbors.find(id) != neighbors.end()) {
+			json tempData;
+
+			tempData["key"] = key;
+
+			client = new FilterClient(neighbors[id].ip, port + 1, neighbors[id].port, tempData);
+			client_state = ConnectionState::PERFORMING;
+		}
+	}
 };
 void SPV_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
 	if (client_state == ConnectionState::FREE && !client) {

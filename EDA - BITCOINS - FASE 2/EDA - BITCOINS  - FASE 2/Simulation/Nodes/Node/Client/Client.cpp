@@ -44,8 +44,6 @@ bool Client::perform(void) {
 			//Cleans used variables.
 			curl_easy_cleanup(handler);
 			curl_multi_cleanup(multiHandler);
-			handler = nullptr;
-			multiHandler = nullptr;
 
 			//Resets step to false.
 			step = false;

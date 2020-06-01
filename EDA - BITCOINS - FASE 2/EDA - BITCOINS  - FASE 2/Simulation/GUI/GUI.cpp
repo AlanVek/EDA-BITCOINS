@@ -312,15 +312,19 @@ void GUI::selectSender() {
 }
 /*Receiver selection.*/
 void GUI::selectReceiver() {
-	ImGui::Text("Select Receiver: ");
+	if (nodes[sender].neighbors.size()) {
+		ImGui::Text("Select Receiver: ");
 
-	/*Loops through every node within the sender's neighbors.*/
-	for (const auto& neighbor : nodes[sender].neighbors) {
-		/*Sets a button with the node's index.*/
-		displayWidget(("Node " + std::to_string(neighbor)).c_str(),
-			[this, &neighbor]() {receiver = neighbor; state = States::MESSAGE_SELECTION; });
-		ImGui::SameLine();
+		/*Loops through every node within the sender's neighbors.*/
+		for (const auto& neighbor : nodes[sender].neighbors) {
+			/*Sets a button with the node's index.*/
+			displayWidget(("Node " + std::to_string(neighbor)).c_str(),
+				[this, &neighbor]() {receiver = neighbor; state = States::MESSAGE_SELECTION; });
+			ImGui::SameLine();
+		}
 	}
+	else
+		state = States::INIT_DONE;
 }
 
 /*Message selection.*/
@@ -504,9 +508,5 @@ const int GUI::getAmount() { return amount; }
 const std::string& GUI::getWallet() { return wallet; }
 
 /*Sets flags to initial state.*/
-void GUI::infoGotten() {
-	wallet.clear(); amount = 0; action = Events::NOTHING;
-
-	/*blockID.clear()*/
-}
+void GUI::infoGotten() { wallet.clear(); amount = 0; action = Events::NOTHING; }
 void GUI::updateMsg(const std::string& info) { msg += info; }

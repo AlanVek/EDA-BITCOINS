@@ -48,7 +48,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Filter (POST).*/
 	case Events::FILTER:
 		ev = Events::FILTER;
-		//nodes[getIndex()]->postFilter(gui->getReceiverID(), gui->getKey(), gui->getAmount());
+		nodes[getIndex()]->postFilter(gui->getReceiverID(), "0"/*gui->getKey()*/);
 		gui->infoGotten();
 
 		break;

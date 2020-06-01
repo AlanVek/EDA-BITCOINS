@@ -63,9 +63,13 @@ const std::string Node::ERRORResponse() {
 	result["status"] = false;
 	result["result"] = 1;
 
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
-		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
-		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
+	return headerFormat(result.dump());
+}
+
+const std::string Node::headerFormat(const std::string& result) {
+	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + begURL + "\r\nCache-Control: max-age=30\r\nExpires:" +
+		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.length()) +
+		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result;
 }
 
 /*Getters*/

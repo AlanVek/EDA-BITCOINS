@@ -37,10 +37,9 @@ public:
 	virtual void transaction(const unsigned int, const std::string& wallet, const unsigned int amount) = 0;
 
 	virtual void postBlock(const unsigned int, const std::string& blockID) = 0;
-	virtual void postMerkleBlock(const unsigned int,
-		const std::string& blockID, const std::string& transID) = 0;
+	virtual void postMerkleBlock(const unsigned int, const std::string& blockID, const std::string& transID) = 0;
 
-	virtual void postFilter(const unsigned int, const std::string& key, const unsigned int node) = 0;
+	virtual void postFilter(const unsigned int, const std::string& key) = 0;
 
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
@@ -54,6 +53,8 @@ protected:
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&) = 0;
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&) = 0;
 	virtual const std::string ERRORResponse(void);
+
+	virtual const std::string headerFormat(const std::string&);
 
 	virtual void setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
 

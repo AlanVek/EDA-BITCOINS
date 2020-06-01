@@ -1,4 +1,5 @@
 #include "Full_Node.h"
+
 #include "Node/Client/AllClients.h"
 
 /*Text constants in requests.*/
@@ -191,9 +192,7 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 		result["result"] = 2;
 	}
 
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
-		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
-		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
+	return headerFormat(result.dump());
 }
 
 /*POST callback for server.*/
@@ -223,7 +222,5 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 	else if (request.find(FILTERPOST) != std::string::npos) {
 	}
 
-	return "HTTP/1.1 200 OK\r\nDate:" + makeDaytimeString(false) + "Location: " + "eda_coins" + "\r\nCache-Control: max-age=30\r\nExpires:" +
-		makeDaytimeString(true) + "Content-Length:" + std::to_string(result.dump().length()) +
-		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result.dump();
+	return headerFormat(result.dump());
 }
