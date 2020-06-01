@@ -2,8 +2,8 @@
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-	: ip(ip), server(nullptr), client(nullptr), state(States::FREE),
-	port(port), identifier(identifier), sentMsg(false), receivedMsg(-1) {
+	: ip(ip), server(nullptr), client(nullptr), client_state(ConnectionState::FREE), server_state(ConnectionState::FREE),
+	port(port), identifier(identifier), receivedMsg(-1) {
 	server = new Server(io_context, ip,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
@@ -31,16 +31,13 @@ void Node::newNeighbor(const unsigned int id, const std::string& ip, const unsig
 /*Performs client mode. */
 void Node::perform() {
 	/*If node is in client mode...*/
-	if (client && state == States::CLIENTMODE) {
+	if (client) {
 		/*If request has ended...*/
 		if (!client->perform()) {
 			/*Deletes client and set pointer to null.*/
 			delete client;
 			client = nullptr;
-			sentMsg = true;
-
-			/*Toggles state.*/
-			state = States::FREE;
+			client_state = ConnectionState::FINISHED;
 		}
 	}
 }
@@ -73,15 +70,24 @@ const std::string Node::ERRORResponse() {
 
 /*Getters*/
 const unsigned int Node::getID() { return identifier; }
-bool Node::getClientState(void) { bool tempMsg = sentMsg; sentMsg = false; return tempMsg; }
+ConnectionState Node::getClientState(void) {
+	if (client_state == ConnectionState::FINISHED) {
+		client_state = ConnectionState::FREE;
+		return ConnectionState::FINISHED;
+	}
+	else
+		return client_state;
+}
 
 int Node::getClientPort(void) {
-	for (const auto& neighbor : neighbors) {
-		if (neighbor.second.port + 1 == receivedMsg)
-			receivedMsg = neighbor.first;
-	}
-
 	int temp = receivedMsg;
 	receivedMsg = -1;
 	return temp;
+}
+
+void Node::newPortNeighbor(unsigned int port) {
+	for (const auto& neighbor : neighbors) {
+		if (neighbor.second.port + 1 == port)
+			receivedMsg = neighbor.first;
+	}
 }

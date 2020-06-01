@@ -148,8 +148,26 @@ bool GUI::nodeSelectionScreen() {
 	return result;
 }
 
+void GUI::setConnectionStr() {
+	nodeConnections.clear();
+
+	for (const auto& node : nodes) {
+		nodeConnections += "Node " + std::to_string(node.index) + ":\n";
+		nodeConnections += "\tType: " + ((node.type == NodeTypes::NEW_FULL) ? (std::string)"FULL\n" : (std::string)"SVP\n");
+		nodeConnections += "\tConnections:\n";
+
+		for (const auto& neighbor : node.neighbors)
+			nodeConnections += "\t\t- Node " + std::to_string(nodes[neighbor].index) + '(' + ((nodes[neighbor].type == NodeTypes::NEW_FULL) ? (std::string)"FULL)\n" : (std::string)"SVP)\n");
+
+		nodeConnections += "\n";
+	}
+}
+
 bool GUI::init(bool* endOfSetup) {
 	bool result = false;
+
+	ImGui::Text(nodeConnections.c_str());
+	ImGui::NewLine(); ImGui::NewLine();
 
 	/*New Node button.*/
 	displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
@@ -186,7 +204,7 @@ Events GUI::checkStatus(void) {
 
 		ImGui::Text(msg.c_str());
 
-		ImGui::NewLine(); ImGui::NewLine();
+		ImGui::NewLine();
 
 		/*Sender selection.*/
 		if (state == States::SENDER_SELECTION) selectSender();
@@ -381,7 +399,7 @@ void GUI::selectParameters() {
 		ImGui::SameLine();
 		ImGui::InputText("_.", &wallet);
 		ImGui::NewLine();
-		displayWidget("Done", [this]() {if (wallet.length() && amount) state = States::INIT_DONE; });
+		displayWidget("Done", [this]() {if (wallet.length() && amount) { state = States::INIT_DONE; } });
 		break;
 	default:
 		break;
@@ -407,7 +425,7 @@ void GUI::creation() {
 	ImGui::NewLine();
 
 	/*'Done' button for finishing setup.*/
-	displayWidget("Done", [this]() {if (nodes.back().ip.length()) state = States::INIT; });
+	displayWidget("Done", [this]() {if (nodes.back().ip.length()) { state = States::INIT; setConnectionStr(); } });
 }
 
 void GUI::generalScreen() {
@@ -419,16 +437,18 @@ void GUI::generalScreen() {
 	}
 	if (extraWindow != -1) nodeWindow();
 	ImGui::NewLine();*/
-	ImGui::Text("Actions: ");
+	ImGui::Text("Nodes info: ");
 	ImGui::NewLine();
-	displayWidget("Clear", [this]() {msg.clear(); });
-	ImGui::SameLine();
-	/*New Message button.*/
-	if (nodes.size() > 1)
-		displayWidget("New message", [this] {state = States::SENDER_SELECTION; });
+	ImGui::Text(nodeConnections.c_str());
+	ImGui::NewLine();
+	ImGui::Text("Actions: ");
 	/*Exit button.*/
 	ImGui::NewLine();
 	displayWidget("Exit", [this] {action = Events::END; });
+	ImGui::SameLine();
+	/*New Message button.*/
+	if (nodes.size() > 1)
+		displayWidget("New message", [this] {state = States::SENDER_SELECTION; msg.clear(); });
 }
 //
 //void GUI::nodeWindow() {
@@ -573,10 +593,4 @@ void GUI::infoGotten() {
 //	action_msg = "none.";
 //}
 
-void GUI::setSendOk(const unsigned int id) {
-	msg += "\nNode " + std::to_string(id) + " sent a message.";
-}
-
-void GUI::setReceptionOk(const unsigned int id_rec, const unsigned int id_sent) {
-	msg += "\nNode " + std::to_string(id_rec) + " got a message from node " + std::to_string(id_sent);
-}
+void GUI::updateMsg(const std::string& info) { msg += info; }

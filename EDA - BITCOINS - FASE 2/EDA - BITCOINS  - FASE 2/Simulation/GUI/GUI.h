@@ -71,12 +71,11 @@ public:
 	const unsigned int getCount();
 	const std::string& getWallet();
 
-	void setReceptionOk(const unsigned int, const unsigned int);
-	void setSendOk(const unsigned int);
+	void updateMsg(const std::string&);
 
 	void infoGotten();
 
-	void setInfoShower(const std::string&);
+	//void setInfoShower(const std::string&);
 
 	//int getCurrentNodeIndex();
 
@@ -123,6 +122,7 @@ private:
 	void connections(void);
 	void creation(void);
 	void showConnections(void);
+	void setConnectionStr(void);
 	/***********************/
 
 	/*Messages*/
@@ -160,7 +160,7 @@ private:
 	unsigned int sender, receiver;
 	std::string wallet;
 	int count, amount, portOk;
-	std::string msg;
+	std::string msg, nodeConnections;
 
 	//std::string blockID;
 	/*int nodeID;*/

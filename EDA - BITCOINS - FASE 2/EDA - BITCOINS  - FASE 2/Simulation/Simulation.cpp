@@ -125,12 +125,20 @@ const Events Simulation::eventGenerator() {
 	io_context.poll();
 
 	for (const auto& node : nodes) {
-		if (node->getClientState()) {
-			gui->setSendOk(node->getID());
+		switch (node->getClientState()) {
+		case ConnectionState::PERFORMING:
+			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is performing a client request.");
+			break;
+		case ConnectionState::FINISHED:
+			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " finished the request.");
+			break;
+		default:
+			break;
 		}
+
 		int port_rec = node->getClientPort();
 		if (port_rec != -1) {
-			gui->setReceptionOk(node->getID(), port_rec);
+			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is answering a request from node " + std::to_string(port_rec));
 		}
 	}
 

@@ -12,15 +12,15 @@ const enum class ConnectionType : unsigned int {
 	POSTFILTER
 };
 
+const enum class ConnectionState : unsigned int {
+	FREE,
+	PERFORMING,
+	FINISHED
+};
+
 struct Neighbor {
 	std::string ip;
 	unsigned int port;
-};
-
-const enum class States : unsigned int {
-	FREE,
-	CLIENTMODE,
-	SERVERMODE
 };
 
 class Node {
@@ -47,7 +47,7 @@ public:
 
 	virtual std::string makeDaytimeString(bool);
 
-	virtual bool getClientState(void);
+	virtual ConnectionState getClientState(void);
 	virtual int getClientPort(void);
 
 protected:
@@ -56,13 +56,14 @@ protected:
 	virtual const std::string POSTResponse(const std::string&, unsigned int node_id) = 0;
 	virtual const std::string ERRORResponse(void);
 
+	virtual void newPortNeighbor(unsigned int);
+
 	Client* client;
 	Server* server;
 	std::map<unsigned int, Neighbor> neighbors;
 
 	std::string ip;
 	unsigned int port, identifier;
-	States state;
-	bool sentMsg;
+	ConnectionState client_state, server_state;
 	int receivedMsg;
 };

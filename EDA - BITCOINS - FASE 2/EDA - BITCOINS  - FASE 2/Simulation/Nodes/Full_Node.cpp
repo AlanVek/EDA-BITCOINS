@@ -25,14 +25,14 @@ Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 /*GET performer for GET blocks request. */
 void Full_Node::GETBlocks(const unsigned int id, const std::string& blockID, const unsigned int count) {
 	/*If node is free...*/
-	if (state == States::FREE && !client) {
+	if (client_state == ConnectionState::FREE && !client) {
 		/*If id is a neighbor and count isn't null...*/
 		if (neighbors.find(id) != neighbors.end() && count) {
 			/*Sets new GETBlockClient.*/
 			client = new GETBlockClient(neighbors[id].ip, port + 1, neighbors[id].port, blockID, count);
 
 			/*Toggles state.*/
-			state = States::CLIENTMODE;
+			client_state = ConnectionState::PERFORMING;
 		}
 	}
 }
@@ -40,24 +40,24 @@ void Full_Node::GETBlocks(const unsigned int id, const std::string& blockID, con
 /*POST connection for blocks.*/
 void Full_Node::postBlock(const unsigned int id, const std::string& blockID) {
 	/*If node is in client mode...*/
-	if (state == States::FREE && !client) {
+	if (client_state == ConnectionState::FREE && !client) {
 		/*If id is a neighbor and count isn't null...*/
 		if (neighbors.find(id) != neighbors.end()) {
 			/*Sets new BlockClient for POST request.*/
 			client = new BlockClient(neighbors[id].ip, port + 1, neighbors[id].port, blockChain.getBlock(0)/*getBlock(blockID)*/);
-			state = States::CLIENTMODE;
+			client_state = ConnectionState::PERFORMING;
 		}
 	}
 }
 
 /*POST merkleblock connection.*/
 void Full_Node::postMerkleBlock(const unsigned int id, const std::string& blockID, const std::string& transID) {
-	if (state == States::FREE && !client) {
+	if (client_state == ConnectionState::FREE && !client) {
 		/*If id is a neighbor...*/
 		if (neighbors.find(id) != neighbors.end()) {
 			auto temp = getMerkleBlock(blockID, transID);
 			client = new MerkleClient(neighbors[id].ip, port + 1, neighbors[id].port, temp);
-			state = States::CLIENTMODE;
+			client_state = ConnectionState::PERFORMING;
 		}
 	}
 }
@@ -75,7 +75,7 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 }
 
 void Full_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
-	if (state == States::FREE && !client) {
+	if (client_state == ConnectionState::FREE && !client) {
 		/*If id is a neighbor...*/
 		if (neighbors.find(id) != neighbors.end()) {
 			json tempData;
@@ -92,7 +92,7 @@ void Full_Node::transaction(const unsigned int id, const std::string& wallet, co
 			tempData["vout"] = vout;
 
 			client = new TransactionClient(neighbors[id].ip, port + 1, neighbors[id].port, tempData);
-			state = States::CLIENTMODE;
+			client_state = ConnectionState::PERFORMING;
 		}
 	}
 }
@@ -130,7 +130,7 @@ Full_Node::~Full_Node() {}
 /*GET callback for server.*/
 const std::string Full_Node::GETResponse(const std::string& request, const unsigned int client_port) {
 	json result;
-	receivedMsg = client_port;
+	newPortNeighbor(client_port);
 
 	result["status"] = true;
 	int block;
@@ -199,7 +199,8 @@ const std::string Full_Node::GETResponse(const std::string& request, const unsig
 
 /*POST callback for server.*/
 const std::string Full_Node::POSTResponse(const std::string& request, const unsigned int client_port) {
-	receivedMsg = client_port;
+	newPortNeighbor(client_port);
+
 	json result;
 	result["status"] = true;
 	result["result"] = NULL;
