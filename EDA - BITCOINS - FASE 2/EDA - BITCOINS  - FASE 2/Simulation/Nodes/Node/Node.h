@@ -45,18 +45,17 @@ public:
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 
-	virtual std::string makeDaytimeString(bool);
-
 	virtual ConnectionState getClientState(void);
 	virtual int getClientPort(void);
 
 protected:
+	virtual std::string makeDaytimeString(bool);
 
-	virtual const std::string GETResponse(const std::string&, unsigned int node_id) = 0;
-	virtual const std::string POSTResponse(const std::string&, unsigned int node_id) = 0;
+	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&) = 0;
+	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&) = 0;
 	virtual const std::string ERRORResponse(void);
 
-	virtual void newPortNeighbor(unsigned int);
+	virtual void setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
 
 	Client* client;
 	Server* server;
@@ -65,5 +64,5 @@ protected:
 	std::string ip;
 	unsigned int port, identifier;
 	ConnectionState client_state, server_state;
-	int receivedMsg;
+	int connected_client_id;
 };

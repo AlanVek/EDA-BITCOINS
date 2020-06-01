@@ -5,19 +5,9 @@
 
 #define MAXSIZE 100000
 
-struct Connection {
-	Connection(boost::asio::io_context& io_context) : socket(io_context) {}
-	boost::asio::ip::tcp::socket socket;
-	char reader[MAXSIZE];
-	std::string response;
-	std::list<Connection>::iterator pos;
-};
-
 namespace {
-	using Response = std::function<const std::string(const std::string&, const unsigned int)>;
+	using Response = std::function<const std::string(const std::string&, const boost::asio::ip::tcp::endpoint&)>;
 	using errorResp = std::function<const std::string(void)>;
-
-	using iterator = Connection&;
 }
 class Server
 {
@@ -28,18 +18,25 @@ public:
 protected:
 	void newConnector(void);
 
-	const enum class Connections {
+	const enum class ConnectionTypes {
 		NONE = 0,
 		POST,
 		GET
 	};
+	struct Connection {
+		Connection(boost::asio::io_context& io_context) : socket(io_context) {}
+		boost::asio::ip::tcp::socket socket;
+		char reader[MAXSIZE];
+		std::string response;
+		std::list<Connection>::iterator pos;
+	};
 
 	/*Connection methods.*/
 	/*******************************************/
-	void asyncConnection(iterator);
-	void closeConnection(iterator);
+	void asyncConnection(Connection&);
+	void closeConnection(Connection&);
 
-	void answer(iterator, const std::string&);
+	void answer(Connection&, const std::string&);
 	Response GETResponse;
 	Response POSTResponse;
 	errorResp errorResponse;
@@ -47,9 +44,9 @@ protected:
 
 	/*Callbacks and callback-related.*/
 	/*********************************************************************************/
-	void connectionCallback(iterator, const boost::system::error_code& error);
-	void messageCallback(iterator, const boost::system::error_code& error, size_t bytes_sent);
-	void inputValidation(iterator, const boost::system::error_code& error, size_t bytes);
+	void connectionCallback(Connection&, const boost::system::error_code& error);
+	void messageCallback(Connection&, const boost::system::error_code& error, size_t bytes_sent);
+	void inputValidation(Connection&, const boost::system::error_code& error, size_t bytes);
 	/*********************************************************************************/
 
 	/*Boost::asio data members.*/
@@ -63,7 +60,7 @@ protected:
 	/*********************************************/
 	size_t size;
 	std::string host;
-	Connections state;
+	ConnectionTypes state;
 	unsigned int port;
 	/*********************************************/
 };

@@ -1,18 +1,18 @@
-#include "SVP_Node.h"
+#include "SPV_Node.h"
 #include "Node/Client/AllClients.h"
 namespace {
 	const char* MERKLEPOST = "send_merkle_block";
 }
 
-/*SVP_Node constructor. Uses Node constructor.*/
-SVP_Node::SVP_Node(boost::asio::io_context& io_context, const std::string& ip,
+/*SPV_Node constructor. Uses Node constructor.*/
+SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier)
 {
 }
 
 /*GET callback for server.*/
-const std::string SVP_Node::GETResponse(const std::string& request, unsigned int node_id) {
-	newPortNeighbor(node_id);
+const std::string SPV_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
+	setConnectedClientID(nodeInfo);
 
 	json result;
 	result["status"] = false;
@@ -25,8 +25,8 @@ const std::string SVP_Node::GETResponse(const std::string& request, unsigned int
 }
 
 /*POST callback for server.*/
-const std::string SVP_Node::POSTResponse(const std::string& request, unsigned int node_id) {
-	newPortNeighbor(node_id);
+const std::string SPV_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
+	setConnectedClientID(nodeInfo);
 	server_state = ConnectionState::PERFORMING;
 	json result;
 	result["status"] = true;
@@ -52,11 +52,11 @@ const std::string SVP_Node::POSTResponse(const std::string& request, unsigned in
 }
 
 /*Destructor. Uses Node destructor.*/
-SVP_Node::~SVP_Node() {}
+SPV_Node::~SPV_Node() {}
 
-void SVP_Node::postFilter(const unsigned int, const std::string& key, const unsigned int node) {
+void SPV_Node::postFilter(const unsigned int, const std::string& key, const unsigned int node) {
 };
-void SVP_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
+void SPV_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
 	if (client_state == ConnectionState::FREE && !client) {
 		/*If id is a neighbor...*/
 		if (neighbors.find(id) != neighbors.end()) {
@@ -78,7 +78,7 @@ void SVP_Node::transaction(const unsigned int id, const std::string& wallet, con
 		}
 	}
 }
-void SVP_Node::GETBlockHeaders(const unsigned int id, const std::string& blockID, const unsigned int count) {
+void SPV_Node::GETBlockHeaders(const unsigned int id, const std::string& blockID, const unsigned int count) {
 	/*If node is free...*/
 	if (client_state == ConnectionState::FREE && !client) {
 		/*If id is a neighbor and count isn't null...*/

@@ -3,7 +3,7 @@
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
 	: ip(ip), server(nullptr), client(nullptr), client_state(ConnectionState::FREE), server_state(ConnectionState::FREE),
-	port(port), identifier(identifier), receivedMsg(-1) {
+	port(port), identifier(identifier), connected_client_id(-1) {
 	server = new Server(io_context, ip,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
@@ -80,14 +80,14 @@ ConnectionState Node::getClientState(void) {
 }
 
 int Node::getClientPort(void) {
-	int temp = receivedMsg;
-	receivedMsg = -1;
+	int temp = connected_client_id;
+	connected_client_id = -1;
 	return temp;
 }
 
-void Node::newPortNeighbor(unsigned int port) {
+void Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	for (const auto& neighbor : neighbors) {
-		if (neighbor.second.port + 1 == port)
-			receivedMsg = neighbor.first;
+		if (neighbor.second.port + 1 == nodeInfo.port() && neighbor.second.ip == nodeInfo.address().to_string())
+			connected_client_id = neighbor.first;
 	}
 }

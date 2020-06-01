@@ -66,4 +66,12 @@ bool Client::perform(void) {
 		throw std::exception("Invalid data.");
 }
 
+size_t Client::writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
+	std::string* userDataPtr = (std::string*) userData;
+
+	userDataPtr->append(ptr, size * nmemb);
+
+	return size * nmemb;
+}
+
 Client::~Client() {}

@@ -22,7 +22,6 @@ Server::Server(boost::asio::io_context& io_context_, const std::string& host, co
 /*If there's a new neighbor, it sets a new socket.*/
 void Server::newConnector() {
 	/*Pushes a new socket.*/
-
 	sockets.push_back(Connection(io_context));
 	sockets.back().pos = std::prev(sockets.end());
 
@@ -54,7 +53,7 @@ Server::~Server() {
 }
 
 /*Sets acceptor to accept (asynchronously) with specific socket.*/
-void Server::asyncConnection(iterator connector) {
+void Server::asyncConnection(Connection& connector) {
 	if (acceptor.is_open()) {
 		if (!(connector).socket.is_open()) {
 			acceptor.async_accept(
@@ -66,7 +65,7 @@ void Server::asyncConnection(iterator connector) {
 }
 
 //Closes socket and clears message holder.
-void Server::closeConnection(iterator connector) {
+void Server::closeConnection(Connection& connector) {
 	(connector).socket.shutdown(tcp::socket::shutdown_both);
 	(connector).socket.close();
 
@@ -85,7 +84,7 @@ void Server::closeConnection(iterator connector) {
 }
 
 /*Validates input given in GET request.*/
-void Server::inputValidation(iterator connector, const boost::system::error_code& error, size_t bytes) {
+void Server::inputValidation(Connection& connector, const boost::system::error_code& error, size_t bytes) {
 	if (!error) {
 		std::string message = (connector).reader;
 
@@ -96,19 +95,19 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 
 		//If it's a GET request, sets state to GET.
 		if (!message.find(validator_GET))
-			state = Connections::GET;
+			state = ConnectionTypes::GET;
 
 		//If it's a POST request, sets state to POST.
 		else if (!message.find(validator_POST) && message.find("Data=") != std::string::npos)
-			state = Connections::POST;
+			state = ConnectionTypes::POST;
 
 		/*Otherwise, it's an error.*/
 		else {
-			state = Connections::NONE;
+			state = ConnectionTypes::NONE;
 		}
 
 		if (message.find(host_validator) == std::string::npos)
-			state = Connections::NONE;
+			state = ConnectionTypes::NONE;
 
 		//Answers request.
 		answer(connector, message);
@@ -120,7 +119,7 @@ void Server::inputValidation(iterator connector, const boost::system::error_code
 }
 
 /*Called when there's been a connection.*/
-void Server::connectionCallback(iterator connector, const boost::system::error_code& error) {
+void Server::connectionCallback(Connection& connector, const boost::system::error_code& error) {
 	newConnector();
 
 	if (!error) {
@@ -142,7 +141,7 @@ void Server::connectionCallback(iterator connector, const boost::system::error_c
 		std::cout << "Failed to respond. Error: " << error.message() << std::endl;
 }
 /*Called when a message has been sent to client.*/
-void Server::messageCallback(iterator connector, const boost::system::error_code& error, size_t bytes_sent)
+void Server::messageCallback(Connection& connector, const boost::system::error_code& error, size_t bytes_sent)
 {
 	if (error)
 		std::cout << "Failed to respond. Error: " << error.message() << std::endl;
@@ -154,23 +153,21 @@ void Server::messageCallback(iterator connector, const boost::system::error_code
 }
 
 /*Responds to input.*/
-void Server::answer(iterator connector, const std::string& message) {
-	const unsigned int client_port = connector.socket.remote_endpoint().port();
-
+void Server::answer(Connection& connector, const std::string& message) {
 	/*Generates text response, according to validity of input.*/
 	switch (state) {
 		/*GET request. Calls GET callback.*/
-	case Connections::GET:
-		(connector).response = GETResponse(message, client_port);
+	case ConnectionTypes::GET:
+		(connector).response = GETResponse(message, connector.socket.remote_endpoint());
 		break;
 
 		/*POST request. Calls POST callback.*/
-	case Connections::POST:
-		(connector).response = POSTResponse(message, client_port);
+	case ConnectionTypes::POST:
+		(connector).response = POSTResponse(message, connector.socket.remote_endpoint());
 		break;
 
 		/*Error. Calls error callback.*/
-	case Connections::NONE:
+	case ConnectionTypes::NONE:
 		(connector).response = errorResponse();
 		break;
 	default:

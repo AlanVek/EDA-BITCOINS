@@ -1,6 +1,5 @@
 #include "Full_Node.h"
 #include "Node/Client/AllClients.h"
-#include <iostream>
 
 /*Text constants in requests.*/
 /************************************************/
@@ -99,7 +98,7 @@ void Full_Node::transaction(const unsigned int id, const std::string& wallet, co
 
 const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
 	//int k = blockChain.getBlockIndex(blockID);
-	int k = 0;
+	unsigned int k = 0;
 	auto tree = blockChain.getTree(k);
 
 	/*for (unsigned int i = 0; i < tree.size(); i++) {
@@ -107,13 +106,13 @@ const json Full_Node::getMerkleBlock(const std::string& blockID, const std::stri
 			k = i;
 	}*/
 	json result;
-	int size = log2(tree.size() + 1);
+	int size = static_cast<int>(log2(tree.size() + 1));
 	std::vector<std::string> merklePath;
 	while (k < (tree.size() - 1)) {
 		if (k % 2) merklePath.push_back(tree[--k]);
 		else merklePath.push_back(tree[k + 1]);
 
-		k = k / 2 + pow(2, size - 1);
+		k = static_cast<unsigned int>(k / 2 + pow(2, size - 1));
 	}
 
 	result["blockid"] = blockID;
@@ -128,9 +127,9 @@ const json Full_Node::getMerkleBlock(const std::string& blockID, const std::stri
 Full_Node::~Full_Node() {}
 
 /*GET callback for server.*/
-const std::string Full_Node::GETResponse(const std::string& request, const unsigned int client_port) {
+const std::string Full_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	json result;
-	newPortNeighbor(client_port);
+	setConnectedClientID(nodeInfo);
 
 	result["status"] = true;
 	int block;
@@ -198,8 +197,8 @@ const std::string Full_Node::GETResponse(const std::string& request, const unsig
 }
 
 /*POST callback for server.*/
-const std::string Full_Node::POSTResponse(const std::string& request, const unsigned int client_port) {
-	newPortNeighbor(client_port);
+const std::string Full_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
+	setConnectedClientID(nodeInfo);
 
 	json result;
 	result["status"] = true;

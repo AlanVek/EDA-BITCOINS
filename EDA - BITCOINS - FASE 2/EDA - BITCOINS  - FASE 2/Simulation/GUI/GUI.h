@@ -13,16 +13,7 @@ const enum class Events : unsigned int {
 	GET_BLOCKS,
 	GET_HEADERS,
 	TRANSACTION,
-	POST_BLOCK,
-	SEE_MROOT,
-	VALIDATE_MROOT,
-	ALL_MERKLE,
-	BLOCKID,
-	PREVIOUS_BLOCKID,
-	NTX,
-	BLOCK_NUMBER,
-	NONCE,
-	PRINT_TREE
+	POST_BLOCK
 };
 /********************************/
 const enum class NodeTypes {
@@ -66,18 +57,12 @@ public:
 	const unsigned int& getReceiverID();
 	const NewNode& getNode(unsigned int index);
 
-	//const std::string& getBlockID();
 	const int getAmount();
-	const unsigned int getCount();
 	const std::string& getWallet();
 
 	void updateMsg(const std::string&);
 
 	void infoGotten();
-
-	//void setInfoShower(const std::string&);
-
-	//int getCurrentNodeIndex();
 
 private:
 
@@ -136,10 +121,6 @@ private:
 	/*Exit and resize events.*/
 	bool eventManager(void);
 	void generalScreen(void);
-	void nodeWindow();
-	//void displayBlocks();
-	//void displayActions();
-	//void setAllFalse();
 
 	/*Allegro data members.*/
 	/******************************/
@@ -159,12 +140,7 @@ private:
 	std::vector <NewNode> nodes;
 	unsigned int sender, receiver;
 	std::string wallet;
-	int count, amount, portOk;
+	int amount;
 	std::string msg, nodeConnections;
-
-	//std::string blockID;
-	/*int nodeID;*/
-	//std::string shower, action_msg;
-	//int extraWindow, chainLength, index;
 	/**********************************/
 };

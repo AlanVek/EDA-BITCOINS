@@ -1,6 +1,6 @@
 #include "Simulation.h"
-#include "Nodes/FULL_Node.h"
-#include "Nodes/SVP_Node.h"
+#include "Nodes/Full_Node.h"
+#include "Nodes/SPV_Node.h"
 
 //Simulation constructor.
 Simulation::Simulation(void) : running(true), ev(Events::NOTHING)
@@ -21,7 +21,7 @@ void Simulation::mainScreen() {
 			if (node.type == NodeTypes::NEW_FULL)
 				nodes.push_back(new Full_Node(io_context, node.ip, node.port, node.index));
 			else
-				nodes.push_back(new SVP_Node(io_context, node.ip, node.port, node.index));
+				nodes.push_back(new SPV_Node(io_context, node.ip, node.port, node.index));
 
 			/*Sets neighbors.*/
 			for (const auto& neighbor : node.neighbors) {

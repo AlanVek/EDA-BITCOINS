@@ -153,11 +153,11 @@ void GUI::setConnectionStr() {
 
 	for (const auto& node : nodes) {
 		nodeConnections += "Node " + std::to_string(node.index) + ":\n";
-		nodeConnections += "\tType: " + ((node.type == NodeTypes::NEW_FULL) ? (std::string)"FULL\n" : (std::string)"SVP\n");
+		nodeConnections += "\tType: " + ((node.type == NodeTypes::NEW_FULL) ? (std::string)"FULL\n" : (std::string)"SPV\n");
 		nodeConnections += "\tConnections:\n";
 
 		for (const auto& neighbor : node.neighbors)
-			nodeConnections += "\t\t- Node " + std::to_string(nodes[neighbor].index) + '(' + ((nodes[neighbor].type == NodeTypes::NEW_FULL) ? (std::string)"FULL)\n" : (std::string)"SVP)\n");
+			nodeConnections += "\t\t- Node " + std::to_string(nodes[neighbor].index) + " (" + ((nodes[neighbor].type == NodeTypes::NEW_FULL) ? (std::string)"FULL)\n" : (std::string)"SPV)\n");
 
 		nodeConnections += "\n";
 	}
@@ -232,8 +232,8 @@ void GUI::newNode() {
 	ImGui::Text("Select type: ");
 	ImGui::SameLine();
 
-	/*SVP button.*/
-	displayWidget("SVP", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SVP, nodes.size())); state = States::NODE_CONNECTION; });
+	/*SPV button.*/
+	displayWidget("SPV", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SVP, nodes.size())); state = States::NODE_CONNECTION; });
 	ImGui::SameLine();
 
 	/*FULL button.*/
@@ -256,7 +256,7 @@ void GUI::connections() {
 	ImGui::Text("******************************************");
 	/*For every node available...*/
 	for (unsigned int i = 0; i < nodes.size() - 1; i++) {
-		/*If at least one is FULL (no SVP-SVP neighbors)...*/
+		/*If at least one is FULL (no SPV-SPV neighbors)...*/
 		if (nodes[i].type == NodeTypes::NEW_FULL || nodes.back().type == NodeTypes::NEW_FULL) {
 			/*Sets a button with the node's index.*/
 			displayWidget(
@@ -347,11 +347,11 @@ void GUI::selectMessage() {
 			transaction(); ImGui::NewLine();
 		}
 
-		/*If receiver is an SVP Node, displays allowed messages.*/
+		/*If receiver is an SPV Node, displays allowed messages.*/
 		else { merkleblock(); ImGui::NewLine(); }
 	}
 
-	/*If sender is an SVP Node...*/
+	/*If sender is an SPV Node...*/
 	else {
 		/*If receiver is a Full Node...*/
 		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
@@ -429,14 +429,6 @@ void GUI::creation() {
 }
 
 void GUI::generalScreen() {
-	/*ImGui::Text("Nodes");
-	for (const auto& node : nodes) {
-		displayWidget(("Node " + std::to_string(node.index)).c_str(),
-			[this, &node]() { extraWindow = node.index; });
-		ImGui::SameLine();
-	}
-	if (extraWindow != -1) nodeWindow();
-	ImGui::NewLine();*/
 	ImGui::Text("Nodes info: ");
 	ImGui::NewLine();
 	ImGui::Text(nodeConnections.c_str());
@@ -450,70 +442,7 @@ void GUI::generalScreen() {
 	if (nodes.size() > 1)
 		displayWidget("New message", [this] {state = States::SENDER_SELECTION; msg.clear(); });
 }
-//
-//void GUI::nodeWindow() {
-//	/*Shows blocks in BlockChain.*/
-//	displayBlocks();
-//
-//	ImGui::NewLine();
-//
-//	/*Shows actions to perform to a given block.*/
-//	displayActions();
-//	ImGui::NewLine(); ImGui::NewLine();
-//
-//	/*If an action has been selected...*/
-//
-//	ImGui::Text("Result: ");
-//	ImGui::NewLine();
-//	ImGui::Text(shower.c_str());
-//	ImGui::NewLine();
-//}
-///*Displays action buttons.*/
-//inline void GUI::displayActions() {
-//	ImGui::Text("Action to perform: ");
-//
-//	/*Button callback for both buttons.*/
-//	const auto button_callback = [this](const Events code, const char* msg) {
-//		action = code;
-//		action_msg = msg;
-//	};
-//	/*Creates buttons for different functionalities.*/
-//	displayWidget("Block ID", std::bind(button_callback, Events::BLOCKID, "Block ID"));
-//	ImGui::SameLine();
-//	displayWidget("Previous ID", std::bind(button_callback, Events::PREVIOUS_BLOCKID, "Previous ID"));
-//	ImGui::SameLine();
-//	displayWidget("nTx", std::bind(button_callback, Events::NTX, "Number of transactions"));
-//	ImGui::SameLine();
-//	displayWidget("Block Number", std::bind(button_callback, Events::BLOCK_NUMBER, "Block Number"));
-//	ImGui::SameLine();
-//	displayWidget("Nonce", std::bind(button_callback, Events::NONCE, "Nonce"));
-//	ImGui::SameLine();
-//	displayWidget("Calculate MR", std::bind(button_callback, Events::SEE_MROOT, "Merkle Root calculation"));
-//	ImGui::SameLine();
-//	displayWidget("Validate MR", std::bind(button_callback, Events::VALIDATE_MROOT, "Merkle Root validation"));
-//	ImGui::SameLine();
-//	displayWidget("Print tree", std::bind(button_callback, Events::PRINT_TREE, "Tree printing"));
-//
-//	/*Message with selected option.*/
-//	ImGui::Text(("Selected: " + action_msg).c_str());
-//}
 
-///*For every block in the vector, it shows it.*/
-//void GUI::displayBlocks(void) {
-//	bool checker;
-//	for (unsigned int i = 0; i < chainLength; i++) {
-//		checker = (index == i);
-//		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i)).c_str(), &checker),
-//
-//			[this, i, &checker]() {
-//				if (checker) { index = i; }
-//				else setAllFalse();
-//			});
-//		ImGui::SameLine();
-//	}
-//	ImGui::NewLine();
-//	ImGui::Text(("Selected: Block " + (index != data::notSelectedIndex ? std::to_string(index) : "none.")).c_str());
-//}
 /*Sets a new ImGUI frame and window.*/
 inline void GUI::newWindow(const char* title) const {
 	//Sets new ImGUI frame.
@@ -571,26 +500,13 @@ const std::vector<GUI::NewNode>& GUI::getNodes() { return nodes; }
 const unsigned int& GUI::getSenderID() { return nodes[sender].index; }
 const unsigned int& GUI::getReceiverID() { return nodes[receiver].index; }
 const GUI::NewNode& GUI::getNode(unsigned int index) { return nodes[index]; }
-//const std::string& GUI::getBlockID() { return blockID; }
 const int GUI::getAmount() { return amount; }
-const unsigned int GUI::getCount() { return count; }
 const std::string& GUI::getWallet() { return wallet; }
-//int GUI::getCurrentNodeIndex() { return extraWindow; }
 
-//void GUI::setInfoShower(const std::string& show) { shower = show; }
 /*Sets flags to initial state.*/
 void GUI::infoGotten() {
-	wallet.clear(); amount = 0; count = 0; ; action = Events::NOTHING;
+	wallet.clear(); amount = 0; action = Events::NOTHING;
 
 	/*blockID.clear()*/
 }
-//
-//void GUI::setAllFalse() {
-//	action = Events::NOTHING;
-//	index = data::notSelectedIndex;
-//	state = States::INIT_DONE;
-//	shower = "";
-//	action_msg = "none.";
-//}
-
 void GUI::updateMsg(const std::string& info) { msg += info; }

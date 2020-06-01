@@ -38,12 +38,6 @@
     <Filter Include="Source Files\ImGui Sources">
       <UniqueIdentifier>{a3c26338-125e-4d2f-9921-412851f49a61}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Node Sources\Server Sources">
-      <UniqueIdentifier>{ef0213cf-cce5-4fde-9086-53d0d2e2276f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Node Headers\Server Headers">
-      <UniqueIdentifier>{5d5bea2a-4319-434e-b185-85c6a7fa4032}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -51,12 +45,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Full_Node.cpp">
-      <Filter>Source Files\Node Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\SVP_Node.cpp">
-      <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp">
       <Filter>Source Files\Node Sources\Client Sources</Filter>
@@ -88,30 +76,30 @@
     <ClCompile Include="Simulation\GUI\GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\BlockChain.cpp">
-      <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.cpp">
-      <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
-      <Filter>Source Files\Node Sources\Server Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\Nodes\Node\Node.cpp">
       <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp">
       <Filter>Source Files\Node Sources\Client Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp">
+      <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp">
+      <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Full_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\SPV_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Simulation\Nodes\Full_Node.h">
-      <Filter>Header Files\Node Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Node.h">
-      <Filter>Header Files\Node Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\SVP_Node.h">
       <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h">
@@ -174,14 +162,20 @@
     <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h">
       <Filter>Header Files\ImGui Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Server\BlockChain\BlockChain.h">
+    <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h">
       <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Server\BlockChain\Block\Block.h">
+    <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h">
       <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
-      <Filter>Header Files\Node Headers\Server Headers</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\SPV_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Full_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

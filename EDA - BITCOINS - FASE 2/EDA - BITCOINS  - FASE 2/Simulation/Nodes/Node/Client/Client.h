@@ -37,11 +37,5 @@ protected:
 	int stillRunning;
 	/********************************/
 	//Callback with string as userData.
-	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
-		std::string* userDataPtr = (std::string*) userData;
-
-		userDataPtr->append(ptr, size * nmemb);
-
-		return size * nmemb;
-	}
+	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData);
 };

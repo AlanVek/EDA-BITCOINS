@@ -1,5 +1,4 @@
 #include "GETClient.h"
-#include <iostream>
 
 GETClient::GETClient(const std::string& ip, const unsigned int self_port, const unsigned int out_port, const std::string& id,
 	const unsigned int count) : Client(ip, self_port, out_port), id(id), count(count)
