@@ -86,4 +86,8 @@ size_t Client::writeCallback(char* ptr, size_t size, size_t nmemb, void* userDat
 	return size * nmemb;
 }
 
+const json& Client::getAnswer() {
+	return answer;
+}
+
 Client::~Client() {}

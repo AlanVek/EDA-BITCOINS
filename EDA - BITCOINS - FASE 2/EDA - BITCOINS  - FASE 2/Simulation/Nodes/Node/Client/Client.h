@@ -19,6 +19,7 @@ public:
 	virtual ~Client(void);
 
 	virtual bool perform();
+	virtual const json& getAnswer();
 
 protected:
 	virtual void configurateClient(void) = 0;

@@ -28,20 +28,6 @@ void Node::newNeighbor(const unsigned int id, const std::string& ip, const unsig
 	neighbors[id] = { ip, port };
 }
 
-/*Performs client mode. */
-void Node::perform() {
-	/*If node is in client mode...*/
-	if (client) {
-		/*If request has ended...*/
-		if (!client->perform()) {
-			/*Deletes client and set pointer to null.*/
-			delete client;
-			client = nullptr;
-			client_state = ConnectionState::FINISHED;
-		}
-	}
-}
-
 /*Returns daytime string. If plusThirty is true, it returns
 current daytime + 30 seconds.*/
 std::string Node::makeDaytimeString(bool plusThirty) {

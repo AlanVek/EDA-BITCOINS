@@ -33,7 +33,7 @@ public:
 
 	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port);
 
-	virtual void perform();
+	virtual void perform() = 0;
 	virtual const unsigned int getID();
 
 	virtual void transaction(const unsigned int, const std::string& wallet, const unsigned int amount) = 0;

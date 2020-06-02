@@ -1,5 +1,5 @@
 #include "Full_Node.h"
-
+#include <typeinfo>
 #include "Node/Client/AllClients.h"
 
 /*Text constants in requests.*/
@@ -229,4 +229,26 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 	}
 
 	return headerFormat(result.dump());
+}
+#include <iostream>
+/*Performs client mode. */
+void Full_Node::perform() {
+	/*If node is in client mode...*/
+	if (client) {
+		/*If request has ended...*/
+		if (!client->perform()) {
+			if (typeid(*client) == typeid(GETBlockClient)) {
+				const json& temp = client->getAnswer();
+				if (temp["status"]) {
+					for (const auto& block : temp["result"]) {
+						blockChain.addBlock(block);
+					}
+				}
+			}
+			/*Deletes client and set pointer to null.*/
+			delete client;
+			client = nullptr;
+			client_state = ConnectionState::FINISHED;
+		}
+	}
 }

@@ -1,6 +1,6 @@
 #include "SPV_Node.h"
 #include "Node/Client/AllClients.h"
-
+#include <typeinfo>
 namespace {
 	const char* MERKLEPOST = "send_merkle_block";
 }
@@ -39,7 +39,6 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
 		else {
-			headers.push_back(json::parse(request.substr(data + 5, content - data - 5)));
 			server_state = ConnectionState::CONNECTIONOK;
 		}
 	}
@@ -102,3 +101,23 @@ void SPV_Node::GETBlockHeaders(const unsigned int id, const std::string& blockID
 		}
 	}
 };
+/*Performs client mode. */
+void SPV_Node::perform() {
+	/*If node is in client mode...*/
+	if (client) {
+		/*If request has ended...*/
+		if (!client->perform()) {
+			if (typeid(*client) == typeid(GETHeaderClient)) {
+				const json& temp = client->getAnswer();
+				if (temp["status"]) {
+					for (const auto& header : temp["result"])
+						headers.push_back(header);
+				}
+			}
+			/*Deletes client and set pointer to null.*/
+			delete client;
+			client = nullptr;
+			client_state = ConnectionState::FINISHED;
+		}
+	}
+}

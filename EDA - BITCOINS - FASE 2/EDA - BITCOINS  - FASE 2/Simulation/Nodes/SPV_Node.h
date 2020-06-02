@@ -17,6 +17,8 @@ public:
 	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) {};
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count);
 
+	virtual void perform();
+
 private:
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
