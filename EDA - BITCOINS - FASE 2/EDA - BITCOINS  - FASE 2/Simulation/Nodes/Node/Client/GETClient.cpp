@@ -10,7 +10,7 @@ void GETClient::configurateClient(void) {
 	unparsedAnswer.clear();
 
 	//Sets handler and multihandler.
-	if (curl_multi_add_handle(multiHandler, handler) != CURLE_OK)
+	if (curl_multi_add_handle(multiHandler, handler) != CURLM_OK)
 		throw std::exception("Failed to set add handler en cURL");
 
 	//Sets URL to read from.

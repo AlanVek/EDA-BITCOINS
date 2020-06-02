@@ -26,7 +26,6 @@ protected:
 	/*cURL data members.*/
 	/**********************/
 	CURL* handler, * multiHandler;
-	CURLMcode errorMulti;
 	/**********************/
 
 	/*Connection data members.*/

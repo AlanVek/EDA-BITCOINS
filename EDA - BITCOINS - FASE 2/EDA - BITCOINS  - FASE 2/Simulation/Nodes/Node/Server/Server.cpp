@@ -8,12 +8,13 @@ using boost::asio::ip::tcp;
 
 namespace {
 	const std::string fixed = "eda_coins";
+	const char* autoIP = "127.0.0.1";
 }
 
 /*Server constructor. Initializes io_context, acceptor and socket.
 Calls asyncConnection to accept connections.*/
-Server::Server(boost::asio::io_context& io_context_, const std::string& host, const Response& GET,
-	const Response& POST, const errorResp& ERROR_RESP, unsigned int port) : host(host), port(port), io_context(io_context_),
+Server::Server(boost::asio::io_context& io_context_, const Response& GET,
+	const Response& POST, const errorResp& ERROR_RESP, unsigned int port) : host(autoIP), port(port), io_context(io_context_),
 	acceptor(io_context_, tcp::endpoint(tcp::v4(), port)), GETResponse(GET), POSTResponse(POST), errorResponse(ERROR_RESP)
 {
 	newConnector();

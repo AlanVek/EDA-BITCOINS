@@ -13,55 +13,69 @@ out_port(out_port), multiHandler(nullptr), handler(nullptr) {
 
 //Performs request.
 bool Client::perform(void) {
-	if (ip.length() && self_port && out_port) {
-		static bool step = false;
-		bool stillOn = true;
+	bool stillOn = true;
+	static bool step = false;
+	try {
+		if (ip.length() && self_port && out_port) {
+			if (!step) {
+				//Sets easy and multi modes with error checker.
+				if (!(handler = curl_easy_init()))
+					throw std::exception("Failed to initialize easy handler.");
 
-		if (!step) {
-			//Sets easy and multi modes with error checker.
-			if (!(handler = curl_easy_init()))
-				throw std::exception("Failed to initialize easy handler.");
+				if (!(multiHandler = curl_multi_init()))
+					throw std::exception("Failed to initialize multi handler.");
 
-			if (!(multiHandler = curl_multi_init()))
-				throw std::exception("Failed to initialize multi handler.");
+				//If it's the first time in this run, it sets the request parameters.
+				configurateClient();
+				step = true;
+			}
 
-			//If it's the first time in this run, it sets the request parameters.
-			configurateClient();
-			step = true;
-		}
+			//Should be an if. Performs one request and checks for errors.
+			if (stillRunning) {
+				if (curl_multi_perform(multiHandler, &stillRunning) != CURLM_OK) {
+					curl_easy_cleanup(handler);
+					curl_multi_cleanup(multiHandler);
+					handler = nullptr;
+					multiHandler = nullptr;
+					throw std::exception("Failed to connect.");
+				}
+			}
 
-		//Should be an if. Performs one request and checks for errors.
-		if (stillRunning) {
-			if (curl_multi_perform(multiHandler, &stillRunning) != CURLE_OK) {
+			else {
+				//Cleans used variables.
 				curl_easy_cleanup(handler);
 				curl_multi_cleanup(multiHandler);
-				handler = nullptr;
-				multiHandler = nullptr;
-				throw std::exception("Failed to perform cURL.");
+
+				//Resets step to false.
+				step = false;
+
+				//Resets stillRunning to 1;
+				stillRunning = 1;
+
+				//Parses answer.
+				try {
+					answer = json::parse(unparsedAnswer);
+				}
+				catch (std::exception&) {
+					throw std::exception("Invalid Data. Wrong JSON format.");
+				}
+				std::cout << "Received: " << answer << std::endl;
+
+				//Sets result to 'FALSE', to end loop.
+				stillOn = false;
 			}
 		}
-		else {
-			//Cleans used variables.
-			curl_easy_cleanup(handler);
-			curl_multi_cleanup(multiHandler);
-
-			//Resets step to false.
-			step = false;
-
-			//Resets stillRunning to 1;
-			stillRunning = 1;
-
-			//Parses answer.
-			answer = json::parse(unparsedAnswer);
-			std::cout << "Received: " << answer << std::endl;
-
-			//Sets result to 'FALSE', to end loop.
-			stillOn = false;
-		}
-		return stillOn;
+		else
+			throw std::exception("Invalid data.");
 	}
-	else
-		throw std::exception("Invalid data.");
+	catch (std::exception& e) {
+		answer = e.what();
+		stillOn = false;
+		step = false;
+		stillRunning = 1;
+		std::cout << "Received: " << answer << std::endl;
+	}
+	return stillOn;
 }
 
 size_t Client::writeCallback(char* ptr, size_t size, size_t nmemb, void* userData) {

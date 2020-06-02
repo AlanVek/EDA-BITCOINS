@@ -12,7 +12,7 @@ namespace {
 class Server
 {
 public:
-	Server(boost::asio::io_context&, const std::string&, const Response&, const Response&, const errorResp&, unsigned int);
+	Server(boost::asio::io_context&, const Response&, const Response&, const errorResp&, unsigned int);
 	virtual ~Server();
 
 protected:

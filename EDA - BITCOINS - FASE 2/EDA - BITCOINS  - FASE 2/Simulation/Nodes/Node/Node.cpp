@@ -4,7 +4,7 @@
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
 	: ip(ip), server(nullptr), client(nullptr), client_state(ConnectionState::FREE), server_state(ConnectionState::FREE),
 	port(port), identifier(identifier), connected_client_id(-1) {
-	server = new Server(io_context, ip,
+	server = new Server(io_context,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::ERRORResponse, this),

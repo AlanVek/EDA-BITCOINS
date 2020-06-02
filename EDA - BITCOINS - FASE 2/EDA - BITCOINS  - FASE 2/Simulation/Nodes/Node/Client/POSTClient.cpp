@@ -20,7 +20,7 @@ void POSTClient::configurateClient(void) {
 		throw std::exception("Failed to set POST request.");
 
 	//Sets handler and multihandler.
-	else if (curl_multi_add_handle(multiHandler, handler) != CURLE_OK)
+	else if (curl_multi_add_handle(multiHandler, handler) != CURLM_OK)
 		throw std::exception("Failed to set add handler en cURL");
 
 	//Sets URL to read from.
