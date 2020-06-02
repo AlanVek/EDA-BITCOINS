@@ -131,10 +131,9 @@ Full_Node::~Full_Node() {}
 const std::string Full_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	json result;
 	setConnectedClientID(nodeInfo);
-
 	result["status"] = true;
 	int block;
-
+	server_state = ConnectionState::CONNNECTIONFAIL;
 	/*Checks for correct data input (one of the strings must be in the request).*/
 	if ((block = request.find(BLOCKSGET)) || request.find(HEADERGET)) {
 		/*Checks for correct syntax within data input.*/
@@ -174,6 +173,7 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 						response.push_back(blockChain.getHeader(abs));
 					}
 					count--;
+					server_state = ConnectionState::CONNECTIONOK;
 				}
 
 				/*Appends response to result.*/
@@ -199,6 +199,8 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 const std::string Full_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	setConnectedClientID(nodeInfo);
 
+	server_state = ConnectionState::CONNNECTIONFAIL;
+
 	json result;
 	result["status"] = true;
 	result["result"] = NULL;
@@ -210,16 +212,20 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 		int data = request.find/*_last_of*/("Data=");
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
-		else
+		else {
 			blockChain.addBlock(json::parse(request.substr(data + 5, content - data - 5)));
+			server_state = ConnectionState::CONNECTIONOK;
+		}
 	}
 
 	/*If it's a transaction...*/
 	else if (request.find(TRANSPOST) != std::string::npos) {
+		server_state = ConnectionState::CONNECTIONOK;
 	}
 
 	/*If it's a filter...*/
 	else if (request.find(FILTERPOST) != std::string::npos) {
+		server_state = ConnectionState::CONNECTIONOK;
 	}
 
 	return headerFormat(result.dump());

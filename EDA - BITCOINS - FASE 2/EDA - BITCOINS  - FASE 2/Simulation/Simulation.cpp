@@ -90,31 +90,6 @@ void Simulation::dispatch(const Events& code) {
 		gui->infoGotten();
 
 		break;
-		/*case Events::BLOCKID:
-			gui->setInfoShower(nodes[gui->getCurrentNodeIndex()]->getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCKID));
-			break;
-		case Events::SEE_MROOT:
-			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::SEE_MROOT));
-			break;
-		case Events::PREVIOUS_BLOCKID:
-			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::PREVIOUS_BLOCKID));
-			break;
-		case Events::NONCE:
-			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::NONCE));
-			break;
-		case Events::NTX:
-			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::NTX));
-			break;
-		case Events::BLOCK_NUMBER:
-			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::BLOCK_NUMBER));
-			break;
-		case Events::VALIDATE_MROOT:
-			gui->setInfoShower(blockChain.getBlockInfo(gui->getBlockIndex(), BlockInfo::VALIDATE_MROOT));
-			break;
-		case Events::PRINT_TREE:
-			gui->setInfoShower(blockChain.reprTree(gui->getBlockIndex()));
-		default:
-			break;*/
 	default:
 		break;
 	}
@@ -136,9 +111,23 @@ const Events Simulation::eventGenerator() {
 			break;
 		}
 
-		int port_rec = node->getClientPort();
-		if (port_rec != -1) {
-			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is answering a request from node " + std::to_string(port_rec));
+		switch (node->getServerState()) {
+			int client_reception;
+		case ConnectionState::CONNECTIONOK:
+			if ((client_reception = node->getClientPort()) != -1) {
+				gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was OK");
+			}
+			break;
+		case ConnectionState::CONNNECTIONFAIL:
+			if ((client_reception = node->getClientPort()) != -1) {
+				gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was NOT OK");
+			}
+			break;
+		case ConnectionState::FINISHED:
+			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " closed the connection");
+			break;
+		default:
+			break;
 		}
 	}
 

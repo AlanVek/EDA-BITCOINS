@@ -21,8 +21,9 @@ GUI::GUI(void) :
 	guiDisp(nullptr),
 	guiQueue(nullptr),
 	action(Events::NOTHING),
-	state(States::INIT)
-	//extraWindow(-1)
+	state(States::INIT),
+	showingConnections(true),
+	showingNetworking(true)
 {
 	setAllegro();
 }
@@ -165,8 +166,11 @@ void GUI::setConnectionStr() {
 
 bool GUI::init(bool* endOfSetup) {
 	bool result = false;
+	if (nodes.size()) {
+		ImGui::Text("Nodes:");
+		ImGui::Text(nodeConnections.c_str());
+	}
 
-	ImGui::Text(nodeConnections.c_str());
 	ImGui::NewLine(); ImGui::NewLine();
 
 	/*New Node button.*/
@@ -200,10 +204,7 @@ Events GUI::checkStatus(void) {
 		/*Sets new ImGui window.*/
 		newWindow("BitCoin network");
 
-		ImGui::Text("Connection info: ");
-
-		ImGui::Text(msg.c_str());
-
+		showNetworkingInfo();
 		ImGui::NewLine();
 
 		/*Sender selection.*/
@@ -289,13 +290,25 @@ void GUI::showConnections() {
 	ImGui::NewLine(); ImGui::NewLine();
 	ImGui::Text("Connected with: ");
 	ImGui::SameLine();
-
-	/*Loops through every node in the current node's 'neighbors' vector.*/
-	for (const auto& neighbor : nodes.back().neighbors) {
-		/*Shows the node's index.*/
-		ImGui::Text(("Node " + std::to_string(neighbor)).c_str());
-		ImGui::SameLine();
+	if (nodes.back().neighbors.size()) {
+		/*Loops through every node in the current node's 'neighbors' vector.*/
+		for (const auto& neighbor : nodes.back().neighbors) {
+			/*Shows the node's index.*/
+			ImGui::Text(("Node " + std::to_string(neighbor)).c_str());
+			ImGui::SameLine();
+		}
 	}
+	else
+		ImGui::Text("None");
+}
+
+void GUI::showNetworkingInfo() {
+	if (showingNetworking) {
+		displayWidget("Hide networking info", [this]() {showingNetworking = false; });
+		ImGui::Text(networkingInfo.c_str());
+	}
+	else
+		displayWidget("Show networking info", [this]() {showingNetworking = true; });
 }
 
 /*Sender selection.*/
@@ -433,18 +446,21 @@ void GUI::creation() {
 }
 
 void GUI::generalScreen() {
-	ImGui::Text("Nodes info: ");
-	ImGui::NewLine();
-	ImGui::Text(nodeConnections.c_str());
+	if (!showingConnections)
+		displayWidget("Show connections", [this]() {showingConnections = true; });
+	else {
+		displayWidget("Hide connections", [this]() {showingConnections = false; });
+		ImGui::Text(nodeConnections.c_str());
+	}
+
 	ImGui::NewLine();
 	ImGui::Text("Actions: ");
 	/*Exit button.*/
-	ImGui::NewLine();
 	displayWidget("Exit", [this] {action = Events::END; });
 	ImGui::SameLine();
 	/*New Message button.*/
 	if (nodes.size() > 1)
-		displayWidget("New message", [this] {state = States::SENDER_SELECTION; msg.clear(); });
+		displayWidget("New message", [this] {state = States::SENDER_SELECTION; networkingInfo.clear(); });
 }
 
 /*Sets a new ImGUI frame and window.*/
@@ -509,4 +525,4 @@ const std::string& GUI::getWallet() { return wallet; }
 
 /*Sets flags to initial state.*/
 void GUI::infoGotten() { wallet.clear(); amount = 0; action = Events::NOTHING; }
-void GUI::updateMsg(const std::string& info) { msg += info; }
+void GUI::updateMsg(const std::string& info) { networkingInfo.append(info); }

@@ -83,6 +83,22 @@ ConnectionState Node::getClientState(void) {
 		return client_state;
 }
 
+ConnectionState Node::getServerState(void) {
+	switch (server_state) {
+	case ConnectionState::CONNECTIONOK:
+		server_state = ConnectionState::FINISHED;
+		return ConnectionState::CONNECTIONOK;
+	case ConnectionState::CONNNECTIONFAIL:
+		server_state = ConnectionState::FINISHED;
+		return ConnectionState::CONNNECTIONFAIL;
+	case ConnectionState::FINISHED:
+		server_state = ConnectionState::FREE;
+		return ConnectionState::FINISHED;
+	default:
+		break;
+	}
+}
+
 int Node::getClientPort(void) {
 	int temp = connected_client_id;
 	connected_client_id = -1;

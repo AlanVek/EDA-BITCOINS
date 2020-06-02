@@ -15,6 +15,8 @@ const enum class ConnectionType : unsigned int {
 const enum class ConnectionState : unsigned int {
 	FREE,
 	PERFORMING,
+	CONNECTIONOK,
+	CONNNECTIONFAIL,
 	FINISHED
 };
 
@@ -45,6 +47,7 @@ public:
 	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
 
 	virtual ConnectionState getClientState(void);
+	virtual ConnectionState getServerState(void);
 	virtual int getClientPort(void);
 
 protected:

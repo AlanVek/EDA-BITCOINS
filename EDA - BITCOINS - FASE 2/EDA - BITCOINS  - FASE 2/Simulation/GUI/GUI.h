@@ -108,6 +108,7 @@ private:
 	void creation(void);
 	void showConnections(void);
 	void setConnectionStr(void);
+	void showNetworkingInfo(void);
 	/***********************/
 
 	/*Messages*/
@@ -141,6 +142,7 @@ private:
 	unsigned int sender, receiver;
 	std::string wallet;
 	int amount;
-	std::string msg, nodeConnections;
+	std::string networkingInfo, nodeConnections;
+	bool showingConnections, showingNetworking;
 	/**********************************/
 };

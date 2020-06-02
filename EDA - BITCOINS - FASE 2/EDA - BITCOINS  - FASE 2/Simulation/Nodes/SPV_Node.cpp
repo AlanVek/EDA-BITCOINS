@@ -14,6 +14,7 @@ SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 /*GET callback for server.*/
 const std::string SPV_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	setConnectedClientID(nodeInfo);
+	server_state = ConnectionState::CONNNECTIONFAIL;
 
 	json result;
 	result["status"] = false;
@@ -26,7 +27,7 @@ const std::string SPV_Node::GETResponse(const std::string& request, const boost:
 /*POST callback for server.*/
 const std::string SPV_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	setConnectedClientID(nodeInfo);
-	server_state = ConnectionState::PERFORMING;
+	server_state = ConnectionState::CONNNECTIONFAIL;
 	json result;
 	result["status"] = true;
 	result["result"] = NULL;
@@ -37,8 +38,10 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 		int data = request.find/*_last_of*/("Data=");
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
-		else
+		else {
 			headers.push_back(json::parse(request.substr(data + 5, content - data - 5)));
+			server_state = ConnectionState::CONNECTIONOK;
+		}
 	}
 	else {
 		result["status"] = false;
