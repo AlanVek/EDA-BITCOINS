@@ -97,7 +97,7 @@ void Simulation::dispatch(const Events& code) {
 
 /*Generates event from GUI and polls io_context.*/
 const Events Simulation::eventGenerator() {
-	io_context.poll();
+	io_context.poll_one();
 
 	for (const auto& node : nodes) {
 		switch (node->getClientState()) {

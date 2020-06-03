@@ -71,16 +71,11 @@ void Block::buildTree(void) {
 
 		/*For every node in the list...*/
 		for (auto i = nodes.begin(); i != nodes.end(); i++) {
-			itrTemp = ++i;
-
-			/*Concats next node's content to the current node's content.*/
-			*i = *(--i) + *itrTemp;
-
-			/*Hashes node's content.*/
-			*i = hash(*i);
+			/*Concats next node's content to the current node's content and hashes.*/
+			*i = hash(*i + *std::next(i));
 
 			/*Erases next node.*/
-			nodes.erase(itrTemp);
+			nodes.erase(std::next(i));
 		}
 	}
 	if (nodes.size()) {
