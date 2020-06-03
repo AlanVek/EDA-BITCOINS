@@ -2,6 +2,7 @@
 #include "Client/Client.h"
 #include "Server/Server.h"
 #include <map>
+#include "Action.h"
 
 const enum class ConnectionType : unsigned int {
 	GETBLOCK,
@@ -36,21 +37,22 @@ public:
 	virtual void perform() = 0;
 	virtual const unsigned int getID();
 
-	virtual void transaction(const unsigned int, const std::string& wallet, const unsigned int amount) = 0;
-
-	virtual void postBlock(const unsigned int, const std::string& blockID) = 0;
-	virtual void postMerkleBlock(const unsigned int, const std::string& blockID, const std::string& transID) = 0;
-
-	virtual void postFilter(const unsigned int, const std::string& key) = 0;
-
-	virtual void GETBlocks(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
-	virtual void GETBlockHeaders(const unsigned int, const std::string& blockID, const unsigned int count) = 0;
-
 	virtual ConnectionState getClientState(void);
 	virtual ConnectionState getServerState(void);
 	virtual int getClientPort(void);
 
+	virtual void perform(ConnectionType, const unsigned int, const std::string&, const unsigned int) = 0;
+	virtual void perform(ConnectionType, const unsigned int, const std::string&, const std::string&) = 0;
+
 protected:
+	friend Action;
+	friend POSTBlock;
+	friend GETBlock;
+	friend POSTTrans;
+	friend POSTMerkle;
+	friend POSTFilter;
+	friend GETHeader;
+
 	virtual std::string makeDaytimeString(bool);
 
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&) = 0;
@@ -61,9 +63,10 @@ protected:
 
 	virtual void setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
 
-	Client* client;
-	Server* server;
+	std::vector<Client*> clients;
+	Server server;
 	std::map<unsigned int, Neighbor> neighbors;
+	std::map <ConnectionType, Action*> actions;
 
 	std::string ip;
 	unsigned int port, identifier;

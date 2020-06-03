@@ -20,46 +20,11 @@ Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 	const unsigned int port, const unsigned int identifier)
 	: Node(io_context, ip, port, identifier), blockChain("Tests/blockChain.json")
 {
-}
-
-/*GET performer for GET blocks request. */
-void Full_Node::GETBlocks(const unsigned int id, const std::string& blockID, const unsigned int count) {
-	/*If node is free...*/
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor and count isn't null...*/
-		if (neighbors.find(id) != neighbors.end() && count) {
-			/*Sets new GETBlockClient.*/
-			client = new GETBlockClient(neighbors[id].ip, port + 1, neighbors[id].port, blockID, count);
-
-			/*Toggles state.*/
-			client_state = ConnectionState::PERFORMING;
-		}
-	}
-}
-
-/*POST connection for blocks.*/
-void Full_Node::postBlock(const unsigned int id, const std::string& blockID) {
-	/*If node is in client mode...*/
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor and count isn't null...*/
-		if (neighbors.find(id) != neighbors.end()) {
-			/*Sets new BlockClient for POST request.*/
-			client = new BlockClient(neighbors[id].ip, port + 1, neighbors[id].port, blockChain.getBlock(0)/*getBlock(blockID)*/);
-			client_state = ConnectionState::PERFORMING;
-		}
-	}
-}
-
-/*POST merkleblock connection.*/
-void Full_Node::postMerkleBlock(const unsigned int id, const std::string& blockID, const std::string& transID) {
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor...*/
-		if (neighbors.find(id) != neighbors.end()) {
-			auto temp = getMerkleBlock(blockID, transID);
-			client = new MerkleClient(neighbors[id].ip, port + 1, neighbors[id].port, temp);
-			client_state = ConnectionState::PERFORMING;
-		}
-	}
+	actions[ConnectionType::POSTBLOCK] = new POSTBlock(this);
+	actions[ConnectionType::POSTMERKLE] = new POSTMerkle(this);
+	actions[ConnectionType::POSTMERKLE] = new POSTMerkle(this);
+	actions[ConnectionType::GETBLOCK] = new GETBlock(this);
+	actions[ConnectionType::POSTTRANS] = new POSTTrans(this);
 }
 
 /*Gets block from blockChain by ID.*/
@@ -74,54 +39,23 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 	return error;
 }
 
-void Full_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor...*/
-		if (neighbors.find(id) != neighbors.end()) {
-			json tempData;
-
-			tempData["nTxin"] = 0;
-			tempData["nTxout"] = 1;
-			tempData["txid"] = "ABCDE123";
-			tempData["vin"] = json();
-
-			json vout;
-			vout["amount"] = amount;
-			vout["publicid"] = wallet;
-
-			tempData["vout"] = vout;
-
-			client = new TransactionClient(neighbors[id].ip, port + 1, neighbors[id].port, tempData);
-			client_state = ConnectionState::PERFORMING;
-		}
+void Full_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
+	if (type == ConnectionType::POSTBLOCK)
+		actions[ConnectionType::POSTBLOCK]->setData(getBlock(blockID));
+	if (actions.find(type) != actions.end()) {
+		actions[type]->Perform(id, blockID, count);
+		client_state = ConnectionState::PERFORMING;
 	}
 }
 
-const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
-	//int k = blockChain.getBlockIndex(blockID);
-	unsigned int k = 0;
-	auto tree = blockChain.getTree(k);
+void Full_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
+	if (type == ConnectionType::POSTMERKLE)
+		actions[ConnectionType::POSTMERKLE];
 
-	/*for (unsigned int i = 0; i < tree.size(); i++) {
-		if (tree[i] == transID)
-			k = i;
-	}*/
-	json result;
-	int size = static_cast<int>(log2(tree.size() + 1));
-	std::vector<std::string> merklePath;
-	while (k < (tree.size() - 1)) {
-		if (k % 2) merklePath.push_back(tree[--k]);
-		else merklePath.push_back(tree[k + 1]);
-
-		k = static_cast<unsigned int>(k / 2 + pow(2, size - 1));
+	if (actions.find(type) != actions.end()) {
+		actions[type]->Perform(id, blockID, key);
+		client_state = ConnectionState::PERFORMING;
 	}
-
-	result["blockid"] = blockID;
-	result["tx"] = blockChain.getBlock(0)["tx"];
-	result["txPos"] = 0;
-	result["merklePath"] = merklePath;
-
-	return result;
 }
 
 /*Destructor. Uses Node destructor.*/
@@ -232,12 +166,11 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 }
 /*Performs client mode. */
 void Full_Node::perform() {
-	/*If node is in client mode...*/
-	if (client) {
+	for (unsigned int i = 0; i < clients.size(); i++) {
 		/*If request has ended...*/
-		if (!client->perform()) {
-			if (typeid(*client) == typeid(GETBlockClient)) {
-				const json& temp = client->getAnswer();
+		if (clients[i] && !clients[i]->perform()) {
+			if (typeid(*clients[i]) == typeid(GETBlockClient)) {
+				const json& temp = clients[i]->getAnswer();
 				if (temp["status"]) {
 					for (const auto& block : temp["result"]) {
 						blockChain.addBlock(block);
@@ -245,9 +178,10 @@ void Full_Node::perform() {
 				}
 			}
 			/*Deletes client and set pointer to null.*/
-			delete client;
-			client = nullptr;
+			delete clients[i];
+			clients.erase(clients.begin() + i);
 			client_state = ConnectionState::FINISHED;
+			i--;
 		}
 	}
 }

@@ -151,6 +151,7 @@
     <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp" />
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Action.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h" />
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\Full_Node.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Action.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\AllClients.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h" />

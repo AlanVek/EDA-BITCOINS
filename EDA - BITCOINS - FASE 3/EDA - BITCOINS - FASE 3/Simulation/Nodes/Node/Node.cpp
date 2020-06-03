@@ -2,24 +2,28 @@
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-	: ip(ip), server(nullptr), client(nullptr), client_state(ConnectionState::FREE), server_state(ConnectionState::FREE),
-	port(port), identifier(identifier), connected_client_id(-1) {
-	server = new Server(io_context,
-		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
+	: ip(ip), client_state(ConnectionState::FREE), server_state(ConnectionState::FREE),
+	port(port), identifier(identifier), connected_client_id(-1),
+
+	server(io_context, std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&Node::ERRORResponse, this),
-		port);
-};
+		std::bind(&Node::ERRORResponse, this), port)
+{
+}
 
 /*Desctructor. Frees resources.*/
 Node::~Node() {
-	if (client) {
-		delete client;
-		client = nullptr;
+	for (auto& client : clients) {
+		if (client) {
+			delete client;
+			client = nullptr;
+		}
 	}
-	if (server) {
-		delete server;
-		server = nullptr;
+	for (auto& action : actions) {
+		if (action.second) {
+			delete action.second;
+			action.second = nullptr;
+		}
 	}
 }
 

@@ -9,6 +9,9 @@ namespace {
 SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier)
 {
+	actions[ConnectionType::POSTTRANS] = new POSTTrans(this);
+	actions[ConnectionType::POSTFILTER] = new POSTFilter(this);
+	actions[ConnectionType::GETHEADER] = new GETHeader(this);
 }
 
 /*GET callback for server.*/
@@ -53,71 +56,37 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 /*Destructor. Uses Node destructor.*/
 SPV_Node::~SPV_Node() {}
 
-void SPV_Node::postFilter(const unsigned int id, const std::string& key) {
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor...*/
-		if (neighbors.find(id) != neighbors.end()) {
-			json tempData;
-
-			tempData["key"] = key;
-
-			client = new FilterClient(neighbors[id].ip, port + 1, neighbors[id].port, tempData);
-			client_state = ConnectionState::PERFORMING;
-		}
-	}
-};
-void SPV_Node::transaction(const unsigned int id, const std::string& wallet, const unsigned int amount) {
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor...*/
-		if (neighbors.find(id) != neighbors.end()) {
-			json tempData;
-
-			tempData["nTxin"] = 0;
-			tempData["nTxout"] = 1;
-			tempData["txid"] = "ABCDE123";
-			tempData["vin"] = json();
-
-			json vout;
-			vout["amount"] = amount;
-			vout["publicid"] = wallet;
-
-			tempData["vout"] = vout;
-
-			client = new TransactionClient(neighbors[id].ip, port + 1, neighbors[id].port, tempData);
-			client_state = ConnectionState::PERFORMING;
-		}
+void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
+	if (actions.find(type) != actions.end()) {
+		actions[type]->Perform(id, blockID, count);
+		client_state = ConnectionState::PERFORMING;
 	}
 }
-void SPV_Node::GETBlockHeaders(const unsigned int id, const std::string& blockID, const unsigned int count) {
-	/*If node is free...*/
-	if (client_state == ConnectionState::FREE && !client) {
-		/*If id is a neighbor and count isn't null...*/
-		if (neighbors.find(id) != neighbors.end() && count) {
-			/*Sets new GETBlockClient.*/
-			client = new GETHeaderClient(neighbors[id].ip, port + 1, neighbors[id].port, blockID, count);
 
-			/*Toggles state.*/
-			client_state = ConnectionState::PERFORMING;
-		}
+void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
+	if (actions.find(type) != actions.end()) {
+		actions[type]->Perform(id, blockID, key);
+		client_state = ConnectionState::PERFORMING;
 	}
-};
+}
+
 /*Performs client mode. */
 void SPV_Node::perform() {
-	/*If node is in client mode...*/
-	if (client) {
+	for (unsigned int i = 0; i < clients.size(); i++) {
 		/*If request has ended...*/
-		if (!client->perform()) {
-			if (typeid(*client) == typeid(GETHeaderClient)) {
-				const json& temp = client->getAnswer();
+		if (clients[i] && !clients[i]->perform()) {
+			if (typeid(*clients[i]) == typeid(GETHeaderClient)) {
+				const json& temp = clients[i]->getAnswer();
 				if (temp["status"]) {
 					for (const auto& header : temp["result"])
 						headers.push_back(header);
 				}
 			}
 			/*Deletes client and set pointer to null.*/
-			delete client;
-			client = nullptr;
+			delete clients[i];
+			clients.erase(clients.begin() + i);
 			client_state = ConnectionState::FINISHED;
+			i--;
 		}
 	}
 }

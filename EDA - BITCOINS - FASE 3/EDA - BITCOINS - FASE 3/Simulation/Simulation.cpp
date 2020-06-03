@@ -48,7 +48,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Filter (POST).*/
 	case Events::FILTER:
 		ev = Events::FILTER;
-		nodes[getIndex()]->postFilter(gui->getReceiverID(), "0"/*gui->getKey()*/);
+		nodes[getIndex()]->perform(ConnectionType::POSTFILTER, gui->getReceiverID(), (std::string) "0", NULL/*gui->getKey()*/);
 		gui->infoGotten();
 
 		break;
@@ -56,7 +56,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Blocks (GET).*/
 	case Events::GET_BLOCKS:
 		ev = Events::GET_BLOCKS;
-		nodes[getIndex()]->GETBlocks(gui->getReceiverID(), "84CB2573", 1);
+		nodes[getIndex()]->perform(ConnectionType::GETBLOCK, gui->getReceiverID(), "84CB2573", 1);
 		gui->infoGotten();
 
 		break;
@@ -64,7 +64,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Headers (GET).*/
 	case Events::GET_HEADERS:
 		ev = Events::GET_HEADERS;
-		nodes[getIndex()]->GETBlockHeaders(gui->getReceiverID(), "84CB2573", 1);
+		nodes[getIndex()]->perform(ConnectionType::GETHEADER, gui->getReceiverID(), "84CB2573", 1);
 		gui->infoGotten();
 
 		break;
@@ -72,21 +72,21 @@ void Simulation::dispatch(const Events& code) {
 		/*Merkleblock (POST).*/
 	case Events::MERKLEBLOCK:
 		ev = Events::MERKLEBLOCK;
-		nodes[getIndex()]->postMerkleBlock(gui->getReceiverID(), "84CB2573", "7B857A14"/*gui->getTransactionID()*/);
+		nodes[getIndex()]->perform(ConnectionType::POSTMERKLE, gui->getReceiverID(), "84CB2573", "7B857A14"/*gui->getTransactionID()*/);
 		gui->infoGotten();
 		break;
 
 		/*Block (POST).*/
 	case Events::POST_BLOCK:
 		ev = Events::POST_BLOCK;
-		nodes[getIndex()]->postBlock(gui->getReceiverID(),/* gui->getBlockID()*/"84CB2573");
+		nodes[getIndex()]->perform(ConnectionType::POSTBLOCK, gui->getReceiverID(),/* gui->getBlockID()*/"84CB2573", NULL);
 		gui->infoGotten();
 		break;
 
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
 		ev = Events::TRANSACTION;
-		nodes[getIndex()]->transaction(gui->getReceiverID(), gui->getWallet(), gui->getAmount());
+		nodes[getIndex()]->perform(ConnectionType::POSTTRANS, gui->getReceiverID(), gui->getWallet(), gui->getAmount());
 		gui->infoGotten();
 
 		break;
