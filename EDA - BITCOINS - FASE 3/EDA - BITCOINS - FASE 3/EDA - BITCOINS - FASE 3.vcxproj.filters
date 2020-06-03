@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ImGui Headers">
+      <UniqueIdentifier>{900ad235-0160-4210-8c64-f390eaf14959}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers">
+      <UniqueIdentifier>{912ed7dc-b2bf-4949-a4f7-44e4fb86b997}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers\Client Headers">
+      <UniqueIdentifier>{a0dc15b6-d176-4d72-9b40-6cc01e24ffff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers\BlockChain Headers">
+      <UniqueIdentifier>{77cc2c7d-dab2-4c51-8c24-fdc961ca7de8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImGui Sources">
+      <UniqueIdentifier>{74175795-21ec-4916-8129-9cecf837e1f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Node Sources">
+      <UniqueIdentifier>{cd17bff0-e7f0-48ad-815c-9e7d9996bb07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Node Sources\BlockChain Sources">
+      <UniqueIdentifier>{f2d0a178-9ad5-41b7-992d-3c7ed9c5d52b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Node Sources\Client Sources">
+      <UniqueIdentifier>{b433e6fe-38e2-433d-883c-2e3aa1c17fb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers\Client Headers\GET Clients Headers">
+      <UniqueIdentifier>{7bb449c6-2f3e-40c4-bd4b-d1ad58050a6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Node Headers\Client Headers\POST Clients Headers">
+      <UniqueIdentifier>{5edc47f9-0f62-4294-91fd-84c839e2b09c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Simulation\Simulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\GUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_demo.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_draw.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_impl_allegro5.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_stdlib.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\ImGui Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\SPV_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Full_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp">
+      <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\BlockChain\BlockChain.cpp">
+      <Filter>Source Files\Node Sources\BlockChain Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp">
+      <Filter>Source Files\Node Sources\Client Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp">
+      <Filter>Source Files\Node Sources\Client Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp">
+      <Filter>Source Files\Node Sources\Client Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Simulation\Simulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\GUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imconfig.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui_impl_allegro5.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui_internal.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imgui_stdlib.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imstb_rectpack.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imstb_textedit.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI\imgui\imstb_truetype.h">
+      <Filter>Header Files\ImGui Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\SPV_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Full_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\Client.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\AllClients.h">
+      <Filter>Header Files\Node Headers\Client Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETBlockClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\GET Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\GET Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\GETHeaderClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\GET Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\FilterClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\MerkleClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\BlockChain\BlockChain.h">
+      <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h">
+      <Filter>Header Files\Node Headers\BlockChain Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>
