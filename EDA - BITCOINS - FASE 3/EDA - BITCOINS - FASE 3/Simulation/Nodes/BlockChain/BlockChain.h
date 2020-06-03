@@ -19,6 +19,7 @@ public:
 	unsigned int getBlockIndex(const std::string&);
 	const json& getHeader(unsigned int);
 	const std::vector<std::string>& getTree(unsigned int);
+	const json& getRawData() { return JSON; }
 	/************************************************************/
 
 private:

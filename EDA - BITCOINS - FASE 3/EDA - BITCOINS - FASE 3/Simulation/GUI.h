@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+class Node;
+
 /*GUI event codes.*/
 /********************************/
 const enum class Events : unsigned int {
@@ -14,6 +16,21 @@ const enum class Events : unsigned int {
 	GET_HEADERS,
 	TRANSACTION,
 	POST_BLOCK
+};
+
+const enum class Shower : int {
+	NOTHING = 0,
+	END,
+	SEE_MROOT,
+	VALIDATE_MROOT,
+	ALL_MERKLE,
+	BLOCKID,
+	PREVIOUS_BLOCKID,
+	NTX,
+	BLOCK_NUMBER,
+	NONCE,
+	NEW_FILE,
+	PRINT_TREE
 };
 /********************************/
 const enum class NodeTypes {
@@ -63,6 +80,8 @@ public:
 	void updateMsg(const std::string&);
 
 	void infoGotten();
+
+	void setRealNodes(const std::vector < Node*>&);
 
 private:
 
@@ -130,6 +149,11 @@ private:
 	ALLEGRO_EVENT guiEvent;
 	/******************************/
 
+	/*Displaying nodes*/
+	void showBlocks();
+	void displayActions();
+	void showNodes();
+
 	/*Flag data members.*/
 	/******************************/
 	Events action;
@@ -139,10 +163,13 @@ private:
 	/*Data members modifiable by user.*/
 	/**********************************/
 	std::vector <NewNode> nodes;
+	std::vector <Node*> allNodes;
 	unsigned int sender, receiver;
 	std::string wallet;
 	int amount;
 	std::string networkingInfo, nodeConnections;
 	bool showingConnections, showingNetworking;
+	int currentIndex, dataIndex;
+	Shower showingBlock;
 	/**********************************/
 };

@@ -12,6 +12,12 @@ public:
 
 	virtual void perform();
 
+	virtual const json& getData() {
+		return blockChain.getRawData();
+	}
+
+	virtual const std::string printTree(unsigned int idx) { return blockChain.getBlockInfo(idx, BlockInfo::PRINT_TREE); }
+	virtual const std::string validateMRoot(unsigned int idx) { return blockChain.getBlockInfo(idx, BlockInfo::VALIDATE_MROOT); }
 private:
 	const json getMerkleBlock(const std::string&, const std::string&);
 	const json& getBlock(const std::string& blockID);

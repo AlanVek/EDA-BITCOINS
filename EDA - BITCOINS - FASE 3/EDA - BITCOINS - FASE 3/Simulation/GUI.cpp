@@ -1,11 +1,12 @@
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_allegro5.h"
-#include "imgui/imgui_stdlib.h"
+#include "GUI/imgui/imgui.h"
+#include "GUI/imgui/imgui_impl_allegro5.h"
+#include "GUI/imgui/imgui_stdlib.h"
 #include "GUI.h"
 #include <allegro5/keyboard.h>
 #include <allegro5/mouse.h>
 #include <allegro5/allegro_primitives.h>
 #include <functional>
+#include "Nodes/Node/Node.h"
 
 /*GUI data.*/
 /***************************************/
@@ -23,7 +24,9 @@ GUI::GUI(void) :
 	action(Events::NOTHING),
 	state(States::INIT),
 	showingConnections(true),
-	showingNetworking(true)
+	showingNetworking(true),
+	currentIndex(-1),
+	dataIndex(-1)
 {
 	setAllegro();
 }
@@ -446,13 +449,8 @@ void GUI::creation() {
 }
 
 void GUI::generalScreen() {
-	if (!showingConnections)
-		displayWidget("Show connections", [this]() {showingConnections = true; });
-	else {
-		displayWidget("Hide connections", [this]() {showingConnections = false; });
-		ImGui::Text(nodeConnections.c_str());
-	}
-
+	showNodes();
+	ImGui::NewLine();
 	ImGui::NewLine();
 	ImGui::Text("Actions: ");
 	/*Exit button.*/
@@ -463,6 +461,96 @@ void GUI::generalScreen() {
 		displayWidget("New message", [this] {state = States::SENDER_SELECTION; networkingInfo.clear(); });
 }
 
+void GUI::showNodes() {
+	if (currentIndex == -1) {
+		ImGui::Text("Nodes: ");
+		for (const auto& node : nodes) {
+			displayWidget(("Node " + std::to_string(node.index)).c_str(), [this, &node]() {currentIndex = node.index; });
+			ImGui::SameLine();
+		}
+		//ImGui::Text(nodeConnections.c_str());
+	}
+	else {
+		if (nodes[currentIndex].type == NodeTypes::NEW_FULL) {
+			/*SHOW BLOCKS*/
+			showBlocks();
+			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; });
+			if (dataIndex != -1) {
+				displayActions();
+			}
+		}
+		else {
+			ImGui::Text("SPV, nothing to show.");
+			ImGui::SameLine();
+			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; });
+		}
+	}
+}
+
+/*/*Displays action buttons.*/
+inline void GUI::displayActions() {
+	ImGui::NewLine();
+	ImGui::Text("Action to perform: ");
+
+	/*Creates buttons for different functionalities.*/
+	displayWidget("Block ID", ([this]() {showingBlock = Shower::BLOCKID; }));
+	ImGui::SameLine();
+	displayWidget("Previous ID", ([this]() {showingBlock = Shower::PREVIOUS_BLOCKID; }));
+	ImGui::SameLine();
+	displayWidget("nTx", ([this]() {showingBlock = Shower::NTX; }));
+	ImGui::SameLine();
+	displayWidget("Block Number", ([this]() {showingBlock = Shower::BLOCK_NUMBER; }));
+	ImGui::SameLine();
+	displayWidget("Nonce", ([this]() {showingBlock = Shower::NONCE; }));
+	ImGui::SameLine();
+	displayWidget("Calculate MR", ([this]() {showingBlock = Shower::SEE_MROOT; }));
+	ImGui::SameLine();
+	displayWidget("Validate MR", ([this]() {showingBlock = Shower::VALIDATE_MROOT; }));
+	ImGui::SameLine();
+	displayWidget("Print tree", ([this]() {showingBlock = Shower::PRINT_TREE; }));
+
+	switch (showingBlock) {
+	case Shower::BLOCKID:
+		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["blockid"].get<std::string>().c_str());
+		break;
+	case Shower::VALIDATE_MROOT:
+		ImGui::Text(allNodes[currentIndex]->validateMRoot(dataIndex).c_str());
+		break;
+	case Shower::BLOCK_NUMBER:
+		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["height"].get<int>()).c_str());
+		break;
+	case Shower::NONCE:
+		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["nonce"].get<int>()).c_str());
+		break;
+	case Shower::NTX:
+		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["nTx"].get<int>()).c_str());
+		break;
+	case Shower::PREVIOUS_BLOCKID:
+		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["previousblockid"].get<std::string>().c_str());
+		break;
+	case Shower::PRINT_TREE:
+		ImGui::Text(allNodes[currentIndex]->printTree(dataIndex).c_str());
+		break;
+	case Shower::SEE_MROOT:
+		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["merkleroot"].get<std::string>().c_str());
+		break;
+	}
+}
+
+/*For every block in the vector, it shows it.*/
+void GUI::showBlocks(void) {
+	bool checker;
+	for (unsigned int i = 0; i < allNodes[currentIndex]->getData().size(); i++) {
+		checker = (dataIndex == i);
+		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i)).c_str(), &checker),
+
+			[this, i, &checker]() {
+				if (checker) dataIndex = i;
+				else dataIndex = -1;
+			});
+		ImGui::SameLine();
+	}
+}
 /*Sets a new ImGUI frame and window.*/
 inline void GUI::newWindow(const char* title) const {
 	//Sets new ImGUI frame.
@@ -526,3 +614,11 @@ const std::string& GUI::getWallet() { return wallet; }
 /*Sets flags to initial state.*/
 void GUI::infoGotten() { wallet.clear(); amount = 0; action = Events::NOTHING; }
 void GUI::updateMsg(const std::string& info) { networkingInfo.append(info); }
+void GUI::setRealNodes(const std::vector<Node*>& nodes) {
+	for (unsigned int i = 0; i < nodes.size(); i++) {
+		if (i < allNodes.size())
+			allNodes[i] = nodes[i];
+		else
+			allNodes.push_back(nodes[i]);
+	}
+}

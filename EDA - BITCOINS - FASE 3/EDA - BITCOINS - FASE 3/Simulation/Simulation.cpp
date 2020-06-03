@@ -29,6 +29,8 @@ void Simulation::mainScreen() {
 				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
 			}
 		}
+
+		gui->setRealNodes(nodes);
 	}
 }
 

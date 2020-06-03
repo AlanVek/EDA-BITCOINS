@@ -33,6 +33,7 @@ public:
 	virtual ~Node();
 
 	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port);
+	virtual const json& getData(void) = 0;
 
 	virtual void perform() = 0;
 	virtual const unsigned int getID();
@@ -43,6 +44,9 @@ public:
 
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const unsigned int) = 0;
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const std::string&) = 0;
+
+	virtual const std::string printTree(unsigned int) = 0;
+	virtual const std::string validateMRoot(unsigned int) = 0;
 
 protected:
 	friend Action;

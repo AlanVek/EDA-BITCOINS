@@ -1,5 +1,5 @@
 #pragma once
-#include "GUI/GUI.h"
+#include "GUI.h"
 #include "Nodes/Node/Node.h"
 
 class Simulation {
