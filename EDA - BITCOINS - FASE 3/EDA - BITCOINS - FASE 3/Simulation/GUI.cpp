@@ -26,7 +26,8 @@ GUI::GUI(void) :
 	showingConnections(true),
 	showingNetworking(true),
 	currentIndex(-1),
-	dataIndex(-1)
+	dataIndex(-1),
+	showingBlock(Shower::NOTHING)
 {
 	setAllegro();
 }
@@ -464,8 +465,8 @@ void GUI::generalScreen() {
 void GUI::showNodes() {
 	if (currentIndex == -1) {
 		ImGui::Text("Nodes: ");
-		for (const auto& node : nodes) {
-			displayWidget(("Node " + std::to_string(node.index)).c_str(), [this, &node]() {currentIndex = node.index; });
+		for (const auto& node : allNodes) {
+			displayWidget(("Node " + std::to_string(node->getID())).c_str(), [this, &node]() {currentIndex = node->getID(); });
 			ImGui::SameLine();
 		}
 		//ImGui::Text(nodeConnections.c_str());
@@ -474,7 +475,7 @@ void GUI::showNodes() {
 		if (nodes[currentIndex].type == NodeTypes::NEW_FULL) {
 			/*SHOW BLOCKS*/
 			showBlocks();
-			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; });
+			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; showingBlock = Shower::NOTHING; });
 			if (dataIndex != -1) {
 				displayActions();
 			}
@@ -482,7 +483,7 @@ void GUI::showNodes() {
 		else {
 			ImGui::Text("SPV, nothing to show.");
 			ImGui::SameLine();
-			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; });
+			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; showingBlock = Shower::NOTHING; });
 		}
 	}
 }
@@ -618,6 +619,7 @@ void GUI::setRealNodes(const std::vector<Node*>& nodes) {
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		if (i < allNodes.size())
 			allNodes[i] = nodes[i];
+
 		else
 			allNodes.push_back(nodes[i]);
 	}

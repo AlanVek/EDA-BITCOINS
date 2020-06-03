@@ -37,7 +37,11 @@ const std::string BlockChain::getBlockInfo(int index, const BlockInfo& member) {
 const json& BlockChain::getBlock(unsigned int index) { return blocks[index].block; }
 
 /*Adds block to blockchain.*/
-void BlockChain::addBlock(const json& block) { blocks.push_back(Block(block)); }
+void BlockChain::addBlock(const json& block) {
+	blocks.push_back(Block(block));
+
+	JSON.push_back(block);
+}
 
 const std::vector<std::string>& BlockChain::getTree(unsigned int index) {
 	if (!blocks[index].tree.size())

@@ -20,16 +20,13 @@ const enum class Events : unsigned int {
 
 const enum class Shower : int {
 	NOTHING = 0,
-	END,
 	SEE_MROOT,
 	VALIDATE_MROOT,
-	ALL_MERKLE,
 	BLOCKID,
 	PREVIOUS_BLOCKID,
 	NTX,
 	BLOCK_NUMBER,
 	NONCE,
-	NEW_FILE,
 	PRINT_TREE
 };
 /********************************/

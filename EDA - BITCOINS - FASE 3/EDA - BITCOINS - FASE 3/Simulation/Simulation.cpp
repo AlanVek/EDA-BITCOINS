@@ -108,6 +108,7 @@ const Events Simulation::eventGenerator() {
 			break;
 		case ConnectionState::FINISHED:
 			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " finished the request.");
+			gui->setRealNodes(nodes);
 			break;
 		default:
 			break;
