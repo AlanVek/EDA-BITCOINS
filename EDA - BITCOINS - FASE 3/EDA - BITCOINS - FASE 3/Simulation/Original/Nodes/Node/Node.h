@@ -41,8 +41,6 @@ public:
 	virtual ConnectionState getClientState(void);
 	virtual ConnectionState getServerState(void);
 	virtual int getClientPort(void);
-	const std::map<unsigned int, Neighbor>& getNeighbors() { return neighbors; }
-	const unsigned int getPort() { return port; }
 
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const unsigned int) = 0;
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const std::string&) = 0;

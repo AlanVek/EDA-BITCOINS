@@ -14,7 +14,6 @@ namespace data {
 	const unsigned int width = 1000;
 	const unsigned int height = 500;
 	const int notSelectedIndex = -1;
-	const char* autoIP = "127.0.0.1";
 }
 /***************************************/
 
@@ -28,15 +27,9 @@ GUI::GUI(void) :
 	showingNetworking(true),
 	currentIndex(-1),
 	dataIndex(-1),
-	showingBlock(Shower::NOTHING),
-	ID(0),
-	isLocal(false),
-	addingNeighbor(false)
+	showingBlock(Shower::NOTHING)
 {
 	setAllegro();
-	newNeighbor.type = NodeTypes::UNDEFINED;
-	newNeighbor.port = 0;
-	newNeighbor.ip = "";
 }
 
 /*Initializes Allegro resources and throws different
@@ -120,7 +113,7 @@ bool GUI::eventManager(void) {
 /*Initial data input for node selection.
 Returns true if setup was done successfully or
 false if user asked to leave.*/
-bool GUI::nodeSelectionScreen() {                         /*********************************************/
+bool GUI::nodeSelectionScreen() {
 	bool result = false;
 
 	bool endOfSetup = false;
@@ -140,12 +133,6 @@ bool GUI::nodeSelectionScreen() {                         /*********************
 				ImGui::NewLine();
 
 				if (state == States::INIT) { result = init(&endOfSetup); }
-
-				/*Select genesis mode.*/
-				else if (state == States::GENESIS_MODE) { genesisConnection(); }
-
-				/*Select appendix mode*/
-				else if (state == States::APPENDIX_MODE) { newNode(); }
 
 				/*Select node type.*/
 				else if (state == States::NODE_SELECTION) { newNode(); }
@@ -181,7 +168,7 @@ void GUI::setConnectionStr() {
 	}
 }
 
-bool GUI::init(bool* endOfSetup) {     /*******************************/
+bool GUI::init(bool* endOfSetup) {
 	bool result = false;
 	if (nodes.size()) {
 		ImGui::Text("Nodes:");
@@ -190,18 +177,8 @@ bool GUI::init(bool* endOfSetup) {     /*******************************/
 
 	ImGui::NewLine(); ImGui::NewLine();
 
-	/*Genensis ande Appendix mode buttons (only if no nodes were created).*/
-	if (nodes.size() == 0)
-	{
-		displayWidget("Genesis Mode", [this]() { state = States::GENESIS_MODE; });
-		ImGui::SameLine();
-		displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; });
-	}
 	/*New Node button.*/
-	else
-	{
-		displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
-	}
+	displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
 
 	ImGui::NewLine(); ImGui::NewLine();
 
@@ -256,29 +233,16 @@ Events GUI::checkStatus(void) {
 }
 
 /*New node type selection.*/
-void GUI::newNode() {             /***************************************************/
+void GUI::newNode() {
 	ImGui::Text("Select type: ");
 	ImGui::SameLine();
 
 	/*SPV button.*/
-	displayWidget("SPV", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SPV, nodes.size())); state = States::NODE_CONNECTION; });
+	displayWidget("SPV", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SVP, nodes.size())); state = States::NODE_CONNECTION; });
 	ImGui::SameLine();
 
 	/*FULL button.*/
 	displayWidget("FULL", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size())); state = States::NODE_CONNECTION; });
-}
-
-/*Genesis mode. It creates a connection between inserted nodes from JSON file*/
-//FALTA CARGAR ARCHIVO JSON PERO NO ENTENDÍ SI DEBE BUSCAR UN PATH CON EL ARCHIVO O SI UNO COMPLETA
-//LA GUI Y ESO SE GUARDA EN UN JSON.
-void GUI::genesisConnection() {
-	json j;
-
-	ImGui::Text("Creating peer-to-peer net");
-
-	ImGui::NewLine();
-
-	displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; });
 }
 
 /*Makes connections in new node.*/
@@ -356,24 +320,23 @@ void GUI::selectSender() {
 	ImGui::Text("Select Sender: ");
 
 	/*Loops through every node...*/
-	for (const auto& node : allNodes) {
+	for (const auto& node : nodes) {
 		/*Sets a button with the node's index.*/
-		displayWidget(("Node " + std::to_string(node->getID())).c_str(),
-			[this, &node]() {sender = node->getID(); state = States::RECEIVER_SELECTION; });
+		displayWidget(("Node " + std::to_string(node.index)).c_str(),
+			[this, &node]() {sender = node.index; state = States::RECEIVER_SELECTION; });
 		ImGui::SameLine();
 	}
 }
 /*Receiver selection.*/
 void GUI::selectReceiver() {
-	const auto& neighbors = allNodes[sender]->getNeighbors();
-	if (neighbors.size()) {
+	if (nodes[sender].neighbors.size()) {
 		ImGui::Text("Select Receiver: ");
 
 		/*Loops through every node within the sender's neighbors.*/
-		for (const auto& neighbor : neighbors) {
+		for (const auto& neighbor : nodes[sender].neighbors) {
 			/*Sets a button with the node's index.*/
-			displayWidget(("Node " + std::to_string(neighbor.first)).c_str(),
-				[this, &neighbor]() {receiver = neighbor.first; state = States::MESSAGE_SELECTION; });
+			displayWidget(("Node " + std::to_string(neighbor)).c_str(),
+				[this, &neighbor]() {receiver = neighbor; state = States::MESSAGE_SELECTION; });
 			ImGui::SameLine();
 		}
 	}
@@ -464,86 +427,26 @@ void GUI::selectParameters() {
 	}
 }
 
-void GUI::addNeighbour(bool local) {
-	if (!local) {
-		ImGui::Text("Enter IP:   ", ImGuiInputTextFlags_CharsDecimal);
-		ImGui::SameLine();
-		ImGui::InputText("", &newNeighbor.ip);
-	}
-
-	/*Text input for IP.*/
-	ImGui::Text("Enter Port: ");
-	ImGui::SameLine();
-
-	/*Int input for port.*/
-	if (ImGui::InputInt("~  ", &(newNeighbor.port)), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
-		/*Checks that port>0 or sets it to 0 otherwise.*/
-		if (newNeighbor.port < 0) newNeighbor.port = 0;
-	}
-
-	ImGui::Text("Select type: ");
-	ImGui::SameLine();
-	displayWidget("FULL", [this]() {newNeighbor.type = NodeTypes::NEW_FULL; });
-	ImGui::SameLine();
-	displayWidget("SPV", [this]() {newNeighbor.type = NodeTypes::NEW_SPV; });
-	if (newNeighbor.type != NodeTypes::UNDEFINED) {
-		ImGui::SameLine();
-		const char* text = newNeighbor.type == NodeTypes::NEW_FULL ? "FULL" : "SPV";
-		ImGui::Text(text);
-	}
-
-	ImGui::NewLine();
-
-	displayWidget("Done", [this, &local]() {
-		auto resetNeighbor = [this]() {addingNeighbor = false; selected = false; newNeighbor = NewNode(); };
-		if (newNeighbor.port && newNeighbor.type != NodeTypes::UNDEFINED) {
-			if (local) {
-				for (const auto& node : allNodes) {
-					if (node->getPort() == newNeighbor.port) {
-						allNodes[currentIndex]->newNeighbor(node->getID(), data::autoIP, newNeighbor.port);
-						allNodes[node->getID()]->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort());
-
-						resetNeighbor();
-					}
-				}
-			}
-			else {
-				if (newNeighbor.ip.length()) {
-					newNeighbor.index = ID;
-					allNodes[currentIndex]->newNeighbor(newNeighbor.index, newNeighbor.ip, newNeighbor.port);
-					nodes.push_back(newNeighbor);
-					ID++;
-					resetNeighbor();
-				}
-			}
-		}
-		});
-}
-
 /*Node setup of IP and port.*/
 void GUI::creation() {
-	NewNode& adder = nodes.back();
+	ImGui::Text("Enter IP:   ", ImGuiInputTextFlags_CharsDecimal);
+	ImGui::SameLine();
 
 	/*Text input for IP.*/
+	ImGui::InputText("", &(nodes.back().ip));
 	ImGui::Text("Enter Port: ");
 	ImGui::SameLine();
 
 	/*Int input for port.*/
-	if (ImGui::InputInt("~  ", &(adder.port)), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
+	if (ImGui::InputInt("~  ", &(nodes.back().port)), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
 		/*Checks that port>0 or sets it to 0 otherwise.*/
-		if (adder.port < 0) adder.port = 0;
+		if (nodes.back().port < 0) nodes.back().port = 0;
 	}
 
 	ImGui::NewLine();
 
 	/*'Done' button for finishing setup.*/
-	displayWidget("Done", [this, &adder]() {
-		if (adder.port) {
-			state = States::INIT; adder.ip = data::autoIP;
-			ID++;
-		}
-		setConnectionStr();
-		});
+	displayWidget("Done", [this]() {if (nodes.back().ip.length()) { state = States::INIT; setConnectionStr(); } });
 }
 
 void GUI::generalScreen() {
@@ -559,7 +462,7 @@ void GUI::generalScreen() {
 		displayWidget("New message", [this] {state = States::SENDER_SELECTION; networkingInfo.clear(); });
 }
 
-void GUI::showNodes() {  /******************************************************/
+void GUI::showNodes() {
 	if (currentIndex == -1) {
 		ImGui::Text("Nodes: ");
 		for (const auto& node : allNodes) {
@@ -570,65 +473,22 @@ void GUI::showNodes() {  /******************************************************
 	}
 	else {
 		if (nodes[currentIndex].type == NodeTypes::NEW_FULL) {
-			displayWidget("Add neighbor", [this]() {addingNeighbor = true; });
-			if (addingNeighbor) {
-				if (!selected) {
-					displayWidget("Local", [this]() {isLocal = true; selected = true; });
-					ImGui::SameLine();
-					displayWidget("External", [this]() {isLocal = false; selected = true; });
-				}
-				if (selected) {
-					addNeighbour(isLocal);
-				}
-			}
-
 			/*SHOW BLOCKS*/
 			showBlocks();
-			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; selected = false; addingNeighbor = false; showingBlock = Shower::NOTHING; });
+			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; showingBlock = Shower::NOTHING; });
 			if (dataIndex != -1) {
 				displayActions();
 			}
 		}
 		else {
-			/*MODIFY NEIGHBOURS*/
-			//MEJORAR ESTO PARA CAMBIAR VARIABLE ESTATICA
-			//NO FUNCIONA
-			/*
-			static bool checker = false;
-			displayWidget(std::bind(ImGui::Checkbox, ("Modify neighbours", &checker)),
-				[this]() {
-					if (checker)
-						showingBlock = Shower::MODIFY_NEIGHBOURS;
-					else
-						showingBlock = Shower::NOTHING;
-				});
-			*/
+			ImGui::Text("SPV, nothing to show.");
 			ImGui::SameLine();
 			displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; showingBlock = Shower::NOTHING; });
-			if (dataIndex != -1) {
-				displaySPVActions();
-			}
 		}
 	}
 }
 
-/*Displays action buttons for SPV nodes.*/
-inline void GUI::displaySPVActions() {  /***********************************************************/
-/*
-	NO FUNCIONA
-	ImGui::NewLine();
-	ImGui::Text("Action to perform: ");
-
-	//ESTO ESTÁ MAL PUES SOLO DEBERIA MOSTRAR LOS VECINOS
-	ImGui::Text("Nodes: ");
-	for (const auto& node : allNodes) {
-		displayWidget(("Node " + std::to_string(node->getID())).c_str(), [this, &node]() {currentIndex = node->getID(); });
-		ImGui::SameLine();
-	}
-*/
-}
-
-/*Displays action buttons.*/
+/*/*Displays action buttons.*/
 inline void GUI::displayActions() {
 	ImGui::NewLine();
 	ImGui::Text("Action to perform: ");

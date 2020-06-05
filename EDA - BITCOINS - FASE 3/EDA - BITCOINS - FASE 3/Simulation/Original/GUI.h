@@ -27,14 +27,12 @@ const enum class Shower : int {
 	NTX,
 	BLOCK_NUMBER,
 	NONCE,
-	PRINT_TREE,
-	MODIFY_NEIGHBOURS
+	PRINT_TREE
 };
 /********************************/
 const enum class NodeTypes {
-	NEW_SPV,
+	NEW_SVP,
 	NEW_FULL,
-	UNDEFINED
 };
 
 class GUI {
@@ -44,7 +42,6 @@ private:
 	struct NewNode {
 		/*Constructor.*/
 		NewNode(const NodeTypes type, const unsigned int index) : type(type), index(index) { port = 0; ip.clear(); }
-		NewNode() {}
 
 		/*Data*/
 		/*********************************/
@@ -89,8 +86,6 @@ private:
 	/****************************/
 	const enum class States {
 		INIT = 0,
-		GENESIS_MODE,
-		APPENDIX_MODE,
 		NODE_SELECTION,
 		NODE_CONNECTION,
 		NODE_CREATION,
@@ -130,8 +125,6 @@ private:
 	void showConnections(void);
 	void setConnectionStr(void);
 	void showNetworkingInfo(void);
-	void genesisConnection(void);
-	void addNeighbour(bool);
 	/***********************/
 
 	/*Messages*/
@@ -157,7 +150,6 @@ private:
 	void showBlocks();
 	void displayActions();
 	void showNodes();
-	void displaySPVActions();
 
 	/*Flag data members.*/
 	/******************************/
@@ -171,12 +163,10 @@ private:
 	std::vector <Node*> allNodes;
 	unsigned int sender, receiver;
 	std::string wallet;
-	NewNode newNeighbor;
 	int amount;
 	std::string networkingInfo, nodeConnections;
-	bool showingConnections, showingNetworking, addingNeighbor, isLocal, selected;
+	bool showingConnections, showingNetworking;
 	int currentIndex, dataIndex;
 	Shower showingBlock;
-	unsigned int ID;
 	/**********************************/
 };
