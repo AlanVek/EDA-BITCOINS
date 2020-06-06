@@ -32,4 +32,8 @@ private:
 	boost::asio::io_context io_context;
 
 	Events ev;
+
+	void newNodes();
+
+	void generateMsg();
 };

@@ -7,6 +7,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <functional>
 #include "Nodes/Node/Node.h"
+#include <fstream>
 
 /*GUI data.*/
 /***************************************/
@@ -139,23 +140,30 @@ bool GUI::nodeSelectionScreen() {                         /*********************
 				ImGui::Text("Initial Setup: ");
 				ImGui::NewLine();
 
-				if (state == States::INIT) { result = init(&endOfSetup); }
-
-				/*Select genesis mode.*/
-				else if (state == States::GENESIS_MODE) { genesisConnection(); }
-
-				/*Select appendix mode*/
-				else if (state == States::APPENDIX_MODE) { newNode(); }
-
-				/*Select node type.*/
-				else if (state == States::NODE_SELECTION) { newNode(); }
-
-				/*Select neighbors.*/
-				else if (state == States::NODE_CONNECTION) { connections(); }
-
-				/*Select IP and port.*/
-				else if (state == States::NODE_CREATION) { creation(); }
-
+				switch (state) {
+				case States::INIT:
+					result = init(&endOfSetup);
+					break;
+				case States::GENESIS_MODE:
+					genesisConnection();
+					break;
+				case States::NETWORK_CREATION:
+					createNetwork();
+					break;
+				case States::APPENDIX_MODE:
+					newNode();
+					break;
+				case States::NODE_CREATION:
+					ImGui::Text("Create node: ");
+					nodes.back().ip = data::autoIP; creation(&nodes.back(), States::NODE_CONNECTION);
+					if (nodes.back().ip != data::autoIP) nodes.back().ip = data::autoIP;
+					break;
+				case States::NODE_CONNECTION:
+					connections();
+					break;
+				default:
+					break;
+				}
 				/*Rendering.*/
 				ImGui::End();
 				render();
@@ -183,36 +191,37 @@ void GUI::setConnectionStr() {
 
 bool GUI::init(bool* endOfSetup) {     /*******************************/
 	bool result = false;
-	if (nodes.size()) {
+	/*if (nodes.size()) {
 		ImGui::Text("Nodes:");
 		ImGui::Text(nodeConnections.c_str());
-	}
+	}*/
+	if (!nodes.size()) {
+		ImGui::NewLine(); ImGui::NewLine();
 
-	ImGui::NewLine(); ImGui::NewLine();
+		/*Genensis ande Appendix mode buttons (only if no nodes were created).*/
+		if (!nodes.size())
+		{
+			ImGui::Text("Select mode: ");
+			displayWidget("Genesis Mode", [this]() { state = States::GENESIS_MODE; });
+			ImGui::SameLine();
+			displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; });
+		}
 
-	/*Genensis ande Appendix mode buttons (only if no nodes were created).*/
-	if (nodes.size() == 0)
-	{
-		displayWidget("Genesis Mode", [this]() { state = States::GENESIS_MODE; });
+		ImGui::NewLine(); ImGui::NewLine();
+
+		/*Exit button.*/
+		displayWidget("Exit", [&result]() {result = true; });
 		ImGui::SameLine();
-		displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; });
+
+		/*Go button. Breaks setup loop.*/
+		displayWidget("Go", [&endOfSetup, this, &result]() {
+			if (nodes.size()) { *endOfSetup = true; result = true; state = States::INIT_DONE; }});
 	}
-	/*New Node button.*/
-	else
-	{
-		displayWidget("New Node", [this]() { state = States::NODE_SELECTION; });
+	else {
+		*endOfSetup = true;
+		result = true;
+		state = States::INIT_DONE;
 	}
-
-	ImGui::NewLine(); ImGui::NewLine();
-
-	/*Exit button.*/
-	displayWidget("Exit", [&result]() {result = true; });
-	ImGui::SameLine();
-
-	/*Go button. Breaks setup loop.*/
-	displayWidget("Go", [&endOfSetup, this, &result]() {
-		if (nodes.size()) { *endOfSetup = true; result = true; state = States::INIT_DONE; }});
-
 	return result;
 }
 
@@ -227,27 +236,42 @@ Events GUI::checkStatus(void) {
 		result = Events::END;
 
 	/*If GUI has been initialized...*/
-	else if (state >= States::INIT_DONE) {
+	else {
 		/*Sets new ImGui window.*/
 		newWindow("BitCoin network");
 
 		showNetworkingInfo();
 		ImGui::NewLine();
 
-		/*Sender selection.*/
-		if (state == States::SENDER_SELECTION) selectSender();
-
-		/*Receiver selection.*/
-		else if (state == States::RECEIVER_SELECTION) selectReceiver();
-
-		/*Message selection.*/
-		else if (state == States::MESSAGE_SELECTION) { selectMessage(); }
-
-		/*Parameter(s) selection.*/
-		else if (state == States::PARAM_SELECTION) { selectParameters(); }
-
-		else { generalScreen(); if ((bool)action) result = action; }
-
+		switch (state) {
+		case States::SENDER_SELECTION:
+			selectSender();
+			break;
+		case States::RECEIVER_SELECTION:
+			selectReceiver();
+			break;
+		case States::MESSAGE_SELECTION:
+			selectMessage();
+			break;
+		case States::PARAM_SELECTION:
+			selectParameters();
+			break;
+		case States::APPENDIX_MODE:
+			newNode();
+			break;
+		case States::NODE_CREATION:
+			ImGui::Text("Create node: ");
+			nodes.back().ip = data::autoIP; creation(&nodes.back(), States::NODE_CONNECTION);
+			if (nodes.back().ip != data::autoIP) nodes.back().ip = data::autoIP;
+			break;
+		case States::NODE_CONNECTION:
+			connections();
+			break;
+		default:
+			generalScreen();
+			result = action;
+			action = Events::NOTHING;
+		}
 		/*Rendering.*/
 		ImGui::End();
 		render();
@@ -261,68 +285,124 @@ void GUI::newNode() {             /*********************************************
 	ImGui::SameLine();
 
 	/*SPV button.*/
-	displayWidget("SPV", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SPV, nodes.size())); state = States::NODE_CONNECTION; });
+	displayWidget("SPV", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_SPV, nodes.size(), true)); state = States::NODE_CREATION; });
 	ImGui::SameLine();
 
 	/*FULL button.*/
-	displayWidget("FULL", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size())); state = States::NODE_CONNECTION; });
+	displayWidget("FULL", [this]() {nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), true)); state = States::NODE_CREATION; });
 }
 
 /*Genesis mode. It creates a connection between inserted nodes from JSON file*/
 //FALTA CARGAR ARCHIVO JSON PERO NO ENTENDÍ SI DEBE BUSCAR UN PATH CON EL ARCHIVO O SI UNO COMPLETA
 //LA GUI Y ESO SE GUARDA EN UN JSON.
 void GUI::genesisConnection() {
-	json j;
-
+	static bool wrongFile = false;
 	ImGui::Text("Creating peer-to-peer net");
 
+	ImGui::Text("Enter file path: ");
+	ImGui::SameLine();
+	ImGui::InputText("..", &filePath);
+	if (wrongFile) ImGui::Text("Wrong file path.");
+
+	displayWidget("Done", [this]() {
+		std::fstream file(filePath, std::ios::in | std::ios::binary);
+		if (!file.is_open()) {
+			file.close();
+			wrongFile = true;
+		}
+		else {
+			nodes.clear();
+			json j = json::parse(file);
+			for (const int full : j["full-nodes"]) {
+				nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), true));
+				nodes.back().port = full;
+				nodes.back().ip = data::autoIP;
+			}
+			for (const int spv : j["spv"]) {
+				nodes.push_back(NewNode(NodeTypes::NEW_SPV, nodes.size(), true));
+				nodes.back().port = spv;
+				nodes.back().ip = data::autoIP;
+			}
+			wrongFile = false;
+		}
+		});
+
 	ImGui::NewLine();
 
+	displayWidget("Create network", [this]() {state = States::NETWORK_CREATION; });
+	ImGui::SameLine();
 	displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; });
 }
+void GUI::creation(NewNode* current, States nextState) {
+	ImGui::Text("Enter IP:   ", ImGuiInputTextFlags_CharsDecimal);
+	ImGui::SameLine();
 
+	/*Text input for IP.*/
+	ImGui::InputText("", &(current->ip));
+	ImGui::Text("Enter Port: ");
+	ImGui::SameLine();
+
+	/*Int input for port.*/
+	if (ImGui::InputInt("~  ", &(current->port)), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
+		/*Checks that port>0 or sets it to 0 otherwise.*/
+		if (current->port < 0) current->port = 0;
+	}
+
+	ImGui::NewLine();
+
+	/*'Done' button for finishing setup.*/
+	displayWidget("Done", [this, &current, &nextState]() {if (current->ip.length() && current->port)
+	{
+		state = nextState; setConnectionStr();
+	} });
+}
 /*Makes connections in new node.*/
 void GUI::connections() {
-	/*Validates node (no repeated neighbors).*/
-	auto nodeValidation = [this](unsigned int index) {
-		for (const auto& id : nodes.back().neighbors)
-			if (nodes[id].index == index)
-				return false;
-		return true;
-	};
-
-	ImGui::NewLine();
-	ImGui::Text("Choose connected nodes: ");
-
-	ImGui::Text("******************************************");
-	/*For every node available...*/
-	for (unsigned int i = 0; i < nodes.size() - 1; i++) {
-		/*If at least one is FULL (no SPV-SPV neighbors)...*/
-		if (nodes[i].type == NodeTypes::NEW_FULL || nodes.back().type == NodeTypes::NEW_FULL) {
-			/*Sets a button with the node's index.*/
-			displayWidget(
-				("Node " + std::to_string(i)).c_str(),
-
-				/*If pressed, it sets the new neighbor in each of the nodes' 'neighbors' vector.*/
-				[this, i, &nodeValidation]() {
-					if (nodeValidation(nodes[i].index)) {
-						nodes.back().neighbors.push_back(i);
-						nodes[i].neighbors.push_back(nodes.size() - 1);
-					}
-				}
-			);
-			ImGui::SameLine();
-		}
+	static bool done = false;
+	static int count = 0;
+	static std::vector<NewNode> neighbors(2, NewNode());
+	neighbors[0].index = nodes.size();
+	neighbors[1].index = nodes.size() + 1;
+	if (nodes.back().type == NodeTypes::NEW_FULL) {
+		ImGui::Text("Create neighbor: ");
+		creation(&neighbors[0], States::EMPTYTEMP);
 	}
-	ImGui::NewLine();
-	ImGui::Text("******************************************");
+	else {
+		ImGui::Text(("Create neighbor #" + std::to_string(count + 1)).c_str());
+		creation(&neighbors[count], States::EMPTYTEMP);
+		if (state == States::EMPTYTEMP) {
+			if (!count) {
+				count++;
+				state = States::NODE_CONNECTION;
+			}
+		}
 
-	/*Shows node's current connections.*/
-	showConnections();
+		/*Pedir dos FULL para conectar.*/
+	}
 
 	/*Button for finishing connections setup..*/
-	ImGui::NewLine(); ImGui::NewLine();
-	displayWidget("Done", [this]() {state = States::NODE_CREATION; });
+	if (state == States::EMPTYTEMP) {
+		unsigned int index = nodes.size() - 1;
+		if (nodes.back().type == NodeTypes::NEW_SPV) {
+			if (neighbors[0].port && neighbors[0].ip.length() && neighbors[1].port && neighbors[1].ip.length()) {
+				nodes[index].neighbors.insert(nodes[index].neighbors.end(), { nodes.size(), nodes.size() + 1 });
+				neighbors[0].type = NodeTypes::NEW_FULL;
+				neighbors[1].type = NodeTypes::NEW_FULL;
+				nodes.insert(nodes.end(), neighbors.begin(), neighbors.end());
+				state = States::INIT;
+				neighbors = std::vector<NewNode>(2);
+				action = Events::UPDATE;
+			}
+		}
+		else if (neighbors[0].port && neighbors[0].ip.length()) {
+			nodes[index].neighbors.push_back(nodes.size());
+			neighbors[0].type = NodeTypes::NEW_FULL;
+			nodes.push_back(neighbors[0]);
+			state = States::INIT;
+			neighbors = std::vector<NewNode>(2);
+			action = Events::UPDATE;
+		}
+	};
 }
 
 /*Shows node's connections.*/
@@ -464,7 +544,10 @@ void GUI::selectParameters() {
 	}
 }
 
-void GUI::addNeighbour(bool local) {
+void GUI::createNetwork() {
+}
+
+void GUI::addNeighbor(bool local, bool type) {
 	if (!local) {
 		ImGui::Text("Enter IP:   ", ImGuiInputTextFlags_CharsDecimal);
 		ImGui::SameLine();
@@ -481,15 +564,17 @@ void GUI::addNeighbour(bool local) {
 		if (newNeighbor.port < 0) newNeighbor.port = 0;
 	}
 
-	ImGui::Text("Select type: ");
-	ImGui::SameLine();
-	displayWidget("FULL", [this]() {newNeighbor.type = NodeTypes::NEW_FULL; });
-	ImGui::SameLine();
-	displayWidget("SPV", [this]() {newNeighbor.type = NodeTypes::NEW_SPV; });
-	if (newNeighbor.type != NodeTypes::UNDEFINED) {
+	if (type) {
+		ImGui::Text("Select type: ");
 		ImGui::SameLine();
-		const char* text = newNeighbor.type == NodeTypes::NEW_FULL ? "FULL" : "SPV";
-		ImGui::Text(text);
+		displayWidget("FULL", [this]() {newNeighbor.type = NodeTypes::NEW_FULL; });
+		ImGui::SameLine();
+		displayWidget("SPV", [this]() {newNeighbor.type = NodeTypes::NEW_SPV; });
+		if (newNeighbor.type != NodeTypes::UNDEFINED) {
+			ImGui::SameLine();
+			const char* text = newNeighbor.type == NodeTypes::NEW_FULL ? "FULL" : "SPV";
+			ImGui::Text(text);
+		}
 	}
 
 	ImGui::NewLine();
@@ -520,32 +605,6 @@ void GUI::addNeighbour(bool local) {
 		});
 }
 
-/*Node setup of IP and port.*/
-void GUI::creation() {
-	NewNode& adder = nodes.back();
-
-	/*Text input for IP.*/
-	ImGui::Text("Enter Port: ");
-	ImGui::SameLine();
-
-	/*Int input for port.*/
-	if (ImGui::InputInt("~  ", &(adder.port)), 1, 5, ImGuiInputTextFlags_CharsDecimal) {
-		/*Checks that port>0 or sets it to 0 otherwise.*/
-		if (adder.port < 0) adder.port = 0;
-	}
-
-	ImGui::NewLine();
-
-	/*'Done' button for finishing setup.*/
-	displayWidget("Done", [this, &adder]() {
-		if (adder.port) {
-			state = States::INIT; adder.ip = data::autoIP;
-			ID++;
-		}
-		setConnectionStr();
-		});
-}
-
 void GUI::generalScreen() {
 	showNodes();
 	ImGui::NewLine();
@@ -557,6 +616,12 @@ void GUI::generalScreen() {
 	/*New Message button.*/
 	if (nodes.size() > 1)
 		displayWidget("New message", [this] {state = States::SENDER_SELECTION; networkingInfo.clear(); });
+
+	ImGui::SameLine();
+	displayWidget("New node", [this]() {
+		if (true) {
+			state = States::APPENDIX_MODE;
+		}});
 }
 
 void GUI::showNodes() {  /******************************************************/
@@ -578,7 +643,7 @@ void GUI::showNodes() {  /******************************************************
 					displayWidget("External", [this]() {isLocal = false; selected = true; });
 				}
 				if (selected) {
-					addNeighbour(isLocal);
+					addNeighbor(isLocal, true);
 				}
 			}
 
@@ -590,15 +655,15 @@ void GUI::showNodes() {  /******************************************************
 			}
 		}
 		else {
-			/*MODIFY NEIGHBOURS*/
+			/*MODIFY neighborS*/
 			//MEJORAR ESTO PARA CAMBIAR VARIABLE ESTATICA
 			//NO FUNCIONA
 			/*
 			static bool checker = false;
-			displayWidget(std::bind(ImGui::Checkbox, ("Modify neighbours", &checker)),
+			displayWidget(std::bind(ImGui::Checkbox, ("Modify neighbors", &checker)),
 				[this]() {
 					if (checker)
-						showingBlock = Shower::MODIFY_NEIGHBOURS;
+						showingBlock = Shower::MODIFY_neighborS;
 					else
 						showingBlock = Shower::NOTHING;
 				});

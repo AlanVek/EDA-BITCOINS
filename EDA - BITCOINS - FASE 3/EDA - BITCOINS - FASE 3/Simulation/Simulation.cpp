@@ -15,21 +15,7 @@ void Simulation::mainScreen() {
 
 	/*If main screen exited successfully...*/
 	if (running) {
-		/*Loops through every created node.*/
-		for (const auto& node : gui->getNodes()) {
-			/*Creates new node.*/
-			if (node.type == NodeTypes::NEW_FULL)
-				nodes.push_back(new Full_Node(io_context, node.ip, node.port, node.index));
-			else
-				nodes.push_back(new SPV_Node(io_context, node.ip, node.port, node.index));
-
-			/*Sets neighbors.*/
-			for (const auto& neighbor : node.neighbors) {
-				auto& ngh = gui->getNode(neighbor);
-				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
-			}
-		}
-
+		newNodes();
 		gui->setRealNodes(nodes);
 	}
 }
@@ -92,6 +78,9 @@ void Simulation::dispatch(const Events& code) {
 		gui->infoGotten();
 
 		break;
+	case Events::UPDATE:
+		newNodes();
+		gui->setRealNodes(nodes);
 	default:
 		break;
 	}
@@ -101,6 +90,12 @@ void Simulation::dispatch(const Events& code) {
 const Events Simulation::eventGenerator() {
 	io_context.poll_one();
 
+	generateMsg();
+
+	return gui->checkStatus();
+}
+
+void Simulation::generateMsg() {
 	for (const auto& node : nodes) {
 		switch (node->getClientState()) {
 		case ConnectionState::PERFORMING:
@@ -133,8 +128,31 @@ const Events Simulation::eventGenerator() {
 			break;
 		}
 	}
+}
 
-	return gui->checkStatus();
+void Simulation::newNodes() {
+	const auto& nnds = gui->getNodes();
+
+	for (unsigned int i = nodes.size(); i < nnds.size(); i++) {
+		bool goOn = true;
+		for (const auto& node : nodes)
+			if (node->getID() == nnds[i].index) {
+				goOn = false;
+			}
+		if (nnds[i].local && goOn) {
+			/*Creates new node.*/
+			if (nnds[i].type == NodeTypes::NEW_FULL)
+				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
+			else
+				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
+
+			/*Sets neighbors.*/
+			for (const auto& neighbor : nnds[i].neighbors) {
+				auto& ngh = gui->getNode(neighbor);
+				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+			}
+		}
+	}
 }
 
 /*Getter.*/

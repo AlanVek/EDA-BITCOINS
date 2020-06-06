@@ -15,7 +15,8 @@ const enum class Events : unsigned int {
 	GET_BLOCKS,
 	GET_HEADERS,
 	TRANSACTION,
-	POST_BLOCK
+	POST_BLOCK,
+	UPDATE
 };
 
 const enum class Shower : int {
@@ -28,7 +29,7 @@ const enum class Shower : int {
 	BLOCK_NUMBER,
 	NONCE,
 	PRINT_TREE,
-	MODIFY_NEIGHBOURS
+	MODIFY_neighborS
 };
 /********************************/
 const enum class NodeTypes {
@@ -43,8 +44,8 @@ private:
 	/*Node struct to keep node info in GUI.*/
 	struct NewNode {
 		/*Constructor.*/
-		NewNode(const NodeTypes type, const unsigned int index) : type(type), index(index) { port = 0; ip.clear(); }
-		NewNode() {}
+		NewNode(const NodeTypes type, const unsigned int index, bool local) : local(local), type(type), index(index) { port = 0; ip.clear(); }
+		NewNode() : port(0), ip(""), local(false) {}
 
 		/*Data*/
 		/*********************************/
@@ -52,6 +53,7 @@ private:
 		std::string ip;
 		int port;
 		unsigned int index;
+		bool local;
 		std::vector<unsigned int> neighbors;
 		/*********************************/
 	};
@@ -90,6 +92,7 @@ private:
 	const enum class States {
 		INIT = 0,
 		GENESIS_MODE,
+		NETWORK_CREATION,
 		APPENDIX_MODE,
 		NODE_SELECTION,
 		NODE_CONNECTION,
@@ -98,7 +101,9 @@ private:
 		SENDER_SELECTION,
 		RECEIVER_SELECTION,
 		MESSAGE_SELECTION,
-		PARAM_SELECTION
+		PARAM_SELECTION,
+		ADDING_NEIGHBOR,
+		EMPTYTEMP
 	};
 	/****************************/
 
@@ -126,12 +131,13 @@ private:
 	bool init(bool*);
 	void newNode(void);
 	void connections(void);
-	void creation(void);
+	void creation(NewNode*, States);
 	void showConnections(void);
 	void setConnectionStr(void);
 	void showNetworkingInfo(void);
 	void genesisConnection(void);
-	void addNeighbour(bool);
+	void addNeighbor(bool, bool);
+	void createNetwork();
 	/***********************/
 
 	/*Messages*/
@@ -173,7 +179,7 @@ private:
 	std::string wallet;
 	NewNode newNeighbor;
 	int amount;
-	std::string networkingInfo, nodeConnections;
+	std::string networkingInfo, nodeConnections, filePath;
 	bool showingConnections, showingNetworking, addingNeighbor, isLocal, selected;
 	int currentIndex, dataIndex;
 	Shower showingBlock;
