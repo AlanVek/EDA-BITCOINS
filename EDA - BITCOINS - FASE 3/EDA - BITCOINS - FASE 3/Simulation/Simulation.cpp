@@ -168,7 +168,7 @@ void Simulation::newNodes(bool request) {
 				goOn = false;
 			}
 		if (nnds[i].local && goOn) {
-			/*Creates new node.*/
+			/*Creates new node. */
 			if (nnds[i].type == NodeTypes::NEW_FULL)
 				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
 			else
