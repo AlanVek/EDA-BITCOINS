@@ -16,7 +16,9 @@ const enum class Events : unsigned int {
 	GET_HEADERS,
 	TRANSACTION,
 	POST_BLOCK,
-	UPDATE
+	UPDATE,
+	NEWNET,
+	KEEPCREATING
 };
 
 const enum class Shower : int {
@@ -68,7 +70,9 @@ public:
 	Events checkStatus(void);
 
 	/*Main screen.*/
-	bool nodeSelectionScreen(void);
+	bool nodeSelectionScreen(bool*);
+
+	void networkDone(void);
 
 	/*Getters.*/
 	const std::vector<NewNode>& getNodes();

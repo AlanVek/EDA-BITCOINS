@@ -16,8 +16,20 @@ namespace data {
 	const unsigned int height = 500;
 	const int notSelectedIndex = -1;
 	const char* autoIP = "127.0.0.1";
+	const std::string word = "Creating Network";
+
+	const char* wrongFile = "Wrong file path";
+	const char* wrongFormat = "File was not JSON";
+	const char* okFile = "File was OK";
 }
 /***************************************/
+
+const enum class FILECODES : unsigned int {
+	OKFILE,
+	WRONGFILE,
+	NOTJSON,
+	NOTHING
+};
 
 /*GUI constructor. Initializes data members and sets Allegro resources.*/
 GUI::GUI(void) :
@@ -121,9 +133,9 @@ bool GUI::eventManager(void) {
 /*Initial data input for node selection.
 Returns true if setup was done successfully or
 false if user asked to leave.*/
-bool GUI::nodeSelectionScreen() {                         /*********************************************/
+bool GUI::nodeSelectionScreen(bool* newNet) {                         /*********************************************/
 	bool result = false;
-
+	*newNet = false;
 	bool endOfSetup = false;
 	al_set_target_backbuffer(guiDisp);
 
@@ -148,7 +160,9 @@ bool GUI::nodeSelectionScreen() {                         /*********************
 					genesisConnection();
 					break;
 				case States::NETWORK_CREATION:
-					createNetwork();
+					result = true;
+					*newNet = true;
+					endOfSetup = true;
 					break;
 				case States::APPENDIX_MODE:
 					newNode();
@@ -243,7 +257,19 @@ Events GUI::checkStatus(void) {
 		showNetworkingInfo();
 		ImGui::NewLine();
 
+		static int cantDots = 0;
+		static int count = 0;
+
 		switch (state) {
+		case States::NETWORK_CREATION:
+			count++;
+			/*FOR NOW, HARDCODED DOTS APPEARING.*/
+			if (cantDots >= 1000) cantDots = 0;
+			ImGui::Text((data::word + std::string(cantDots / 300, '.')).c_str());
+			cantDots++;
+			result = Events::KEEPCREATING;
+			if (count > 1000) state = States::INIT_DONE;
+			break;
 		case States::SENDER_SELECTION:
 			selectSender();
 			break;
@@ -279,6 +305,8 @@ Events GUI::checkStatus(void) {
 	return result;
 }
 
+void GUI::networkDone() { state = States::INIT_DONE; }
+
 /*New node type selection.*/
 void GUI::newNode() {             /***************************************************/
 	ImGui::Text("Select type: ");
@@ -296,42 +324,62 @@ void GUI::newNode() {             /*********************************************
 //FALTA CARGAR ARCHIVO JSON PERO NO ENTENDÍ SI DEBE BUSCAR UN PATH CON EL ARCHIVO O SI UNO COMPLETA
 //LA GUI Y ESO SE GUARDA EN UN JSON.
 void GUI::genesisConnection() {
-	static bool wrongFile = false;
+	static FILECODES fileOK = FILECODES::NOTHING;
 	ImGui::Text("Creating peer-to-peer net");
 
 	ImGui::Text("Enter file path: ");
 	ImGui::SameLine();
 	ImGui::InputText("..", &filePath);
-	if (wrongFile) ImGui::Text("Wrong file path.");
 
-	displayWidget("Done", [this]() {
+	switch (fileOK) {
+	case FILECODES::WRONGFILE:
+		ImGui::Text(data::wrongFile);
+		break;
+	case FILECODES::NOTJSON:
+		ImGui::Text(data::wrongFormat);
+		break;
+	case FILECODES::OKFILE:
+		ImGui::Text(data::okFile);
+		break;
+	default:
+		break;
+	}
+
+	static json j;
+
+	displayWidget("Load File", [this]() {
 		std::fstream file(filePath, std::ios::in | std::ios::binary);
 		if (!file.is_open()) {
 			file.close();
-			wrongFile = true;
+			fileOK = FILECODES::WRONGFILE;
 		}
 		else {
 			nodes.clear();
-			json j = json::parse(file);
-			for (const int full : j["full-nodes"]) {
-				nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), true));
-				nodes.back().port = full;
-				nodes.back().ip = data::autoIP;
+			try {
+				j = json::parse(file);
+				for (const int full : j["full-nodes"]) {
+					nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), true));
+					nodes.back().port = full;
+					nodes.back().ip = data::autoIP;
+				}
+				for (const int spv : j["spv"]) {
+					nodes.push_back(NewNode(NodeTypes::NEW_SPV, nodes.size(), true));
+					nodes.back().port = spv;
+					nodes.back().ip = data::autoIP;
+				}
+				fileOK = FILECODES::OKFILE;
 			}
-			for (const int spv : j["spv"]) {
-				nodes.push_back(NewNode(NodeTypes::NEW_SPV, nodes.size(), true));
-				nodes.back().port = spv;
-				nodes.back().ip = data::autoIP;
+			catch (std::exception&) {
+				fileOK = FILECODES::NOTJSON;
 			}
-			wrongFile = false;
 		}
 		});
 
 	ImGui::NewLine();
 
-	displayWidget("Create network", [this]() {state = States::NETWORK_CREATION; });
+	displayWidget("Create network", [this]() {if (j.size()) { state = States::NETWORK_CREATION; fileOK = FILECODES::NOTHING; j.clear(); }});
 	ImGui::SameLine();
-	displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; });
+	displayWidget("Appendix Mode", [this]() { state = States::APPENDIX_MODE; j.clear(); });
 }
 void GUI::creation(NewNode* current, States nextState) {
 	ImGui::Text("Enter IP:   ", ImGuiInputTextFlags_CharsDecimal);

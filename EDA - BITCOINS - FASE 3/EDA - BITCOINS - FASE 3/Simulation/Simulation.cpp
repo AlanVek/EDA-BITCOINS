@@ -11,11 +11,17 @@ Simulation::Simulation(void) : running(true), ev(Events::NOTHING)
 
 /*Calls main GUI screen for node selection.*/
 void Simulation::mainScreen() {
-	running = gui->nodeSelectionScreen();
+	bool newNet;
+	running = gui->nodeSelectionScreen(&newNet);
 
 	/*If main screen exited successfully...*/
 	if (running) {
-		newNodes();
+		if (newNet) {
+			/*CREATE NEW NETWORK.*/
+		}
+		else {
+			newNodes();
+		}
 		gui->setRealNodes(nodes);
 	}
 }
@@ -81,6 +87,13 @@ void Simulation::dispatch(const Events& code) {
 	case Events::UPDATE:
 		newNodes();
 		gui->setRealNodes(nodes);
+	case Events::KEEPCREATING:
+
+		/*CONTINUE NETWORK CREATION*/
+
+		/*IF (NETWORK DONE) GUI->NETWORKDONE();*/
+
+		break;
 	default:
 		break;
 	}
