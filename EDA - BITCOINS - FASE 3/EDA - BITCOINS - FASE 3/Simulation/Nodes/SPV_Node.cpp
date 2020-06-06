@@ -77,9 +77,11 @@ void SPV_Node::perform() {
 		if (clients[i] && !clients[i]->perform()) {
 			if (typeid(*clients[i]) == typeid(GETHeaderClient)) {
 				const json& temp = clients[i]->getAnswer();
-				if (temp["status"]) {
-					for (const auto& header : temp["result"])
-						headers.push_back(header);
+				if (temp.find("status") != temp.end() && temp["status"]) {
+					if (temp.find("result") != temp.end()) {
+						for (const auto& header : temp["result"])
+							headers.push_back(header);
+					}
 				}
 			}
 			/*Deletes client and set pointer to null.*/

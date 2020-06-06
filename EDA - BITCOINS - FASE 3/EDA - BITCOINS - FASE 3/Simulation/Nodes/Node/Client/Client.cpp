@@ -57,7 +57,10 @@ bool Client::perform(void) {
 					answer = json::parse(unparsedAnswer);
 				}
 				catch (std::exception&) {
-					throw std::exception("Invalid Data. Wrong JSON format.");
+					json excpt;
+					excpt["status"] = false;
+					excpt["error"] = "Invalidad Data. Wrong JSON format.";
+					throw std::exception(excpt.dump().c_str());
 				}
 				std::cout << "Received: " << answer << std::endl;
 
@@ -69,7 +72,7 @@ bool Client::perform(void) {
 			throw std::exception("Invalid data.");
 	}
 	catch (std::exception& e) {
-		answer = e.what();
+		answer = json::parse(e.what());
 		stillOn = false;
 		step = false;
 		stillRunning = 1;

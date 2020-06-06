@@ -8,7 +8,7 @@ GETBlock::GETBlock(Node* node) : Action(node, "Blocks (GET)") {
 void GETBlock::Perform(const unsigned int id, const std::string& blockID, const unsigned int count) {
 	/*If node is free...*/
 		/*If id is a neighbor and count isn't null...*/
-	if (node->neighbors.find(id) != node->neighbors.end() && count) {
+	if (node->neighbors.find(id) != node->neighbors.end()) {
 		/*Sets new GETBlockClient.*/
 		node->clients.push_back(new GETBlockClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, blockID, count));
 	}
@@ -68,7 +68,7 @@ GETHeader::GETHeader(Node* node) : Action(node, "Headers (GET)") {
 void GETHeader::Perform(const unsigned int id, const std::string& blockID, const unsigned int count) {
 	/*If node is free...*/
 		/*If id is a neighbor and count isn't null...*/
-	if (node->neighbors.find(id) != node->neighbors.end() && count) {
+	if (node->neighbors.find(id) != node->neighbors.end()) {
 		/*Sets new GETBlockClient.*/
 		node->clients.push_back(new GETHeaderClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, blockID, count));
 	}

@@ -667,9 +667,8 @@ void GUI::generalScreen() {
 
 	ImGui::SameLine();
 	displayWidget("New node", [this]() {
-		if (true) {
-			state = States::APPENDIX_MODE;
-		}});
+		state = States::APPENDIX_MODE;
+		});
 }
 
 void GUI::showNodes() {  /******************************************************/
@@ -832,18 +831,15 @@ inline void GUI::render() const {
 GUI::~GUI() {
 	ImGui_ImplAllegro5_Shutdown();
 	ImGui::DestroyContext();
-	if (guiQueue)
-		al_destroy_event_queue(guiQueue);
-	if (guiDisp)
-		al_destroy_display(guiDisp);
+	if (guiQueue) al_destroy_event_queue(guiQueue);
+	if (guiDisp) al_destroy_display(guiDisp);
 }
 
 /*Displays given widget and applies callback according to widget state.*/
 template <class Widget, class F1, class F2>
 inline auto GUI::displayWidget(const Widget& widget, const F1& f1, const F2& f2) -> decltype(f1())
 {
-	if (widget())
-		return f1();
+	if (widget()) return f1();
 	return f2();
 }
 
@@ -852,8 +848,7 @@ As ImGui::Button is the most used widget, when the given 'widget'
 is actually a const char*, then the widget will be ImGui::Button.*/
 template <class F1, class F2>
 inline auto GUI::displayWidget(const char* txt, const F1& f1, const F2& f2)->decltype(f1()) {
-	if (ImGui::Button(txt))
-		return f1();
+	if (ImGui::Button(txt)) return f1();
 	return f2();
 }
 
@@ -870,10 +865,8 @@ void GUI::infoGotten() { wallet.clear(); amount = 0; action = Events::NOTHING; }
 void GUI::updateMsg(const std::string& info) { networkingInfo.append(info); }
 void GUI::setRealNodes(const std::vector<Node*>& nodes) {
 	for (unsigned int i = 0; i < nodes.size(); i++) {
-		if (i < allNodes.size())
-			allNodes[i] = nodes[i];
+		if (i < allNodes.size()) allNodes[i] = nodes[i];
 
-		else
-			allNodes.push_back(nodes[i]);
+		else allNodes.push_back(nodes[i]);
 	}
 }

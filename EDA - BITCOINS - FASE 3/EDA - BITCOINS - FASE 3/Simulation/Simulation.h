@@ -33,7 +33,7 @@ private:
 
 	Events ev;
 
-	void newNodes();
+	void newNodes(bool);
 
 	void generateMsg();
 };

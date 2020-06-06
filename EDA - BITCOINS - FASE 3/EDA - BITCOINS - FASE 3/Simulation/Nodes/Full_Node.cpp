@@ -85,7 +85,11 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 			int count = std::stoi(request.substr(pos_count + 6, request.find("HTTP") - pos_count - 6));
 
 			/*Sets block's position in blockchain.*/
-			int abs = blockChain.getBlockIndex(id);
+			int abs;
+			if (id == "0")
+				abs = 0;
+			else
+				abs = blockChain.getBlockIndex(id);
 
 			/*Goes to next block.*/
 			if (!(++abs)) {
@@ -94,6 +98,8 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 			}
 
 			else {
+				if (!count)
+					count = blockChain.getBlockAmount();
 				/*Loops through blockchain ('count' blocks or until end of blockchain).*/
 				while (abs < blockChain.getBlockAmount() && count) {
 					/*If it's a POST block...*/
@@ -107,8 +113,9 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 						response.push_back(blockChain.getHeader(abs));
 					}
 					count--;
-					server_state = ConnectionState::CONNECTIONOK;
 				}
+
+				server_state = ConnectionState::CONNECTIONOK;
 
 				/*Appends response to result.*/
 				result["result"] = response;
@@ -171,9 +178,11 @@ void Full_Node::perform() {
 		if (clients[i] && !clients[i]->perform()) {
 			if (typeid(*clients[i]) == typeid(GETBlockClient)) {
 				const json& temp = clients[i]->getAnswer();
-				if (temp["status"]) {
-					for (const auto& block : temp["result"]) {
-						blockChain.addBlock(block);
+				if (temp.find("status") != temp.end() && temp["status"]) {
+					if (temp.find("result") != temp.end()) {
+						for (const auto& block : temp["result"]) {
+							blockChain.addBlock(block);
+						}
 					}
 				}
 			}
@@ -186,12 +195,10 @@ void Full_Node::perform() {
 	}
 }
 
-
 //NO SE SI ESTA BIEN PERO LO AGREGO ACA
 
 /*Full node dispatcher*/
 void Full_Node::nodeDispatcher(void) {
-
 	switch (ev) {
 	case NodeEvents::PING:
 		break;
@@ -210,26 +217,24 @@ void Full_Node::nodeDispatcher(void) {
 
 /*Full node event generator*/
 NodeEvents Full_Node::nodeEventGenerator(void) {
-	
-	if (state== NodeState::IDLE/*&&timeout*/){
+	if (state == NodeState::IDLE/*&&timeout*/) {
 		ev = NodeEvents::TIMEOUT;
 	}
-	else if (state== NodeState::IDLE/*&&ping*/) {
+	else if (state == NodeState::IDLE/*&&ping*/) {
 		ev = NodeEvents::PING;
 	}
-	else if (state== NodeState::COLLECTING_MEMBERS/*&&Network not ready*/) {
+	else if (state == NodeState::COLLECTING_MEMBERS/*&&Network not ready*/) {
 		ev = NodeEvents::NETWORK_NOT_READY;
 	}
 	else if (state == NodeState::COLLECTING_MEMBERS/*&&Network ready*/) {
 		ev = NodeEvents::NETWORK_READY;
 	}
-	else if (state== NodeState::WAITING_LAYOUT/*&&Network layout*/) {
+	else if (state == NodeState::WAITING_LAYOUT/*&&Network layout*/) {
 		ev = NodeEvents::NETWORK_LAYOUT;
 	}
-	else if (state== NodeState::NETWORK_CREATED) {
+	else if (state == NodeState::NETWORK_CREATED) {
 		ev = NodeEvents::END;
 	}
 
 	return ev;
-
 }

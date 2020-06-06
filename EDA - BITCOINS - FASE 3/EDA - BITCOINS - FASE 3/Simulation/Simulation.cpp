@@ -17,11 +17,14 @@ void Simulation::mainScreen() {
 	/*If main screen exited successfully...*/
 	if (running) {
 		if (newNet) {
+			newNodes(false);
+
 			/*CREATE NEW NETWORK.*/
 		}
 		else {
-			newNodes();
+			newNodes(true);
 		}
+
 		gui->setRealNodes(nodes);
 	}
 }
@@ -85,7 +88,7 @@ void Simulation::dispatch(const Events& code) {
 
 		break;
 	case Events::UPDATE:
-		newNodes();
+		newNodes(true);
 		gui->setRealNodes(nodes);
 	case Events::KEEPCREATING:
 
@@ -109,33 +112,45 @@ const Events Simulation::eventGenerator() {
 }
 
 void Simulation::generateMsg() {
-	for (const auto& node : nodes) {
-		switch (node->getClientState()) {
+	static std::vector<bool> canPrint(nodes.size(), true);
+
+	if (nodes.size() > canPrint.size()) {
+		std::vector<bool>temp(nodes.size() - canPrint.size(), true);
+		canPrint.insert(canPrint.end(), temp.begin(), temp.end());
+	}
+	for (unsigned int i = 0; i < nodes.size(); i++) {
+		switch (nodes[i]->getClientState()) {
 		case ConnectionState::PERFORMING:
-			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is performing a client request.");
+			if (canPrint[i]) {
+				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is performing a client request.");
+				canPrint[i] = false;
+			}
 			break;
 		case ConnectionState::FINISHED:
-			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " finished the request.");
+			gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished the request.");
 			gui->setRealNodes(nodes);
+			canPrint[i] = true;
 			break;
 		default:
 			break;
 		}
 
-		switch (node->getServerState()) {
+		switch (nodes[i]->getServerState()) {
 			int client_reception;
 		case ConnectionState::CONNECTIONOK:
-			if ((client_reception = node->getClientPort()) != -1) {
-				gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was OK");
+			if ((client_reception = nodes[i]->getClientPort()) != -1) {
+				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was OK");
 			}
+			else
+				gui->updateMsg("\Node " + std::to_string(nodes[i]->getID()) + " is answering a request from an unkown node.");
 			break;
 		case ConnectionState::CONNNECTIONFAIL:
-			if ((client_reception = node->getClientPort()) != -1) {
-				gui->updateMsg("\nNode " + std::to_string(node->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was NOT OK");
+			if ((client_reception = nodes[i]->getClientPort()) != -1) {
+				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was NOT OK");
 			}
 			break;
 		case ConnectionState::FINISHED:
-			gui->updateMsg("\nNode " + std::to_string(node->getID()) + " closed the connection");
+			gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " closed the connection. Answer sent.");
 			break;
 		default:
 			break;
@@ -143,7 +158,7 @@ void Simulation::generateMsg() {
 	}
 }
 
-void Simulation::newNodes() {
+void Simulation::newNodes(bool request) {
 	const auto& nnds = gui->getNodes();
 
 	for (unsigned int i = nodes.size(); i < nnds.size(); i++) {
@@ -163,6 +178,13 @@ void Simulation::newNodes() {
 			for (const auto& neighbor : nnds[i].neighbors) {
 				auto& ngh = gui->getNode(neighbor);
 				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+			}
+
+			if (request) {
+				if (nnds[i].type == NodeTypes::NEW_FULL)
+					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
+				else
+					nodes.back()->perform(ConnectionType::GETHEADER, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
 			}
 		}
 	}
