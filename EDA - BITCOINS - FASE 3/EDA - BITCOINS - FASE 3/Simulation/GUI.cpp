@@ -423,8 +423,7 @@ void GUI::creation(NewNode* current, States nextState) {
 	displayWidget("Done", [this, &current, &nextState]() {if (current->ip.length() && current->port)
 	{
 		state = nextState;
-	}
-		});
+	}});
 }
 /*Makes connections in new node.*/
 void GUI::connections() {
@@ -474,6 +473,7 @@ void GUI::connections() {
 				state = States::INIT;
 				neighbors = std::vector<NewNode>(2);
 				action = Events::UPDATE;
+				count = 0;
 			}
 		}
 
@@ -492,6 +492,7 @@ void GUI::connections() {
 			state = States::INIT;
 			neighbors = std::vector<NewNode>(2);
 			action = Events::UPDATE;
+			count = 0;
 		}
 	};
 }
@@ -642,7 +643,7 @@ void GUI::addNeighbor(bool local, bool type) {
 
 	/*Sets new neighbor's IP and port.*/
 	creation(&neighbor, States::EMPTYTEMP);
-	if (!local && neighbor.ip != data::autoIP) neighbor.ip = data::autoIP;
+	if (local && neighbor.ip != data::autoIP) neighbor.ip = data::autoIP;
 
 	/*if (type) {
 		ImGui::Text("Select type: ");
@@ -660,7 +661,7 @@ void GUI::addNeighbor(bool local, bool type) {
 	ImGui::NewLine();
 
 	/*"Done" button.*/
-	displayWidget("Done", [this, &local]() {
+	if (state == States::EMPTYTEMP) {
 		/*Function that resets flags..*/
 		auto resetNeighbor = [this]() {addingNeighbor = false; selected = false; neighbor = NewNode(); };
 
@@ -691,7 +692,7 @@ void GUI::addNeighbor(bool local, bool type) {
 				}
 			}
 		}
-		});
+	};
 }
 
 /*General screen after GUI has been initialized.*/

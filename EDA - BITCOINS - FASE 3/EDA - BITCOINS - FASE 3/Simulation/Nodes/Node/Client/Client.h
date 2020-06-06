@@ -35,6 +35,7 @@ protected:
 	json data, answer;
 	unsigned int self_port, out_port;
 	int stillRunning;
+	bool step;
 	/********************************/
 	//Callback with string as userData.
 	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData);

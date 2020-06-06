@@ -2,7 +2,6 @@
 #include "Node/Node.h"
 #include "BlockChain/BlockChain.h"
 
-
 /*****Full node events********/
 
 const enum class NodeEvents : unsigned int {
@@ -25,7 +24,6 @@ const enum class NodeState : unsigned int {
 	END
 };
 
-
 class Full_Node : public Node {
 public:
 	Full_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int);
@@ -46,6 +44,7 @@ public:
 	virtual void nodeDispatcher(void);		/*****************************************/
 	virtual NodeEvents nodeEventGenerator(void);		/**************************************/
 
+	virtual const std::string& getKey() { return std::string(); }
 
 private:
 	const json getMerkleBlock(const std::string&, const std::string&);

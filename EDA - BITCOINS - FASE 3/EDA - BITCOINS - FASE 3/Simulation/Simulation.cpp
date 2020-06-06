@@ -7,6 +7,8 @@ Simulation::Simulation(void) : running(true), ev(Events::NOTHING)
 {
 	/*Attempts to create new GUI variable.*/
 	gui = new GUI;
+
+	srand(time(NULL));
 }
 
 /*Calls main GUI screen for node selection.*/
@@ -118,7 +120,7 @@ void Simulation::dispatch(const Events& code) {
 /*Generates event from GUI and polls io_context.*/
 const Events Simulation::eventGenerator() {
 	/*Polls io_context.*/
-	io_context.poll_one();
+	io_context.poll();
 
 	/*Sets networking message in GUI.*/
 	generateMsg();
@@ -174,7 +176,7 @@ void Simulation::generateMsg() {
 
 			/*With unknown neighbor.*/
 			else
-				gui->updateMsg("\Node " + std::to_string(nodes[i]->getID()) + " is answering a request from an unkown node.");
+				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from an unkown node.");
 			break;
 
 			/*Connection FAIL string.*/
@@ -226,12 +228,16 @@ void Simulation::newNodes(bool request) {
 			}
 
 			/*If it was created from appendix mode, it must request (BLOCK if it's a FULL or HEADER if it's an SPV).
-			Parameters "0" and NULL mean "the whole blockChain" or "all the headers". */
+			Parameters "0" and NULL mean "all the blocks/headers". */
 			if (request) {
 				if (nnds[i].type == NodeTypes::NEW_FULL)
 					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
-				else
+				else {
 					nodes.back()->perform(ConnectionType::GETHEADER, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
+
+					for (const auto& neighbor : nodes.back()->getNeighbors())
+						nodes.back()->perform(ConnectionType::POSTFILTER, neighbor.first, nodes.back()->getKey(), NULL);
+				}
 			}
 		}
 	}

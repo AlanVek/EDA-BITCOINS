@@ -8,5 +8,5 @@ public:
 		url += '/' + indURL;
 	}
 private:
-	const std::string indURL = "send_merkle_block";
+	const std::string indURL = "send_filter";
 };

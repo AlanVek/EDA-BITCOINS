@@ -50,6 +50,8 @@ public:
 	virtual const std::string printTree(unsigned int) = 0;
 	virtual const std::string validateMRoot(unsigned int) = 0;
 
+	virtual const std::string& getKey() = 0;
+
 protected:
 	friend Action;
 	friend POSTBlock;

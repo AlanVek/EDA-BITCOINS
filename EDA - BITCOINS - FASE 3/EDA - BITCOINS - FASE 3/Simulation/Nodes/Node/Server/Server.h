@@ -24,19 +24,19 @@ protected:
 		GET
 	};
 	struct Connection {
-		Connection(boost::asio::io_context& io_context) : socket(io_context) {}
+		Connection(boost::asio::io_context& io_context) : socket(io_context), done(false) {}
 		boost::asio::ip::tcp::socket socket;
 		char reader[MAXSIZE];
 		std::string response;
-		std::list<Connection>::iterator pos;
+		bool done;
 	};
 
 	/*Connection methods.*/
 	/*******************************************/
-	void asyncConnection(Connection&);
-	void closeConnection(Connection&);
+	void asyncConnection(Connection*);
+	void closeConnection(Connection*);
 
-	void answer(Connection&, const std::string&);
+	void answer(Connection*, const std::string&);
 	Response GETResponse;
 	Response POSTResponse;
 	errorResp errorResponse;
@@ -44,9 +44,9 @@ protected:
 
 	/*Callbacks and callback-related.*/
 	/*********************************************************************************/
-	void connectionCallback(Connection&, const boost::system::error_code& error);
-	void messageCallback(Connection&, const boost::system::error_code& error, size_t bytes_sent);
-	void inputValidation(Connection&, const boost::system::error_code& error, size_t bytes);
+	void connectionCallback(Connection*, const boost::system::error_code& error);
+	void messageCallback(Connection*, const boost::system::error_code& error, size_t bytes_sent);
+	void inputValidation(Connection*, const boost::system::error_code& error, size_t bytes);
 	/*********************************************************************************/
 
 	/*Boost::asio data members.*/

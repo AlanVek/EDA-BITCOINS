@@ -2,7 +2,7 @@
 #include <iostream>
 
 Client::Client(const std::string& ip, const unsigned int self_port, const unsigned int out_port) : ip(ip), self_port(self_port),
-out_port(out_port), multiHandler(nullptr), handler(nullptr) {
+out_port(out_port), multiHandler(nullptr), handler(nullptr), step(false) {
 	if (ip.length() && self_port && out_port)
 		stillRunning = 1;
 	else
@@ -14,7 +14,6 @@ out_port(out_port), multiHandler(nullptr), handler(nullptr) {
 //Performs request.
 bool Client::perform(void) {
 	bool stillOn = true;
-	static bool step = false;
 	try {
 		if (ip.length() && self_port && out_port) {
 			if (!step) {
@@ -37,7 +36,10 @@ bool Client::perform(void) {
 					curl_multi_cleanup(multiHandler);
 					handler = nullptr;
 					multiHandler = nullptr;
-					throw std::exception("Failed to connect.");
+					json excpt;
+					excpt["status"] = false;
+					excpt["result"] = 1;
+					throw std::exception(excpt.dump().c_str());
 				}
 			}
 
@@ -62,6 +64,7 @@ bool Client::perform(void) {
 					excpt["result"] = 1;
 					throw std::exception(excpt.dump().c_str());
 				}
+
 				std::cout << "Received: " << answer << std::endl;
 
 				//Sets result to 'FALSE', to end loop.
