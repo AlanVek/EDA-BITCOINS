@@ -387,6 +387,8 @@ void GUI::genesisConnection() {
 			catch (std::exception&) {
 				fileOK = FILECODES::NOTJSON;
 			}
+
+			file.close();
 		}
 		});
 
