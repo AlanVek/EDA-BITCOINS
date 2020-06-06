@@ -21,18 +21,6 @@ const enum class Events : unsigned int {
 	KEEPCREATING
 };
 
-const enum class Shower : int {
-	NOTHING = 0,
-	SEE_MROOT,
-	VALIDATE_MROOT,
-	BLOCKID,
-	PREVIOUS_BLOCKID,
-	NTX,
-	BLOCK_NUMBER,
-	NONCE,
-	PRINT_TREE,
-	MODIFY_neighborS
-};
 /********************************/
 const enum class NodeTypes {
 	NEW_SPV,
@@ -42,6 +30,18 @@ const enum class NodeTypes {
 
 class GUI {
 private:
+
+	const enum class Shower : int {
+		NOTHING = 0,
+		SEE_MROOT,
+		VALIDATE_MROOT,
+		BLOCKID,
+		PREVIOUS_BLOCKID,
+		NTX,
+		BLOCK_NUMBER,
+		NONCE,
+		PRINT_TREE,
+	};
 
 	/*Node struct to keep node info in GUI.*/
 	struct NewNode {
@@ -137,11 +137,10 @@ private:
 	void connections(void);
 	void creation(NewNode*, States);
 	void showConnections(void);
-	void setConnectionStr(void);
 	void showNetworkingInfo(void);
 	void genesisConnection(void);
 	void addNeighbor(bool, bool);
-	void createNetwork();
+	//void createNetwork();
 	/***********************/
 
 	/*Messages*/
@@ -181,12 +180,10 @@ private:
 	std::vector <Node*> allNodes;
 	unsigned int sender, receiver;
 	std::string wallet;
-	NewNode newNeighbor;
 	int amount;
-	std::string networkingInfo, nodeConnections, filePath;
-	bool showingConnections, showingNetworking, addingNeighbor, isLocal, selected;
+	std::string networkingInfo;
+	bool addingNeighbor, isLocal, selected;
 	int currentIndex, dataIndex;
 	Shower showingBlock;
-	unsigned int ID;
 	/**********************************/
 };

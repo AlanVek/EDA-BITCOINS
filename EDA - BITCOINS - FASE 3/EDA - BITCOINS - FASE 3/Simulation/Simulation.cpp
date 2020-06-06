@@ -16,15 +16,19 @@ void Simulation::mainScreen() {
 
 	/*If main screen exited successfully...*/
 	if (running) {
+		/*Sets nodes and creates connections.*/
 		if (newNet) {
 			newNodes(false);
 
 			/*CREATE NEW NETWORK.*/
 		}
+
+		/*Justs sets nodes. Connections are already determined.*/
 		else {
 			newNodes(true);
 		}
 
+		/*Sets the real vector in GUI.*/
 		gui->setRealNodes(nodes);
 	}
 }
@@ -87,9 +91,18 @@ void Simulation::dispatch(const Events& code) {
 		gui->infoGotten();
 
 		break;
+
+		/*New nodes have been added, so the nodes vector
+		must be updated.*/
 	case Events::UPDATE:
+
+		/*Sets new nodes.*/
 		newNodes(true);
+
+		/*Sets the real vector in GUI.*/
 		gui->setRealNodes(nodes);
+
+		/*For non-blocking network creation.*/
 	case Events::KEEPCREATING:
 
 		/*CONTINUE NETWORK CREATION*/
@@ -104,28 +117,40 @@ void Simulation::dispatch(const Events& code) {
 
 /*Generates event from GUI and polls io_context.*/
 const Events Simulation::eventGenerator() {
+	/*Polls io_context.*/
 	io_context.poll_one();
 
+	/*Sets networking message in GUI.*/
 	generateMsg();
 
+	/*Generates and returns event.*/
 	return gui->checkStatus();
 }
 
+/*Generates and sets message in GUI.*/
 void Simulation::generateMsg() {
+	/*Vector to block from setting the same string when client is taking too long.*/
 	static std::vector<bool> canPrint(nodes.size(), true);
 
+	/*Updates vector's size in case new nodes have been added.*/
 	if (nodes.size() > canPrint.size()) {
 		std::vector<bool>temp(nodes.size() - canPrint.size(), true);
 		canPrint.insert(canPrint.end(), temp.begin(), temp.end());
 	}
+
+	/*For every node...*/
 	for (unsigned int i = 0; i < nodes.size(); i++) {
+		/*Sets string according to client state.*/
 		switch (nodes[i]->getClientState()) {
+			/*Performing string.*/
 		case ConnectionState::PERFORMING:
 			if (canPrint[i]) {
 				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is performing a client request.");
 				canPrint[i] = false;
 			}
 			break;
+
+			/*Finished string.*/
 		case ConnectionState::FINISHED:
 			gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished the request.");
 			gui->setRealNodes(nodes);
@@ -135,20 +160,31 @@ void Simulation::generateMsg() {
 			break;
 		}
 
+		/*Sets string according to server state.*/
 		switch (nodes[i]->getServerState()) {
 			int client_reception;
+
+			/*Connection OK string.*/
 		case ConnectionState::CONNECTIONOK:
+
+			/*With known neighbor.*/
 			if ((client_reception = nodes[i]->getClientPort()) != -1) {
 				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was OK");
 			}
+
+			/*With unknown neighbor.*/
 			else
 				gui->updateMsg("\Node " + std::to_string(nodes[i]->getID()) + " is answering a request from an unkown node.");
 			break;
+
+			/*Connection FAIL string.*/
 		case ConnectionState::CONNNECTIONFAIL:
 			if ((client_reception = nodes[i]->getClientPort()) != -1) {
 				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was NOT OK");
 			}
 			break;
+
+			/*Finished string.*/
 		case ConnectionState::FINISHED:
 			gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " closed the connection. Answer sent.");
 			break;
@@ -158,17 +194,26 @@ void Simulation::generateMsg() {
 	}
 }
 
+/*Sets new nodes in nodes vector.*/
 void Simulation::newNodes(bool request) {
 	const auto& nnds = gui->getNodes();
 
+	/*Goes from the last index of the current vector to the last index
+	of the updated vector.*/
 	for (unsigned int i = nodes.size(); i < nnds.size(); i++) {
 		bool goOn = true;
+
+		/*Checks if node's ID is already in the vector.
+		If it is, it sets the flag to false, so the rest of the
+		function doesn't load it again.*/
 		for (const auto& node : nodes)
 			if (node->getID() == nnds[i].index) {
 				goOn = false;
 			}
+
+		/*If it's a local node and isn't already in the nodes vector...*/
 		if (nnds[i].local && goOn) {
-			/*Creates new node. */
+			/*Creates new node.*/
 			if (nnds[i].type == NodeTypes::NEW_FULL)
 				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
 			else
@@ -180,6 +225,8 @@ void Simulation::newNodes(bool request) {
 				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
 			}
 
+			/*If it was created from appendix mode, it must request (BLOCK if it's a FULL or HEADER if it's an SPV).
+			Parameters "0" and NULL mean "the whole blockChain" or "all the headers". */
 			if (request) {
 				if (nnds[i].type == NodeTypes::NEW_FULL)
 					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
