@@ -59,7 +59,7 @@ bool Client::perform(void) {
 				catch (std::exception&) {
 					json excpt;
 					excpt["status"] = false;
-					excpt["error"] = "Invalidad Data. Wrong JSON format.";
+					excpt["result"] = 1;
 					throw std::exception(excpt.dump().c_str());
 				}
 				std::cout << "Received: " << answer << std::endl;

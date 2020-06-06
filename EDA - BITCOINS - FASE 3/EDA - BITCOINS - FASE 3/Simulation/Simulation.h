@@ -20,6 +20,7 @@ private:
 	void perform(void);
 
 	const unsigned int getIndex(void);
+
 	/*Prevents from using copy constructor.*/
 	Simulation(const Simulation&);
 

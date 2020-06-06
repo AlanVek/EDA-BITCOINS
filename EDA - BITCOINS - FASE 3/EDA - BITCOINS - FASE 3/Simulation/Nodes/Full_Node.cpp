@@ -150,7 +150,7 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 	if (request.find(BLOCKPOST) != std::string::npos) {
 		/*Adds block to blockchain.*/
 		int content = request.find/*_last_of*/("Content-Type");
-		int data = request.find/*_last_of*/("Data=");
+		int data = request.find/*_last_of */("Data=");
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
 		else {

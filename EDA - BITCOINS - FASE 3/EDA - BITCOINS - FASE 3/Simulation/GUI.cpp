@@ -429,6 +429,7 @@ void GUI::connections() {
 	}
 
 	/*Button for finishing connections setup..*/
+
 	if (state == States::EMPTYTEMP) {
 		unsigned int index = nodes.size() - 1;
 		if (nodes.back().type == NodeTypes::NEW_SPV) {

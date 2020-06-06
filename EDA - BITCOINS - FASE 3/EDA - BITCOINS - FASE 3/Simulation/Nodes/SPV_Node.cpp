@@ -38,7 +38,7 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 	/*Checks if it's a POST for merkleblock.*/
 	if (request.find(MERKLEPOST) != std::string::npos) {
 		int content = request.find/*_last_of*/("Content-Type");
-		int data = request.find/*_last_of*/("Data=");
+		int data = request.find/*_last_of */("Data=");
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
 		else {
