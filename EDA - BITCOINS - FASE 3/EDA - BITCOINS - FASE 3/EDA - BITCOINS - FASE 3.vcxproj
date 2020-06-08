@@ -154,8 +154,6 @@
     <ClCompile Include="Simulation\Nodes\Node\Action.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Client\LayoutClient.cpp" />
-    <ClCompile Include="Simulation\Nodes\Node\Client\PingClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />

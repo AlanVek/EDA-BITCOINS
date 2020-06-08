@@ -38,5 +38,7 @@ private:
 
 	bool createNetwork();
 
+	void connectSPVs();
+
 	void generateMsg();
 };

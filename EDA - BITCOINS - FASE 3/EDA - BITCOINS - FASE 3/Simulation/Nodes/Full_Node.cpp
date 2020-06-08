@@ -182,7 +182,21 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 
 	/*If it's a transaction...*/
 	else if (request.find(TRANSPOST) != std::string::npos) {
-		result["status"] = true;
+		int content = request.find/*_last_of*/("Content-Type");
+		int data = request.find/*_last_of */("Data=");
+		json trans;
+		if (content != std::string::npos && data != std::string::npos) {
+			trans = json::parse(request.substr(data + 5, content - data - 5));
+
+			if (trans.find("vout") != trans.end()) {
+				for (const auto& neighbor : neighbors) {
+					if (neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port()) {
+						perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"]["publicid"], trans["vout"]["amount"].get<unsigned int>());
+					}
+				}
+				result["status"] = true;
+			}
+		}
 	}
 
 	/*If it's a filter...*/
@@ -361,7 +375,7 @@ void Full_Node::setIndexes(std::map<int, std::string>& connections, json& edges,
 	while (connections[tempIndex].length() >= 2 || tempIndex == index) {
 		if (usedIndexes.find(std::to_string(tempIndex)) == std::string::npos)
 			usedIndexes.append(std::to_string(tempIndex));
-		if (usedIndexes.length() == subNet.size() && tempIndex != index)
+		if (usedIndexes.length() >= subNet.size() && tempIndex != index)
 			break;
 		else
 			tempIndex = rand() % subNet.size();

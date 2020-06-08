@@ -8,6 +8,7 @@
 #include <functional>
 #include "Nodes/Node/Node.h"
 #include <fstream>
+#include "Nodes/Full_Node.h"
 
 /*GUI data.*/
 /***************************************/
@@ -39,9 +40,7 @@ GUI::GUI(void) :
 	state(States::INIT),
 	currentIndex(-1),
 	dataIndex(-1),
-	showingBlock(Shower::NOTHING),
-	isLocal(false),
-	addingNeighbor(false)
+	showingBlock(Shower::NOTHING)
 {
 	setAllegro();
 }
@@ -637,7 +636,7 @@ void GUI::selectParameters() {
 }
 
 /*Adds new neighbor to node.*/
-void GUI::addNeighbor(bool local, bool type) {
+bool GUI::addNeighbor(bool local, bool type) {
 	static NewNode neighbor;
 
 	/*Sets new neighbor's IP and port.*/
@@ -661,9 +660,6 @@ void GUI::addNeighbor(bool local, bool type) {
 
 	/*"Done" button.*/
 	if (state == States::EMPTYTEMP) {
-		/*Function that resets flags..*/
-		auto resetNeighbor = [this]() {addingNeighbor = false; selected = false; neighbor = NewNode(); };
-
 		/*If port was OK...*/
 		if (neighbor.port) {
 			/*If it's a local neighbor...*/
@@ -674,7 +670,8 @@ void GUI::addNeighbor(bool local, bool type) {
 						allNodes[currentIndex]->newNeighbor(node->getID(), data::autoIP, neighbor.port);
 						allNodes[node->getID()]->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort());
 
-						resetNeighbor();
+						neighbor = NewNode();
+						return true;
 					}
 				}
 			}
@@ -687,11 +684,15 @@ void GUI::addNeighbor(bool local, bool type) {
 					neighbor.index = nodes.size();
 					allNodes[currentIndex]->newNeighbor(neighbor.index, neighbor.ip, neighbor.port);
 					nodes.push_back(neighbor);
-					resetNeighbor();
+					neighbor = NewNode();
+
+					return true;
 				}
 			}
 		}
-	};
+	}
+	else
+		return false;
 }
 
 /*General screen after GUI has been initialized.*/
@@ -717,7 +718,12 @@ void GUI::generalScreen() {
 }
 
 /*Shows nodes.*/
-void GUI::showNodes() {  /******************************************************/
+void GUI::showNodes() {
+	static bool doingNeighbors = false;
+	static bool isLocal = false;
+	static bool selected = false;
+	static int neighborIndex = -1;
+
 	if (currentIndex == -1) {
 		ImGui::Text("Nodes: ");
 
@@ -726,29 +732,23 @@ void GUI::showNodes() {  /******************************************************
 			displayWidget(("Node " + std::to_string(node->getID())).c_str(), [this, &node]() {currentIndex = node->getID(); });
 			ImGui::SameLine();
 		}
-		//ImGui::Text(nodeConnections.c_str());
 	}
 
 	/*If a specific node has been selected...*/
 	else {
+		bool checker = typeid(*allNodes[currentIndex]) == typeid(Full_Node);
+		const std::string typeText = checker ? "FULL" : "SPV";
+		ImGui::Text(("Type: " + typeText).c_str());
+		ImGui::Text("Neighbors: ");
+		ImGui::SameLine();
+		for (auto& neighbor : allNodes[currentIndex]->getNeighbors()) {
+			ImGui::Text(("Node " + std::to_string(neighbor.first)).c_str());
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
 		/*If it's a full node...*/
-		if (nodes[currentIndex].type == NodeTypes::NEW_FULL) {
-			/*Button to add new neighbor.*/
-			displayWidget("Add neighbor", [this]() {addingNeighbor = true; });
-
-			/*If user asked to set a new neighbor...*/
-			if (addingNeighbor) {
-				/*Sets if neighbor is local or external.*/
-				if (!selected) {
-					displayWidget("Local", [this]() {isLocal = true; selected = true; });
-					ImGui::SameLine();
-					displayWidget("External", [this]() {isLocal = false; selected = true; });
-				}
-				if (selected) {
-					/*Once selected, adds the neighbor.*/
-					addNeighbor(isLocal, true);
-				}
-			}
+		if (checker) {
+			neighborButtons(doingNeighbors, isLocal, selected);
 
 			/*Shows blocks*/
 			showBlocks();
@@ -756,24 +756,24 @@ void GUI::showNodes() {  /******************************************************
 
 		/*If it was SPV...*/
 		else {
-			/*MODIFY neighborS*/
-			//MEJORAR ESTO PARA CAMBIAR VARIABLE ESTATICA
-			//NO FUNCIONA
-			/*
-			static bool checker = false;
-			displayWidget(std::bind(ImGui::Checkbox, ("Modify neighbors", &checker)),
-				[this]() {
-					if (checker)
-						showingBlock = Shower::MODIFY_neighborS;
-					else
-						showingBlock = Shower::NOTHING;
-				});
-			*/
+			/*displayWidget("Modify Neighbors", []() {doingNeighbors = true; });
+			if (doingNeighbors) {
+				if (neighborIndex == -1) {
+					for (auto& neighbor : allNodes[currentIndex]->getNeighbors()) {
+						displayWidget(("Node " + std::to_string(neighbor.first)).c_str(), [&neighbor]() {neighborIndex = neighbor.first; });
+					}
+				}
+				else {
+					if (modifyNeighbor(neighborIndex)) {
+						neighborIndex = -1;
+					};
+				}
+			}*/
 		}
 
 		ImGui::SameLine();
 		/*Button to go back.*/
-		displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; selected = false; addingNeighbor = false; showingBlock = Shower::NOTHING; });
+		displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; selected = false; doingNeighbors = false; showingBlock = Shower::NOTHING; });
 		if (dataIndex != -1) {
 			displayActions();
 		}
@@ -781,19 +781,46 @@ void GUI::showNodes() {  /******************************************************
 }
 
 /*Displays action buttons for SPV nodes.*/
-inline void GUI::displaySPVActions() {  /***********************************************************/
-/*
-	NO FUNCIONA
-	ImGui::NewLine();
-	ImGui::Text("Action to perform: ");
+bool GUI::modifyNeighbor(int id) {  /***********************************************************/
+	/*static NewNode temp;
+	temp.index = allNodes[currentIndex]->getID();
+	temp.ip = allNodes[currentIndex]->getIP();
+	temp.port = allNodes[currentIndex]->getPort();
 
-	//ESTO ESTÁ MAL PUES SOLO DEBERIA MOSTRAR LOS VECINOS
-	ImGui::Text("Nodes: ");
-	for (const auto& node : allNodes) {
-		displayWidget(("Node " + std::to_string(node->getID())).c_str(), [this, &node]() {currentIndex = node->getID(); });
-		ImGui::SameLine();
+	States whichState = state;
+
+	creation(&temp, States::EMPTYTEMP);
+
+	if (state == States::EMPTYTEMP) {
+		state = whichState;
+		allNodes[currentIndex]->newNeighbor(id, temp.ip, temp.port);
+		nodes[currentIndex].neighbors
+	}*/
+
+	return true;
+}
+
+void GUI::neighborButtons(bool& addingNeighbor, bool& isLocal, bool& selected) {
+	/*Button to add new neighbor.*/
+	displayWidget("Add neighbor", [this, &addingNeighbor]() {addingNeighbor = true; });
+
+	/*If user asked to set a new neighbor...*/
+	if (addingNeighbor) {
+		/*Sets if neighbor is local or external.*/
+		if (!selected) {
+			displayWidget("Local", [this, &isLocal, &selected]() {isLocal = true; selected = true; });
+			ImGui::SameLine();
+			displayWidget("External", [this, &isLocal, &selected]() {isLocal = false; selected = true; });
+		}
+		if (selected) {
+			/*Once selected, adds the neighbor.*/
+			if (addNeighbor(isLocal, true)) {
+				addingNeighbor = false;
+				selected = false;
+				isLocal = false;
+			}
+		}
 	}
-*/
 }
 
 /*Displays action buttons.*/

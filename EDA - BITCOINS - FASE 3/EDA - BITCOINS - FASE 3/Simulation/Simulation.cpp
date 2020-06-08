@@ -111,8 +111,10 @@ void Simulation::dispatch(const Events& code) {
 		/*For non-blocking network creation.*/
 	case Events::KEEPCREATING:
 
-		if (createNetwork())
+		if (createNetwork()) {
 			gui->networkDone();
+			gui->setRealNodes(nodes);
+		}
 
 		break;
 	default:
@@ -289,5 +291,23 @@ bool Simulation::createNetwork() {
 		if (!node->networkDone())
 			done = false;
 	}
+
+	if (done) {
+		connectSPVs();
+	}
 	return done;
+}
+
+void Simulation::connectSPVs() {
+	int tempIndex;
+	for (auto& node : nodes) {
+		if (typeid(*node) == typeid(SPV_Node)) {
+			while (node->getNeighbors().size() < 2) {
+				auto neighbor = nodes[rand() % nodes.size()];
+
+				if (typeid(*neighbor) != typeid(SPV_Node))
+					node->newNeighbor(neighbor->getID(), neighbor->getIP(), neighbor->getPort());
+			}
+		}
+	}
 }

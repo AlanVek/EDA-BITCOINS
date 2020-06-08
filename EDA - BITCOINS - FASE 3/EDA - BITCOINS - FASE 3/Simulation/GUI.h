@@ -139,8 +139,8 @@ private:
 	void showConnections(void);
 	void showNetworkingInfo(void);
 	void genesisConnection(void);
-	void addNeighbor(bool, bool);
-	//void createNetwork();
+	bool addNeighbor(bool, bool);
+	bool modifyNeighbor(int);
 	/***********************/
 
 	/*Messages*/
@@ -167,6 +167,7 @@ private:
 	void displayActions();
 	void showNodes();
 	void displaySPVActions();
+	void neighborButtons(bool&, bool&, bool&);
 
 	/*Flag data members.*/
 	/******************************/
@@ -182,7 +183,6 @@ private:
 	std::string wallet;
 	int amount;
 	std::string networkingInfo;
-	bool addingNeighbor, isLocal, selected;
 	int currentIndex, dataIndex;
 	Shower showingBlock;
 	/**********************************/
