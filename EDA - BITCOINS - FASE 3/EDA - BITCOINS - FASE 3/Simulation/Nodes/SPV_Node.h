@@ -21,6 +21,8 @@ public:
 
 	virtual void checkTimeout(const std::vector < Node*>&) {}
 
+	virtual const std::vector<Neighbor> getAdders() { return std::vector<Neighbor>(0); }
+
 	virtual bool networkDone() { return true; }
 
 private:

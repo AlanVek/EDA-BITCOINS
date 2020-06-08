@@ -728,8 +728,8 @@ void GUI::showNodes() {
 		ImGui::Text("Nodes: ");
 
 		/*Displays buttons with nodes' IDs.*/
-		for (const auto& node : allNodes) {
-			displayWidget(("Node " + std::to_string(node->getID())).c_str(), [this, &node]() {currentIndex = node->getID(); });
+		for (int i = 0; i < allNodes.size(); i++) {
+			displayWidget(("Node " + std::to_string(allNodes[i]->getID())).c_str(), [this, i]() {currentIndex = i; });
 			ImGui::SameLine();
 		}
 	}

@@ -54,6 +54,7 @@ public:
 
 	virtual bool networkDone() = 0;
 
+	virtual const std::vector<Neighbor> getAdders() = 0;
 protected:
 	friend Action;
 	friend POSTBlock;

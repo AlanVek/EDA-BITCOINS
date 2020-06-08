@@ -250,6 +250,7 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 			answer = temp.dump();
 		}
 		else if (state == NodeState::COLLECTING_MEMBERS) {
+			idsToAdd.push_back({ nodeInfo.address().to_string(), nodeInfo.port() });
 			particularAlgorithm();
 			state = NodeState::NETWORK_CREATED;
 			temp["status"] = READY;

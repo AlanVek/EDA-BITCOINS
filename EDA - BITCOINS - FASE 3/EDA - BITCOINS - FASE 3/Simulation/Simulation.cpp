@@ -294,6 +294,15 @@ bool Simulation::createNetwork() {
 
 	if (done) {
 		connectSPVs();
+		for (auto& node : nodes) {
+			for (auto& neighbor : node->getAdders()) {
+				for (auto& node_2 : nodes) {
+					if (node_2->getIP() == neighbor.ip && node_2->getPort() == neighbor.port) {
+						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port);
+					}
+				}
+			}
+		}
 	}
 	return done;
 }

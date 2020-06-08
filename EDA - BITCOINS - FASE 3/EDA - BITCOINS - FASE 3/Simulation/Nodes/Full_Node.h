@@ -54,6 +54,8 @@ public:
 
 	virtual void checkTimeout(const std::vector < Node*>&);
 
+	virtual const std::vector<Neighbor> getAdders() { return idsToAdd; }
+
 private:
 
 	std::string dispatcher(NodeEvents, const boost::asio::ip::tcp::endpoint& nodeInfo, const std::string&);		/**************************************/
@@ -68,6 +70,7 @@ private:
 
 	void neighborFromJSON(const std::string&, bool);
 	void setIndexes(std::map<int, std::string>&, json&, int);
+	std::vector<Neighbor> idsToAdd;
 
 	std::vector<Node*> subNet;
 	BlockChain blockChain;
