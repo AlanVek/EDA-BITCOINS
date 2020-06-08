@@ -23,6 +23,10 @@ void Simulation::mainScreen() {
 			newNodes(false);
 
 			/*CREATE NEW NETWORK.*/
+
+			for (auto& node : nodes) {
+				node->startTimer();
+			}
 		}
 
 		/*Justs sets nodes. Connections are already determined.*/
@@ -107,9 +111,8 @@ void Simulation::dispatch(const Events& code) {
 		/*For non-blocking network creation.*/
 	case Events::KEEPCREATING:
 
-		/*CONTINUE NETWORK CREATION*/
-
-		/*IF (NETWORK DONE) GUI->NETWORKDONE();*/
+		if (createNetwork())
+			gui->networkDone();
 
 		break;
 	default:
@@ -143,56 +146,54 @@ void Simulation::generateMsg() {
 	/*For every node...*/
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		/*Sets string according to client state.*/
-		switch (nodes[i]->getClientState()) {
-			/*Performing string.*/
-		case ConnectionState::PERFORMING:
-			if (canPrint[i]) {
-				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is performing a client request.");
-				canPrint[i] = false;
-			}
-			break;
+		for (auto& state : nodes[i]->getClientState()) {
+			switch (state) {
+				/*Performing string.*/
+			case ClientState::PERFORMING:
+				if (canPrint[i]) {
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is performing a client request.");
+					canPrint[i] = false;
+				}
+				break;
 
-			/*Finished string.*/
-		case ConnectionState::FINISHED:
-			gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished the request.");
-			gui->setRealNodes(nodes);
-			canPrint[i] = true;
-			break;
-		default:
-			break;
+				/*Finished string.*/
+			case ClientState::FINISHED:
+				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished the request.");
+				gui->setRealNodes(nodes);
+				canPrint[i] = true;
+				break;
+			default:
+				break;
+			}
 		}
+		auto serverStates = nodes[i]->getServerState();
+		auto ports = nodes[i]->getClientPort();
+		for (unsigned int j = 0; j < serverStates.size(); j++)
+			/*Sets string according to server state.*/
+			switch (serverStates[j].st) {
+				int client_reception;
 
-		/*Sets string according to server state.*/
-		switch (nodes[i]->getServerState()) {
-			int client_reception;
+				/*Connection OK string.*/
+			case ServerState::PERFORMING:
 
-			/*Connection OK string.*/
-		case ConnectionState::CONNECTIONOK:
-
-			/*With known neighbor.*/
-			if ((client_reception = nodes[i]->getClientPort()) != -1) {
-				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was OK");
+				/*With known neighbor.*/
+				if ((client_reception = ports[j])) {
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception));
+				}
+				else
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from an unknown node.");
+				break;
+				/*Finished string.*/
+			case ServerState::FINISHED:
+				if (ports.size() >= (j) && ports[j - 1]) {
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from node " + std::to_string(ports[j]));
+				}
+				else
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from an unknown node.");
+				break;
+			default:
+				break;
 			}
-
-			/*With unknown neighbor.*/
-			else
-				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from an unkown node.");
-			break;
-
-			/*Connection FAIL string.*/
-		case ConnectionState::CONNNECTIONFAIL:
-			if ((client_reception = nodes[i]->getClientPort()) != -1) {
-				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception) + ". Data was NOT OK");
-			}
-			break;
-
-			/*Finished string.*/
-		case ConnectionState::FINISHED:
-			gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " closed the connection. Answer sent.");
-			break;
-		default:
-			break;
-		}
 	}
 }
 
@@ -221,15 +222,14 @@ void Simulation::newNodes(bool request) {
 			else
 				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
 
-			/*Sets neighbors.*/
-			for (const auto& neighbor : nnds[i].neighbors) {
-				auto& ngh = gui->getNode(neighbor);
-				nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
-			}
-
 			/*If it was created from appendix mode, it must request (BLOCK if it's a FULL or HEADER if it's an SPV).
 			Parameters "0" and NULL mean "all the blocks/headers". */
 			if (request) {
+				/*Sets neighbors.*/
+				for (const auto& neighbor : nnds[i].neighbors) {
+					auto& ngh = gui->getNode(neighbor);
+					nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+				}
 				if (nnds[i].type == NodeTypes::NEW_FULL)
 					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
 				else {
@@ -276,4 +276,18 @@ const unsigned int Simulation::getIndex() {
 			currentIndex = i;
 	}
 	return currentIndex;
+}
+
+bool Simulation::createNetwork() {
+	bool done = true;
+
+	perform();
+
+	for (auto& node : nodes) {
+		node->checkTimeout(nodes);
+
+		if (!node->networkDone())
+			done = false;
+	}
+	return done;
 }

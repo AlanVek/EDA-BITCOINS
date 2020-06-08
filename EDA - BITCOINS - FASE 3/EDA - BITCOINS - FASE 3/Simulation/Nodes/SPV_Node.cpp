@@ -20,7 +20,6 @@ SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 /*GET callback for server.*/
 const std::string SPV_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	setConnectedClientID(nodeInfo);
-	server_state = ConnectionState::CONNNECTIONFAIL;
 
 	json result;
 	result["status"] = false;
@@ -33,7 +32,6 @@ const std::string SPV_Node::GETResponse(const std::string& request, const boost:
 /*POST callback for server.*/
 const std::string SPV_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	setConnectedClientID(nodeInfo);
-	server_state = ConnectionState::CONNNECTIONFAIL;
 	json result;
 	result["status"] = true;
 	result["result"] = NULL;
@@ -45,7 +43,6 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
 		else {
-			server_state = ConnectionState::CONNECTIONOK;
 		}
 	}
 	else {
@@ -62,36 +59,30 @@ SPV_Node::~SPV_Node() {}
 void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
 	if (actions.find(type) != actions.end()) {
 		actions[type]->Perform(id, blockID, count);
-		client_state = ConnectionState::PERFORMING;
 	}
 }
 
 void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
 	if (actions.find(type) != actions.end()) {
 		actions[type]->Perform(id, blockID, key);
-		client_state = ConnectionState::PERFORMING;
 	}
 }
 
 /*Performs client mode. */
 void SPV_Node::perform() {
-	for (unsigned int i = 0; i < clients.size(); i++) {
-		/*If request has ended...*/
-		if (clients[i] && !clients[i]->perform()) {
-			if (typeid(*clients[i]) == typeid(GETHeaderClient)) {
-				const json& temp = clients[i]->getAnswer();
-				if (temp.find("status") != temp.end() && temp["status"]) {
-					if (temp.find("result") != temp.end()) {
-						for (const auto& header : temp["result"])
-							headers.push_back(header);
-					}
+	/*If request has ended...*/
+	if (clients.size() && clients.front() && !clients.front()->perform()) {
+		if (typeid(*clients.front()) == typeid(GETHeaderClient)) {
+			const json& temp = clients.front()->getAnswer();
+			if (temp.find("status") != temp.end() && temp["status"]) {
+				if (temp.find("result") != temp.end()) {
+					for (const auto& header : temp["result"])
+						headers.push_back(header);
 				}
 			}
-			/*Deletes client and set pointer to null.*/
-			delete clients[i];
-			clients.erase(clients.begin() + i);
-			client_state = ConnectionState::FINISHED;
-			i--;
 		}
+		/*Deletes client and set pointer to null.*/
+		delete clients.front();
+		clients.pop_front();
 	}
 }

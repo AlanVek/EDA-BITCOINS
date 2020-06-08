@@ -58,3 +58,15 @@ public:
 	virtual void Perform(const unsigned int, const std::string&, const unsigned int);
 	virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
 };
+class Ping : public Action {
+public:
+	Ping(Node*);
+	virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+	virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+};
+class Layout : public Action {
+public:
+	Layout(Node*);
+	virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+	virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+};

@@ -9,3 +9,5 @@
 #include "FilterClient.h"
 #include "MerkleClient.h"
 #include "TransactionClient.h"
+#include "PingClient.h"
+#include "LayoutClient.h"

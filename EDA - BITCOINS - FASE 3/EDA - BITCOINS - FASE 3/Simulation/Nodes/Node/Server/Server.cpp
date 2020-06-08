@@ -98,21 +98,21 @@ void Server::inputValidation(Connection* connector, const boost::system::error_c
 		std::string validator_POST = "POST /" + fixed + '/';
 		std::string host_validator = " HTTP/1.1\r\nHost: " + host /*+ ':' + std::to_string(port)*/;
 
-		//If it's a GET request, sets state to GET.
+		//If it's a GET request, sets type to GET.
 		if (!message.find(validator_GET))
-			state = ConnectionTypes::GET;
+			type = ConnectionTypes::GET;
 
-		//If it's a POST request, sets state to POST.
-		else if (!message.find(validator_POST) && message.find("Data=") != std::string::npos)
-			state = ConnectionTypes::POST;
+		//If it's a POST request, sets type to POST.
+		else if (!message.find(validator_POST))
+			type = ConnectionTypes::POST;
 
 		/*Otherwise, it's an error.*/
 		else {
-			state = ConnectionTypes::NONE;
+			type = ConnectionTypes::NONE;
 		}
 
 		if (message.find(host_validator) == std::string::npos)
-			state = ConnectionTypes::NONE;
+			type = ConnectionTypes::NONE;
 
 		//Answers request.
 		answer(connector, message);
@@ -126,6 +126,8 @@ void Server::inputValidation(Connection* connector, const boost::system::error_c
 /*Called when there's been a connection.*/
 void Server::connectionCallback(Connection* connector, const boost::system::error_code& error) {
 	newConnector();
+
+	connector->state = ServerState::PERFORMING;
 
 	if (!error) {
 		//Sets socket to read request.
@@ -155,12 +157,14 @@ void Server::messageCallback(Connection* connector, const boost::system::error_c
 
 		/*Closes socket*/
 	closeConnection(connector);
+
+	connector->state = ServerState::FINISHED;
 }
 
 /*Responds to input.*/
 void Server::answer(Connection* connector, const std::string& message) {
 	/*Generates text response, according to validity of input.*/
-	switch (state) {
+	switch (type) {
 		/*GET request. Calls GET callback.*/
 	case ConnectionTypes::GET:
 		(connector)->response = GETResponse(message, connector->socket.remote_endpoint());
@@ -193,4 +197,27 @@ void Server::answer(Connection* connector, const std::string& message) {
 			boost::asio::placeholders::bytes_transferred
 		)
 	);
+}
+std::vector<stateOfConnection> Server::getState() {
+	std::vector<stateOfConnection> temp;
+	boost::asio::ip::tcp::endpoint connection;
+	for (auto& socket : sockets) {
+		switch (socket.state) {
+		case ServerState::FREE:
+			temp.push_back(stateOfConnection(socket.state, "", 0));
+			break;
+		case ServerState::PERFORMING:
+			connection = socket.socket.remote_endpoint();
+			temp.push_back(stateOfConnection(socket.state, connection.address().to_string(), connection.port()));
+			break;
+		case ServerState::FINISHED:
+			temp.push_back(stateOfConnection(socket.state, "", 0));
+			socket.state = ServerState::FREE;
+			break;
+		default:
+			temp.push_back(stateOfConnection(socket.state, "", 0));
+			break;
+		}
+	}
+	return temp;
 }

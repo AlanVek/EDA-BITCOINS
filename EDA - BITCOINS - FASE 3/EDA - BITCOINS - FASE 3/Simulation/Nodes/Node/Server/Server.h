@@ -5,14 +5,31 @@
 
 #define MAXSIZE 100000
 
+const enum class ServerState : unsigned int {
+	FREE,
+	PERFORMING,
+	CONNECTIONOK,
+	CONNNECTIONFAIL,
+	FINISHED
+};
+
+struct stateOfConnection {
+	stateOfConnection(ServerState st, std::string ip, int port) : st(st), ip(ip), port(port) {}
+	ServerState st;
+	std::string ip;
+	int port;
+};
+
 namespace {
 	using Response = std::function<const std::string(const std::string&, const boost::asio::ip::tcp::endpoint&)>;
 	using errorResp = std::function<const std::string(void)>;
 }
-class Server
-{
+class Server {
 public:
 	Server(boost::asio::io_context&, const Response&, const Response&, const errorResp&, unsigned int);
+
+	std::vector<stateOfConnection> getState();
+
 	virtual ~Server();
 
 protected:
@@ -24,11 +41,11 @@ protected:
 		GET
 	};
 	struct Connection {
-		Connection(boost::asio::io_context& io_context) : socket(io_context), done(false) {}
+		Connection(boost::asio::io_context& io_context) : socket(io_context), state(ServerState::FREE) {}
 		boost::asio::ip::tcp::socket socket;
 		char reader[MAXSIZE];
 		std::string response;
-		bool done;
+		ServerState state;
 	};
 
 	/*Connection methods.*/
@@ -60,7 +77,7 @@ protected:
 	/*********************************************/
 	size_t size;
 	std::string host;
-	ConnectionTypes state;
+	ConnectionTypes type;
 	unsigned int port;
 	/*********************************************/
 };

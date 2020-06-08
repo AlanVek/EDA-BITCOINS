@@ -10,15 +10,9 @@ const enum class ConnectionType : unsigned int {
 	POSTBLOCK,
 	POSTMERKLE,
 	POSTTRANS,
-	POSTFILTER
-};
-
-const enum class ConnectionState : unsigned int {
-	FREE,
-	PERFORMING,
-	CONNECTIONOK,
-	CONNNECTIONFAIL,
-	FINISHED
+	POSTFILTER,
+	PING,
+	LAYOUT
 };
 
 struct Neighbor {
@@ -38,9 +32,11 @@ public:
 	virtual void perform() = 0;
 	virtual const unsigned int getID();
 
-	virtual ConnectionState getClientState(void);
-	virtual ConnectionState getServerState(void);
-	virtual int getClientPort(void);
+	const std::string& getIP() { return ip; }
+
+	std::vector<ClientState> getClientState(void);
+	std::vector<stateOfConnection> getServerState(void);
+	virtual std::vector<unsigned int> getClientPort(void);
 	const std::map<unsigned int, Neighbor>& getNeighbors() { return neighbors; }
 	const unsigned int getPort() { return port; }
 
@@ -52,6 +48,12 @@ public:
 
 	virtual const std::string& getKey() = 0;
 
+	virtual void startTimer(void) = 0;
+
+	virtual void checkTimeout(const std::vector < Node*>&) = 0;
+
+	virtual bool networkDone() = 0;
+
 protected:
 	friend Action;
 	friend POSTBlock;
@@ -60,6 +62,8 @@ protected:
 	friend POSTMerkle;
 	friend POSTFilter;
 	friend GETHeader;
+	friend Ping;
+	friend Layout;
 
 	virtual std::string makeDaytimeString(bool);
 
@@ -71,13 +75,13 @@ protected:
 
 	virtual void setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
 
-	std::vector<Client*> clients;
+	std::list<Client*> clients;
 	Server server;
 	std::map<unsigned int, Neighbor> neighbors;
 	std::map <ConnectionType, Action*> actions;
 
 	std::string ip;
 	unsigned int port, identifier;
-	ConnectionState client_state, server_state;
-	int connected_client_id;
+
+	std::vector<unsigned int> connectedClients;
 };

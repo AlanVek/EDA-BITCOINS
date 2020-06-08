@@ -255,7 +255,6 @@ Events GUI::checkStatus(void) {
 			ImGui::Text((data::word + std::string(cantDots / 300, '.')).c_str());
 			cantDots++;
 			result = Events::KEEPCREATING;
-			if (count > 1000) state = States::INIT_DONE;
 			break;
 
 			/*Selects sender of new message.*/

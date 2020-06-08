@@ -2,7 +2,7 @@
 #include <iostream>
 
 Client::Client(const std::string& ip, const unsigned int self_port, const unsigned int out_port) : ip(ip), self_port(self_port),
-out_port(out_port), multiHandler(nullptr), handler(nullptr), step(false) {
+out_port(out_port), multiHandler(nullptr), handler(nullptr), step(false), state(ClientState::FREE) {
 	if (ip.length() && self_port && out_port)
 		stillRunning = 1;
 	else
@@ -27,6 +27,7 @@ bool Client::perform(void) {
 				//If it's the first time in this run, it sets the request parameters.
 				configurateClient();
 				step = true;
+				state = ClientState::PERFORMING;
 			}
 
 			//Should be an if. Performs one request and checks for errors.
@@ -53,6 +54,8 @@ bool Client::perform(void) {
 
 				//Resets stillRunning to 1;
 				stillRunning = 1;
+
+				state = ClientState::FINISHED;
 
 				//Parses answer.
 				try {

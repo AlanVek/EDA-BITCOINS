@@ -36,5 +36,7 @@ private:
 
 	void newNodes(bool);
 
+	bool createNetwork();
+
 	void generateMsg();
 };

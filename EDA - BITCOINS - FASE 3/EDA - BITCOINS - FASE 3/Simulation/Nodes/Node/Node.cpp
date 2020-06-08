@@ -2,10 +2,8 @@
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
-	: ip(ip), client_state(ConnectionState::FREE), server_state(ConnectionState::FREE),
-	port(port), identifier(identifier), connected_client_id(-1),
-
-	server(io_context, std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
+	: ip(ip), port(port), identifier(identifier), server(io_context,
+		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::ERRORResponse, this), port)
 {
@@ -64,40 +62,32 @@ const std::string Node::headerFormat(const std::string& result) {
 
 /*Getters*/
 const unsigned int Node::getID() { return identifier; }
-ConnectionState Node::getClientState(void) {
-	if (client_state == ConnectionState::FINISHED) {
-		client_state = ConnectionState::FREE;
-		return ConnectionState::FINISHED;
+std::vector<ClientState> Node::getClientState(void) {
+	std::vector<ClientState> temp;
+	for (const auto& client : clients) {
+		temp.push_back(client->getState());
 	}
-	else
-		return client_state;
+	return temp;
 }
 
-ConnectionState Node::getServerState(void) {
-	switch (server_state) {
-	case ConnectionState::CONNECTIONOK:
-		server_state = ConnectionState::FINISHED;
-		return ConnectionState::CONNECTIONOK;
-	case ConnectionState::CONNNECTIONFAIL:
-		server_state = ConnectionState::FINISHED;
-		return ConnectionState::CONNNECTIONFAIL;
-	case ConnectionState::FINISHED:
-		server_state = ConnectionState::FREE;
-		return ConnectionState::FINISHED;
-	default:
-		break;
-	}
+std::vector<stateOfConnection> Node::getServerState(void) {
+	return server.getState();
 }
 
-int Node::getClientPort(void) {
-	int temp = connected_client_id;
-	connected_client_id = -1;
+std::vector<unsigned int> Node::getClientPort(void) {
+	auto temp = connectedClients;
+
+	connectedClients.clear();
 	return temp;
 }
 
 void Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
+	int size = connectedClients.size();
 	for (const auto& neighbor : neighbors) {
 		if (neighbor.second.port + 1 == nodeInfo.port() && neighbor.second.ip == nodeInfo.address().to_string())
-			connected_client_id = neighbor.first;
+			connectedClients.push_back(neighbor.first);
 	}
+
+	if (connectedClients.size() == size)
+		connectedClients.push_back(0);
 }

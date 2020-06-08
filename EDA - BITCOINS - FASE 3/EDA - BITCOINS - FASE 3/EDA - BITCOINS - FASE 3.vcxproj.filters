@@ -102,6 +102,12 @@
     <ClCompile Include="Simulation\GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\PingClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Client\LayoutClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\Simulation.h">
@@ -184,6 +190,12 @@
     </ClInclude>
     <ClInclude Include="Simulation\GUI.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\LayoutClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Client\PingClient.h">
+      <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

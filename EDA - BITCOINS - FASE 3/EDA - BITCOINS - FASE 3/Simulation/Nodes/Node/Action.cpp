@@ -82,7 +82,22 @@ POSTMerkle::POSTMerkle(Node* node) : Action(node, "MerkleBlock (POST)") {
 void POSTMerkle::Perform(const unsigned int id, const std::string& blockID, const std::string& transID) {
 	/*If id is a neighbor...*/
 	if (node->neighbors.find(id) != node->neighbors.end()) {
-		//auto temp = getMerkleBlock(blockID, transID);
 		node->clients.push_back(new MerkleClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));
 	}
+}
+
+Ping::Ping(Node* node) : Action(node, "Ping") {
+}
+
+/*POST merkleblock connection.*/
+void Ping::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
+	node->clients.push_back(new PingClient(ip, node->port + 1, port, data));
+}
+
+Layout::Layout(Node* node) : Action(node, "Ping") {
+}
+
+/*POST merkleblock connection.*/
+void Layout::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
+	node->clients.push_back(new LayoutClient(ip, node->port + 1, port, data));
 }

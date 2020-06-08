@@ -3,6 +3,12 @@
 #include "json.hpp"
 #include <string>
 
+const enum class ClientState : unsigned int {
+	FREE,
+	PERFORMING,
+	FINISHED
+};
+
 namespace {
 	const char* begURL = "eda_coins";
 }
@@ -21,6 +27,8 @@ public:
 	virtual bool perform();
 	virtual const json& getAnswer();
 
+	const ClientState getState() { return state; }
+
 protected:
 	virtual void configurateClient(void) = 0;
 
@@ -36,6 +44,7 @@ protected:
 	unsigned int self_port, out_port;
 	int stillRunning;
 	bool step;
+	ClientState state;
 	/********************************/
 	//Callback with string as userData.
 	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userData);

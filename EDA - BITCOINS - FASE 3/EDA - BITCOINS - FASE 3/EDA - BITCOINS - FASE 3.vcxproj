@@ -154,6 +154,8 @@
     <ClCompile Include="Simulation\Nodes\Node\Action.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\LayoutClient.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Client\PingClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
@@ -181,7 +183,9 @@
     <ClInclude Include="Simulation\Nodes\Node\Client\GETBlockClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\GETClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\GETHeaderClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\LayoutClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\MerkleClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Client\PingClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Node.h" />
