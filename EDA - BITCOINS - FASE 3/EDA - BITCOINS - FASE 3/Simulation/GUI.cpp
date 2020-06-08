@@ -323,7 +323,7 @@ void GUI::newNode() {             /*********************************************
 void GUI::genesisConnection() {
 	/*Sets flag for error checking.*/
 	static FILECODES fileOK = FILECODES::NOTHING;
-	static std::string filePath = "";
+	static std::string filePath = "test.json";
 	ImGui::Text("Creating peer-to-peer net");
 
 	/*Path for file.*/
