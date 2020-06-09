@@ -29,6 +29,7 @@ Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 	const unsigned int port, const unsigned int identifier, int& size)
 	: Node(io_context, ip, port, identifier, size), blockChain("Tests/blockChain.json"), state(NodeState::IDLE), pingSent(-1)
 {
+	/*Sets node's actions.*/
 	actions[ConnectionType::POSTBLOCK] = new POSTBlock(this);
 	actions[ConnectionType::POSTMERKLE] = new POSTMerkle(this);
 	actions[ConnectionType::POSTMERKLE] = new POSTMerkle(this);
@@ -36,8 +37,11 @@ Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 	actions[ConnectionType::POSTTRANS] = new POSTTrans(this);
 	actions[ConnectionType::PING] = new Ping(this);
 	actions[ConnectionType::LAYOUT] = new Layout(this);
-	double time = static_cast <double> ((rand()) / (static_cast <double> (RAND_MAX)) * (timeMax - timeMin)) + timeMin;
 
+	/*Generates random time for timer.*/
+	double time = static_cast <double>((rand()) / (static_cast <double> (RAND_MAX)) * (timeMax - timeMin)) + timeMin;
+
+	/*Sets queue and timer.*/
 	if (!(queue = al_create_event_queue())) {
 		throw std::exception("Failed to create event queue");
 	}
@@ -61,6 +65,7 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 	return error;
 }
 
+/*Sets info (if necessary) and queues new action.*/
 void Full_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
 	if (type == ConnectionType::POSTBLOCK)
 		actions[ConnectionType::POSTBLOCK]->setData(getBlock(blockID));
@@ -69,6 +74,7 @@ void Full_Node::perform(ConnectionType type, const unsigned int id, const std::s
 	}
 }
 
+/*Sets info (if necessary) and queues new action.*/
 void Full_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
 	if (type == ConnectionType::POSTMERKLE)
 		actions[ConnectionType::POSTMERKLE]->setData(getMerkleBlock(blockID, key));
@@ -78,7 +84,7 @@ void Full_Node::perform(ConnectionType type, const unsigned int id, const std::s
 	}
 }
 
-/*Destructor. Uses Node destructor.*/
+/*Destructor. Frees resources..*/
 Full_Node::~Full_Node() {
 	if (timer) {
 		al_destroy_timer(timer);
@@ -188,6 +194,7 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 		if (content != std::string::npos && data != std::string::npos) {
 			trans = json::parse(request.substr(data + 5, content - data - 5));
 
+			/*Checks if it's a new transaction or an old one...*/
 			if (trans.find("vout") != trans.end()) {
 				bool resend = true;
 				for (const auto& transaction : blockChain.getBlock(blockChain.getBlockAmount() - 1)["tx"]) {
@@ -195,13 +202,16 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 						resend = false;
 				}
 
+				/*If it's a new one...*/
 				if (resend) {
+					/*It sends it to it's neighbors (except the one who sent it).*/
 					for (const auto& neighbor : neighbors) {
 						if (neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1) {
 							perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"]["publicid"], trans["vout"]["amount"].get<unsigned int>());
 						}
 					}
 
+					/*Saves transaction.*/
 					blockChain.newTransaction(trans);
 				}
 				result["status"] = true;
@@ -209,10 +219,11 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 		}
 	}
 
-	/*If it's a filter...*/
 	else if (request.find(FILTERPOST) != std::string::npos) {
 		result["status"] = true;
 	}
+
+	/*Different types of messages. Sets dispatcher action*/
 	else if (request.find(PING) != std::string::npos) {
 		result = dispatcher(NodeEvents::PING, nodeInfo, request);
 	}
@@ -232,7 +243,9 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 void Full_Node::perform() {
 	/*If request has ended...*/
 	if (clients.size() && clients.front() && !clients.front()->perform()) {
+		/*Checks if it was a GETBlock...*/
 		if (typeid(*clients.front()) == typeid(GETBlockClient)) {
+			/*Saves blocks.*/
 			const json& temp = clients.front()->getAnswer();
 			if (temp.find("status") != temp.end() && temp["status"]) {
 				if (temp.find("result") != temp.end()) {
@@ -242,7 +255,7 @@ void Full_Node::perform() {
 				}
 			}
 		}
-		/*Deletes client and set pointer to null.*/
+		/*Deletes client.*/
 		delete clients.front();
 		clients.pop_front();
 	}
@@ -253,21 +266,36 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 	std::string answer;
 	json temp;
 	switch (Event) {
+		/*If it got a Ping...*/
 	case NodeEvents::PING:
+
+		/*If node was idle...*/
 		if (state == NodeState::IDLE) {
+			/*Sets state to WAITING_LAYOUT.*/
 			state = NodeState::WAITING_LAYOUT;
 			temp["status"] = NOTREADY;
 			answer = temp.dump();
 		}
+
+		/*If it was collecting members...*/
 		else if (state == NodeState::COLLECTING_MEMBERS) {
+			/*Adds neighbor.*/
 			idsToAdd.push_back({ nodeInfo.address().to_string(), static_cast<unsigned int>(nodeInfo.port() - 1) });
+
+			/*Performs net creation.*/
 			particularAlgorithm();
+
+			/*Sets state to NETWORK_CREATED.*/
 			state = NodeState::NETWORK_CREATED;
 			temp["status"] = READY;
 			answer = temp.dump();
 		}
+
+		/*If network was created...*/
 		else if (state == NodeState::NETWORK_CREATED) {
 			bool addIt = true;
+
+			/*Adds neighbor that sent ping.*/
 			for (auto& neighbor : neighbors) {
 				if (neighbor.second.ip == nodeInfo.address().to_string() && neighbor.second.port == nodeInfo.port() - 1)
 					addIt = false;
@@ -282,35 +310,48 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 			answer = temp.dump();
 		}
 		break;
+
+		/*If message was a NETWORK_LAYOUT...*/
 	case NodeEvents::NETWORK_LAYOUT:
+
+		/*If node was waiting for layout...*/
 		if (state == NodeState::WAITING_LAYOUT) {
+			/*Sets state to NETWORK_CREATED.*/
 			state = NodeState::NETWORK_CREATED;
 			temp["status"] = READY;
 			answer = temp.dump();
+
+			/*Adds neighbors from layout.*/
 			neighborFromJSON(request, true);
 		}
-		else {
-		}
 		break;
+
+		/*If message was a NETWORK_READY...*/
 	case NodeEvents::NETWORK_READY:
+
+		/*If node was collecting members...*/
 		if (state == NodeState::COLLECTING_MEMBERS) {
+			/*Sets state to NETWORK_CREATED.*/
 			state = NodeState::NETWORK_CREATED;
+
+			/*Performs net creation.*/
 			particularAlgorithm();
 			temp["status"] = READY;
 			answer = temp.dump();
 		}
 		break;
-	case NodeEvents::NETWORK_NOT_READY:
 
+		/*If message was NETWORK_NOT_READY...*/
+	case NodeEvents::NETWORK_NOT_READY:
+		/*Returns*/
 		break;
 	default:
-		if (state == NodeState::NETWORK_CREATED) {
-		}
 		break;
 	}
 	return answer;
 }
 
+/*Gets merkleblock from block ID and transaction ID.*/
 const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
 	//int k = blockChain.getBlockIndex(blockID);
 	unsigned int k = 0;
@@ -333,14 +374,20 @@ const json Full_Node::getMerkleBlock(const std::string& blockID, const std::stri
 	return result;
 }
 
+/*Checks for timeout.*/
 void Full_Node::checkTimeout(const std::vector<Node*>& nodes) {
+	/*If node is idle...*/
 	if (state == NodeState::IDLE) {
+		/*If there was a timeout, stops timer and changes state to COLLECTING_MEMBERS.*/
 		if (al_get_next_event(queue, &timeEvent)) {
 			al_stop_timer(timer);
 			state = NodeState::COLLECTING_MEMBERS;
 		}
 	}
+
+	/*If node was collecting members...*/
 	else if (state == NodeState::COLLECTING_MEMBERS) {
+		/*Sends ping to node...*/
 		pingSent++;
 		if (pingSent < nodes.size()) {
 			if (typeid(*nodes[pingSent]) == typeid(Full_Node) && nodes[pingSent] != this) {
@@ -348,6 +395,8 @@ void Full_Node::checkTimeout(const std::vector<Node*>& nodes) {
 				perform(ConnectionType::PING, NULL, subNet.back()->getIP(), subNet.back()->getPort());
 			}
 		}
+
+		/*If ping was sent to all nodes, it creates subnet.*/
 		else {
 			particularAlgorithm();
 			state = NodeState::NETWORK_CREATED;
@@ -355,7 +404,7 @@ void Full_Node::checkTimeout(const std::vector<Node*>& nodes) {
 	}
 }
 
-/*HARDCODED*/
+/*Creates subnet.*/
 void Full_Node::particularAlgorithm() {
 	json layout;
 	json nodes;
@@ -372,6 +421,7 @@ void Full_Node::particularAlgorithm() {
 			connections[i] = "";
 		}
 
+		/*Sets neighbors in subnetwork.*/
 		for (unsigned int i = 0; i < subNet.size(); i++) {
 			temp = std::to_string(subNet[i]->getID()) + ':' + subNet[i]->getIP() + ':' + std::to_string(subNet[i]->getPort());
 			nodes.push_back(temp);
@@ -379,21 +429,31 @@ void Full_Node::particularAlgorithm() {
 			while (connections[i].length() < 2)
 				setIndexes(connections, edges, i);
 		}
+
+		/*Sets 'edges' in layout response.*/
 		layout["edges"] = edges;
+
+		/*Sets 'nodes' in layout.*/
+		layout["nodes"] = nodes;
+
+		/*Sends layout to all members of subnet.*/
 		for (unsigned int i = 0; i < subNet.size() - 1; i++) {
 			actions[ConnectionType::LAYOUT]->setData(layout);
 			perform(ConnectionType::LAYOUT, NULL, subNet[i]->getIP(), subNet[i]->getPort());
 		}
 
-		layout["nodes"] = nodes;
+		/*Adds it's own neighbors.*/
 		neighborFromJSON(layout.dump(), false);
 	}
 }
 
+/*Sets neighbors for layout.*/
 void Full_Node::setIndexes(std::map<int, std::string>& connections, json& edges, int index) {
 	json tempEdge;
 	std::string usedIndexes;
 	int tempIndex = rand() % subNet.size();
+
+	/*Generates random index and validates amount of neighbors.*/
 	while (connections[tempIndex].length() >= 2 || tempIndex == index ||
 		connections[index].find(std::to_string(tempIndex)) != std::string::npos) {
 		if (usedIndexes.find(std::to_string(tempIndex)) == std::string::npos)
@@ -404,34 +464,47 @@ void Full_Node::setIndexes(std::map<int, std::string>& connections, json& edges,
 		else
 			tempIndex = rand() % subNet.size();
 	}
+
+	/*Sets targets in layout.*/
 	tempEdge["target1"] = std::to_string(subNet[index]->getID()) + ':' + subNet[index]->getIP() + ':' + std::to_string(subNet[index]->getPort());
 	tempEdge["target2"] = std::to_string(subNet[tempIndex]->getID()) + ':' + subNet[tempIndex]->getIP() + ':' + std::to_string(subNet[tempIndex]->getPort());
 	edges.push_back(tempEdge);
 
+	/*Sets connection in connections map.*/
 	connections[index].append(std::to_string(tempIndex));
 	connections[tempIndex].append(std::to_string(index));
 }
 
+/*Adds neighbors from a JSON.*/
 void Full_Node::neighborFromJSON(const std::string& request, bool fromServer) {
 	json layout;
 	int content = request.find/*_last_of*/("Content-Type");
 	int data = request.find/*_last_of */("Data=");
+
+	/*Checks validity of data.*/
 	if (content != std::string::npos && data != std::string::npos || !fromServer) {
+		/*Gets real layout.*/
 		if (fromServer)
 			layout = json::parse(request.substr(data + 5, content - data - 5));
 		else
 			layout = json::parse(request);
 
+		/*Sets self string to look for in layout.*/
 		std::string self = std::to_string(identifier) + ':' + ip + ':' + std::to_string(port);
+
+		/*Loops through graphs edges...*/
 		for (auto& edge : layout["edges"]) {
 			std::string target1 = edge["target1"];
 			std::string target2 = edge["target2"];
 			std::string target;
+
+			/*Checks if node is a target.*/
 			if (target1 == self)
 				target = target2;
 			else if (target2 == self)
 				target = target1;
 
+			/*If it's a target, it adds neighbor.*/
 			if (target.length()) {
 				int pos1 = target.find_first_of(':');
 				std::string temp = target.substr(pos1 + 1, target.length() - pos1 - 1);

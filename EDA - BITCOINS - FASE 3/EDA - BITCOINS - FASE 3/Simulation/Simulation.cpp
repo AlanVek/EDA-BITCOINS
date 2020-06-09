@@ -181,10 +181,10 @@ void Simulation::generateMsg() {
 				/*Finished string.*/
 			case ServerState::FINISHED:
 				if (ports.size() && ports.back() + 1) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + "finished the connection with node " + std::to_string(ports.back()));
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered to node " + std::to_string(ports.back()));
 				}
 				else
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished connection with an unknown node.");
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered to an unknown node.");
 				break;
 			default:
 				break;
@@ -224,6 +224,8 @@ void Simulation::newNodes(bool request) {
 				for (const auto& neighbor : nnds[i].neighbors) {
 					auto& ngh = gui->getNode(neighbor);
 					bool added = false;
+
+					/*Sets neighbors*/
 					for (auto& node : nodes) {
 						if (node->getIP() == ngh.ip && node->getPort() == ngh.port) {
 							nodes.back()->newNeighbor(node->getID(), ngh.ip, ngh.port);
@@ -236,10 +238,13 @@ void Simulation::newNodes(bool request) {
 					}
 				}
 
+				/*Requests blockchain if it's a full node.*/
 				if (nnds[i].type == NodeTypes::NEW_FULL) {
 					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
 					nodes.back()->perform(ConnectionType::PING, NULL, (*nodes.back()->getNeighbors().begin()).second.ip, (*nodes.back()->getNeighbors().begin()).second.port);
 				}
+
+				/*Sends filters and requests headers if it's an SPV.*/
 				else {
 					nodes.back()->perform(ConnectionType::GETHEADER, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
 
@@ -289,19 +294,26 @@ const unsigned int Simulation::getIndex() {
 	return currentIndex;
 }
 
+/*Creates network.*/
 bool Simulation::createNetwork() {
 	bool done = true;
 
+	/*Performs client requests.*/
 	perform();
+
+	/*Sets message in GUI.*/
 	generateMsg();
 
 	for (auto& node : nodes) {
+		/*Checks for timeouts and pings.*/
 		node->checkTimeout(nodes);
 
+		/*Checks if network is done.*/
 		if (!node->networkDone())
 			done = false;
 	}
 
+	/*If network is done, connects SPVs and adds remaining neighbors.*/
 	if (done) {
 		connectSPVs();
 		addAdders();
@@ -310,13 +322,19 @@ bool Simulation::createNetwork() {
 	return done;
 }
 
+/*Connects SPVs.*/
 void Simulation::connectSPVs() {
 	int tempIndex;
+
+	/*Loops through nodes...*/
 	for (auto& node : nodes) {
+		/*If it's an SPV...*/
 		if (typeid(*node) == typeid(SPV_Node)) {
+			/*While amount if neighbors is less than 2...*/
 			while (node->getNeighbors().size() < 2) {
 				auto neighbor = nodes[rand() % nodes.size()];
 
+				/*Selects random node and connects it to SPV (if it's a full node)*/
 				if (typeid(*neighbor) != typeid(SPV_Node)) {
 					node->newNeighbor(neighbor->getID(), neighbor->getIP(), neighbor->getPort());
 					neighbor->newNeighbor(node->getID(), node->getIP(), node->getPort());
@@ -326,6 +344,7 @@ void Simulation::connectSPVs() {
 	}
 }
 
+/*Adds neighbors set from within node.*/
 void Simulation::addAdders() {
 	for (auto& node : nodes) {
 		for (auto& neighbor : node->getAdders()) {

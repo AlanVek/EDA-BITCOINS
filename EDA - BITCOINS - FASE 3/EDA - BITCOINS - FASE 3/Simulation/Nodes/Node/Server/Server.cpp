@@ -198,9 +198,13 @@ void Server::answer(Connection* connector, const std::string& message) {
 		)
 	);
 }
+
+/*Returns vector with sockets connection states.*/
 std::vector<stateOfConnection> Server::getState() {
 	std::vector<stateOfConnection> temp;
 	boost::asio::ip::tcp::endpoint connection;
+
+	/*Sets new vector with sockets state.*/
 	for (auto& socket : sockets) {
 		switch (socket.state) {
 		case ServerState::FREE:

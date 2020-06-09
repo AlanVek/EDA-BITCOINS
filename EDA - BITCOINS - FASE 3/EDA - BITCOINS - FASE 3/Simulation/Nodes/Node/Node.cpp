@@ -76,10 +76,10 @@ std::vector<ClientState> Node::getClientState(void) {
 	return temp;
 }
 
-std::vector<stateOfConnection> Node::getServerState(void) {
-	return server.getState();
-}
+/*Returns server's connections.*/
+std::vector<stateOfConnection> Node::getServerState(void) { return server.getState(); }
 
+/*Returns connected clients and clears vector.*/
 std::vector<int> Node::getClientPort(void) {
 	auto temp = connectedClients;
 
@@ -87,6 +87,7 @@ std::vector<int> Node::getClientPort(void) {
 	return temp;
 }
 
+/*Sets new connected client in vector.*/
 void Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	int size = connectedClients.size();
 	for (const auto& neighbor : neighbors) {

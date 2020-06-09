@@ -514,14 +514,17 @@ void GUI::showConnections() {
 	else
 		ImGui::Text("None");
 }
-
+/*Shows networking info.*/
 void GUI::showNetworkingInfo() {
 	static bool showingNetworking = true;
 	if (showingNetworking) {
+		/*Shows info if button is activated.*/
 		displayWidget("Hide networking info", [this]() {showingNetworking = false; });
 		ImGui::Text(networkingInfo.c_str());
 	}
 	else
+
+		/*Sets button for showing info if it's desactivated.*/
 		displayWidget("Show networking info", [this]() {showingNetworking = true; });
 }
 
@@ -544,8 +547,11 @@ void GUI::selectReceiver() {
 		if (allNodes[i]->getID() == sender)
 			index = i;
 	}
+
+	/*Gets node's neighbors.*/
 	const auto& neighbors = allNodes[index]->getNeighbors();
 
+	/*Adjusts neighbors if node has new neighbors set from outside of GUI.*/
 	if (neighbors.size() > nodes[sender].neighbors.size()) {
 		for (unsigned int i = nodes[sender].neighbors.size(); i < neighbors.size(); i++) {
 			nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), false));
