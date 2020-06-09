@@ -533,11 +533,7 @@ void GUI::selectSender() {
 	for (const auto& node : allNodes) {
 		/*Sets a button with the node's index.*/
 		displayWidget(("Node " + std::to_string(node->getID())).c_str(),
-			[this, &node]() {
-				if (true) {
-					sender = node->getID();
-					state = States::RECEIVER_SELECTION;
-				} });
+			[this, &node]() {sender = node->getID(); state = States::RECEIVER_SELECTION; });
 		ImGui::SameLine();
 	}
 }
