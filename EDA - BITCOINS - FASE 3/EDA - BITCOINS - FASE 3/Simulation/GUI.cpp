@@ -533,13 +533,23 @@ void GUI::selectSender() {
 	for (const auto& node : allNodes) {
 		/*Sets a button with the node's index.*/
 		displayWidget(("Node " + std::to_string(node->getID())).c_str(),
-			[this, &node]() {sender = node->getID(); state = States::RECEIVER_SELECTION; });
+			[this, &node]() {
+				if (true) {
+					sender = node->getID();
+					state = States::RECEIVER_SELECTION;
+				} });
 		ImGui::SameLine();
 	}
 }
 /*Receiver selection.*/
 void GUI::selectReceiver() {
-	const auto& neighbors = allNodes[sender]->getNeighbors();
+	int index;
+	for (int i = 0; i < allNodes.size(); i++) {
+		if (allNodes[i]->getID() == sender)
+			index = i;
+	}
+	const auto& neighbors = allNodes[index]->getNeighbors();
+
 	if (neighbors.size() > nodes[sender].neighbors.size()) {
 		for (unsigned int i = nodes[sender].neighbors.size(); i < neighbors.size(); i++) {
 			nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), false));
