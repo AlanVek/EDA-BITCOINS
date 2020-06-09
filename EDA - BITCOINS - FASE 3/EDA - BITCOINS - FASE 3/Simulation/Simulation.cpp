@@ -181,10 +181,10 @@ void Simulation::generateMsg() {
 				/*Finished string.*/
 			case ServerState::FINISHED:
 				if (ports.size() && ports.back() + 1) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from node " + std::to_string(ports.back()));
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + "finished the connection with node " + std::to_string(ports.back()));
 				}
 				else
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from an unknown node.");
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished connection with an unknown node.");
 				break;
 			default:
 				break;
