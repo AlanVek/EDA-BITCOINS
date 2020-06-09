@@ -172,7 +172,7 @@ void Simulation::generateMsg() {
 			case ServerState::PERFORMING:
 
 				/*With known neighbor.*/
-				if ((client_reception = ports[j])) {
+				if (ports.size() > j && (client_reception = ports[j]) != -1) {
 					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception));
 				}
 				else
@@ -251,7 +251,7 @@ void Simulation::newNodes(bool request) {
 			}
 		}
 	}
-	size = nnds.size();
+	size = nnds.size() - 1;
 }
 
 /*Getter.*/

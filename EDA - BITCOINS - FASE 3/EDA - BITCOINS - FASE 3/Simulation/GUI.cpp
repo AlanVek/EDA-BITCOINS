@@ -672,11 +672,10 @@ bool GUI::addNeighbor(bool local, bool type) {
 						allNodes[currentIndex]->perform(ConnectionType::PING, NULL, node->getIP(), node->getPort());
 						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort());
 						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort());
-
-						neighbor = NewNode();
-						return true;
 					}
 				}
+				neighbor = NewNode();
+				return true;
 			}
 
 			/*If it's not local...*/
@@ -685,10 +684,12 @@ bool GUI::addNeighbor(bool local, bool type) {
 				if (neighbor.ip.length()) {
 					/*Sets new neighbor and saves node in nodes vector.*/
 					neighbor.index = nodes.size();
+					neighbor.type = NodeTypes::NEW_FULL;
 					allNodes[currentIndex]->newNeighbor(neighbor.index, neighbor.ip, neighbor.port);
+					allNodes[currentIndex]->perform(ConnectionType::PING, NULL, neighbor.ip, neighbor.port);
 					nodes.push_back(neighbor);
-					neighbor = NewNode();
 
+					neighbor = NewNode();
 					return true;
 				}
 			}
