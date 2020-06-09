@@ -23,7 +23,7 @@ struct Neighbor {
 class Node {
 public:
 	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
-		const unsigned int identifier);
+		const unsigned int identifier, int& size);
 	virtual ~Node();
 
 	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port);
@@ -36,10 +36,10 @@ public:
 
 	std::vector<ClientState> getClientState(void);
 	std::vector<stateOfConnection> getServerState(void);
-	virtual std::vector<unsigned int> getClientPort(void);
+	virtual std::vector<int> getClientPort(void);
 	const std::map<unsigned int, Neighbor>& getNeighbors() { return neighbors; }
 	const unsigned int getPort() { return port; }
-
+	int& size;
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const unsigned int) = 0;
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const std::string&) = 0;
 
@@ -54,7 +54,7 @@ public:
 
 	virtual bool networkDone() = 0;
 
-	virtual const std::vector<Neighbor> getAdders() = 0;
+	virtual std::vector<Neighbor> getAdders() = 0;
 protected:
 	friend Action;
 	friend POSTBlock;
@@ -84,5 +84,5 @@ protected:
 	std::string ip;
 	unsigned int port, identifier;
 
-	std::vector<unsigned int> connectedClients;
+	std::vector<int> connectedClients;
 };

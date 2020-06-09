@@ -33,14 +33,15 @@ const enum class FILECODES : unsigned int {
 };
 
 /*GUI constructor. Initializes data members and sets Allegro resources.*/
-GUI::GUI(void) :
+GUI::GUI(std::vector<Node*>& nodes) :
 	guiDisp(nullptr),
 	guiQueue(nullptr),
 	action(Events::NOTHING),
 	state(States::INIT),
 	currentIndex(-1),
 	dataIndex(-1),
-	showingBlock(Shower::NOTHING)
+	showingBlock(Shower::NOTHING),
+	allNodes(nodes)
 {
 	setAllegro();
 }
@@ -291,6 +292,8 @@ Events GUI::checkStatus(void) {
 			/*Connects latest node with other nodes from an existint network.*/
 		case States::NODE_CONNECTION:
 			connections();
+			result = action;
+			action = Events::NOTHING;
 			break;
 
 			/*General screen with GO, EXIT, NEWNODE and NEWMESSAGE buttons.*/
@@ -456,7 +459,7 @@ void GUI::connections() {
 		/*If it's SPV...*/
 		if (nodes.back().type == NodeTypes::NEW_SPV) {
 			/*Checks validity of neighbors' data.*/
-			for (const auto& node : neighbors) if (!node.ip.length() || !node.port) checker = false;
+			for (const auto& node : neighbors) { if (!node.ip.length() || !node.port) checker = false; }
 			if (checker) {
 				/*Inserts neighbors to new node's neighbors.*/
 				nodes[index].neighbors.insert(nodes[index].neighbors.end(), { nodes.size(), nodes.size() + 1 });
@@ -537,6 +540,12 @@ void GUI::selectSender() {
 /*Receiver selection.*/
 void GUI::selectReceiver() {
 	const auto& neighbors = allNodes[sender]->getNeighbors();
+	if (neighbors.size() > nodes[sender].neighbors.size()) {
+		for (unsigned int i = nodes[sender].neighbors.size(); i < neighbors.size(); i++) {
+			nodes.push_back(NewNode(NodeTypes::NEW_FULL, nodes.size(), false));
+			nodes[sender].neighbors.push_back(nodes.back().index);
+		}
+	}
 	if (neighbors.size()) {
 		ImGui::Text("Select Receiver: ");
 
@@ -643,19 +652,6 @@ bool GUI::addNeighbor(bool local, bool type) {
 	creation(&neighbor, States::EMPTYTEMP);
 	if (local && neighbor.ip != data::autoIP) neighbor.ip = data::autoIP;
 
-	/*if (type) {
-		ImGui::Text("Select type: ");
-		ImGui::SameLine();
-		displayWidget("FULL", [this]() {newNeighbor.type = NodeTypes::NEW_FULL; });
-		ImGui::SameLine();
-		displayWidget("SPV", [this]() {newNeighbor.type = NodeTypes::NEW_SPV; });
-		if (newNeighbor.type != NodeTypes::UNDEFINED) {
-			ImGui::SameLine();
-			const char* text = newNeighbor.type == NodeTypes::NEW_FULL ? "FULL" : "SPV";
-			ImGui::Text(text);
-		}
-	}*/
-
 	ImGui::NewLine();
 
 	/*"Done" button.*/
@@ -667,8 +663,9 @@ bool GUI::addNeighbor(bool local, bool type) {
 				/*Searches for node's ID and sets both new neighbors.*/
 				for (const auto& node : allNodes) {
 					if (node->getPort() == neighbor.port) {
-						allNodes[currentIndex]->newNeighbor(node->getID(), data::autoIP, neighbor.port);
-						allNodes[node->getID()]->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort());
+						allNodes[currentIndex]->perform(ConnectionType::PING, NULL, node->getIP(), node->getPort());
+						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort());
+						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort());
 
 						neighbor = NewNode();
 						return true;
@@ -950,10 +947,3 @@ const std::string& GUI::getWallet() { return wallet; }
 void GUI::networkDone() { state = States::INIT_DONE; }
 void GUI::infoGotten() { wallet.clear(); amount = 0; action = Events::NOTHING; }
 void GUI::updateMsg(const std::string& info) { networkingInfo.append(info); }
-void GUI::setRealNodes(const std::vector<Node*>& nodes) {
-	for (unsigned int i = 0; i < nodes.size(); i++) {
-		if (i < allNodes.size()) allNodes[i] = nodes[i];
-
-		else allNodes.push_back(nodes[i]);
-	}
-}

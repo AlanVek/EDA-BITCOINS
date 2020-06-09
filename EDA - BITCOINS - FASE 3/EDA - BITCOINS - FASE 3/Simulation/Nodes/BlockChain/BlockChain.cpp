@@ -61,3 +61,8 @@ unsigned int BlockChain::getBlockIndex(const std::string& blockID) {
 
 /*Gets block's header by id.*/
 const json& BlockChain::getHeader(unsigned int index) { return blocks[index].header; }
+
+void BlockChain::newTransaction(const json& trans) {
+	blocks.back().block["tx"].push_back(trans);
+	blocks.back().tx.push_back(trans);
+}

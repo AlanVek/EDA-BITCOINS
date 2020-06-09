@@ -20,6 +20,7 @@ public:
 	const json& getHeader(unsigned int);
 	const std::vector<std::string>& getTree(unsigned int);
 	const json& getRawData() { return JSON; }
+	void newTransaction(const json&);
 	/************************************************************/
 
 private:

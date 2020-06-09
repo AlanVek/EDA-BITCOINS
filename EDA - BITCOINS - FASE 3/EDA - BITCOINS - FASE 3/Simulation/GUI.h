@@ -62,7 +62,7 @@ private:
 
 public:
 
-	GUI();
+	GUI(std::vector<Node*>&);
 
 	~GUI();
 
@@ -86,8 +86,6 @@ public:
 	void updateMsg(const std::string&);
 
 	void infoGotten();
-
-	void setRealNodes(const std::vector < Node*>&);
 
 private:
 
@@ -166,7 +164,7 @@ private:
 	void showBlocks();
 	void displayActions();
 	void showNodes();
-	void displaySPVActions();
+	//void displaySPVActions();
 	void neighborButtons(bool&, bool&, bool&);
 
 	/*Flag data members.*/
@@ -178,7 +176,7 @@ private:
 	/*Data members modifiable by user.*/
 	/**********************************/
 	std::vector <NewNode> nodes;
-	std::vector <Node*> allNodes;
+	std::vector <Node*>& allNodes;
 	unsigned int sender, receiver;
 	std::string wallet;
 	int amount;

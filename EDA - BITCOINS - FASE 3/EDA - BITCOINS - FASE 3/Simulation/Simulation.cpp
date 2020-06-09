@@ -3,10 +3,10 @@
 #include "Nodes/SPV_Node.h"
 
 //Simulation constructor.
-Simulation::Simulation(void) : running(true), ev(Events::NOTHING)
+Simulation::Simulation(void) : running(true), ev(Events::NOTHING), size(0)
 {
 	/*Attempts to create new GUI variable.*/
-	gui = new GUI;
+	gui = new GUI(nodes);
 
 	srand(time(NULL));
 }
@@ -33,9 +33,6 @@ void Simulation::mainScreen() {
 		else {
 			newNodes(true);
 		}
-
-		/*Sets the real vector in GUI.*/
-		gui->setRealNodes(nodes);
 	}
 }
 
@@ -50,6 +47,7 @@ void Simulation::dispatch(const Events& code) {
 		/*Nothing happened.*/
 	case Events::NOTHING:
 		perform();
+		//gui->setRealNodes(nodes);
 		break;
 
 		/*Filter (POST).*/
@@ -105,15 +103,11 @@ void Simulation::dispatch(const Events& code) {
 		/*Sets new nodes.*/
 		newNodes(true);
 
-		/*Sets the real vector in GUI.*/
-		gui->setRealNodes(nodes);
-
 		/*For non-blocking network creation.*/
 	case Events::KEEPCREATING:
 
 		if (createNetwork()) {
 			gui->networkDone();
-			gui->setRealNodes(nodes);
 		}
 
 		break;
@@ -161,7 +155,6 @@ void Simulation::generateMsg() {
 				/*Finished string.*/
 			case ClientState::FINISHED:
 				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished the request.");
-				gui->setRealNodes(nodes);
 				canPrint[i] = true;
 				break;
 			default:
@@ -187,8 +180,8 @@ void Simulation::generateMsg() {
 				break;
 				/*Finished string.*/
 			case ServerState::FINISHED:
-				if (ports.size() >= (j) && ports[j - 1]) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from node " + std::to_string(ports[j]));
+				if (ports.size() && ports.back() + 1) {
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from node " + std::to_string(ports.back()));
 				}
 				else
 					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered a request from an unknown node.");
@@ -211,18 +204,18 @@ void Simulation::newNodes(bool request) {
 		/*Checks if node's ID is already in the vector.
 		If it is, it sets the flag to false, so the rest of the
 		function doesn't load it again.*/
-		for (const auto& node : nodes)
-			if (node->getID() == nnds[i].index) {
+		for (const auto& node : nodes) {
+			if (node->getPort() == nnds[i].port && node->getIP() == nnds[i].ip) {
 				goOn = false;
 			}
-
+		}
 		/*If it's a local node and isn't already in the nodes vector...*/
 		if (nnds[i].local && goOn) {
 			/*Creates new node.*/
 			if (nnds[i].type == NodeTypes::NEW_FULL)
-				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
+				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
 			else
-				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index));
+				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
 
 			/*If it was created from appendix mode, it must request (BLOCK if it's a FULL or HEADER if it's an SPV).
 			Parameters "0" and NULL mean "all the blocks/headers". */
@@ -230,19 +223,35 @@ void Simulation::newNodes(bool request) {
 				/*Sets neighbors.*/
 				for (const auto& neighbor : nnds[i].neighbors) {
 					auto& ngh = gui->getNode(neighbor);
-					nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+					bool added = false;
+					for (auto& node : nodes) {
+						if (node->getIP() == ngh.ip && node->getPort() == ngh.port) {
+							nodes.back()->newNeighbor(node->getID(), ngh.ip, ngh.port);
+							node->newNeighbor(nodes.back()->getID(), nodes.back()->getIP(), nodes.back()->getPort());
+							added = true;
+						}
+					}
+					if (!added) {
+						nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+					}
 				}
-				if (nnds[i].type == NodeTypes::NEW_FULL)
+
+				if (nnds[i].type == NodeTypes::NEW_FULL) {
 					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
+					nodes.back()->perform(ConnectionType::PING, NULL, (*nodes.back()->getNeighbors().begin()).second.ip, (*nodes.back()->getNeighbors().begin()).second.port);
+				}
 				else {
 					nodes.back()->perform(ConnectionType::GETHEADER, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
 
-					for (const auto& neighbor : nodes.back()->getNeighbors())
+					for (const auto& neighbor : nodes.back()->getNeighbors()) {
 						nodes.back()->perform(ConnectionType::POSTFILTER, neighbor.first, nodes.back()->getKey(), NULL);
+						nodes.back()->perform(ConnectionType::PING, NULL, neighbor.second.ip, neighbor.second.port);
+					}
 				}
 			}
 		}
 	}
+	size = nnds.size();
 }
 
 /*Getter.*/
@@ -284,6 +293,7 @@ bool Simulation::createNetwork() {
 	bool done = true;
 
 	perform();
+	generateMsg();
 
 	for (auto& node : nodes) {
 		node->checkTimeout(nodes);
@@ -294,16 +304,9 @@ bool Simulation::createNetwork() {
 
 	if (done) {
 		connectSPVs();
-		for (auto& node : nodes) {
-			for (auto& neighbor : node->getAdders()) {
-				for (auto& node_2 : nodes) {
-					if (node_2->getIP() == neighbor.ip && node_2->getPort() == neighbor.port) {
-						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port);
-					}
-				}
-			}
-		}
+		addAdders();
 	}
+
 	return done;
 }
 
@@ -314,8 +317,22 @@ void Simulation::connectSPVs() {
 			while (node->getNeighbors().size() < 2) {
 				auto neighbor = nodes[rand() % nodes.size()];
 
-				if (typeid(*neighbor) != typeid(SPV_Node))
+				if (typeid(*neighbor) != typeid(SPV_Node)) {
 					node->newNeighbor(neighbor->getID(), neighbor->getIP(), neighbor->getPort());
+					neighbor->newNeighbor(node->getID(), node->getIP(), node->getPort());
+				}
+			}
+		}
+	}
+}
+
+void Simulation::addAdders() {
+	for (auto& node : nodes) {
+		for (auto& neighbor : node->getAdders()) {
+			for (auto& node_2 : nodes) {
+				if (node_2->getIP() == neighbor.ip && node_2->getPort() == neighbor.port) {
+					node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port);
+				}
 			}
 		}
 	}

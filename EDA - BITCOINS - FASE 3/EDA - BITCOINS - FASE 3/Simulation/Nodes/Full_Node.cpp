@@ -26,8 +26,8 @@ const json error = { "error" };
 
 /*Constructor. Uses Node constructor.*/
 Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
-	const unsigned int port, const unsigned int identifier)
-	: Node(io_context, ip, port, identifier), blockChain("Tests/blockChain.json"), state(NodeState::IDLE), pingSent(-1)
+	const unsigned int port, const unsigned int identifier, int& size)
+	: Node(io_context, ip, port, identifier, size), blockChain("Tests/blockChain.json"), state(NodeState::IDLE), pingSent(-1)
 {
 	actions[ConnectionType::POSTBLOCK] = new POSTBlock(this);
 	actions[ConnectionType::POSTMERKLE] = new POSTMerkle(this);
@@ -189,10 +189,20 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 			trans = json::parse(request.substr(data + 5, content - data - 5));
 
 			if (trans.find("vout") != trans.end()) {
-				for (const auto& neighbor : neighbors) {
-					if (neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port()) {
-						perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"]["publicid"], trans["vout"]["amount"].get<unsigned int>());
+				bool resend = true;
+				for (const auto& transaction : blockChain.getBlock(blockChain.getBlockAmount() - 1)["tx"]) {
+					if (transaction["txid"] == trans["txid"])
+						resend = false;
+				}
+
+				if (resend) {
+					for (const auto& neighbor : neighbors) {
+						if (neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1) {
+							perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"]["publicid"], trans["vout"]["amount"].get<unsigned int>());
+						}
 					}
+
+					blockChain.newTransaction(trans);
 				}
 				result["status"] = true;
 			}
@@ -250,13 +260,26 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 			answer = temp.dump();
 		}
 		else if (state == NodeState::COLLECTING_MEMBERS) {
-			idsToAdd.push_back({ nodeInfo.address().to_string(), nodeInfo.port() });
+			idsToAdd.push_back({ nodeInfo.address().to_string(), static_cast<unsigned int>(nodeInfo.port() - 1) });
 			particularAlgorithm();
 			state = NodeState::NETWORK_CREATED;
 			temp["status"] = READY;
 			answer = temp.dump();
 		}
-		else {
+		else if (state == NodeState::NETWORK_CREATED) {
+			bool addIt = true;
+			for (auto& neighbor : neighbors) {
+				if (neighbor.second.ip == nodeInfo.address().to_string() && neighbor.second.port == nodeInfo.port() - 1)
+					addIt = false;
+			}
+
+			if (addIt) {
+				newNeighbor(size + 1, nodeInfo.address().to_string(), static_cast<unsigned int>(nodeInfo.port() - 1));
+				size++;
+			}
+
+			temp["status"] = READY;
+			answer = temp.dump();
 		}
 		break;
 	case NodeEvents::NETWORK_LAYOUT:
@@ -275,8 +298,6 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 			particularAlgorithm();
 			temp["status"] = READY;
 			answer = temp.dump();
-		}
-		else {
 		}
 		break;
 	case NodeEvents::NETWORK_NOT_READY:
@@ -373,10 +394,12 @@ void Full_Node::setIndexes(std::map<int, std::string>& connections, json& edges,
 	json tempEdge;
 	std::string usedIndexes;
 	int tempIndex = rand() % subNet.size();
-	while (connections[tempIndex].length() >= 2 || tempIndex == index) {
+	while (connections[tempIndex].length() >= 2 || tempIndex == index ||
+		connections[index].find(std::to_string(tempIndex)) != std::string::npos) {
 		if (usedIndexes.find(std::to_string(tempIndex)) == std::string::npos)
 			usedIndexes.append(std::to_string(tempIndex));
-		if (usedIndexes.length() >= subNet.size() && tempIndex != index)
+		if (usedIndexes.length() >= subNet.size() && tempIndex != index &&
+			connections[index].find(std::to_string(tempIndex)) == std::string::npos)
 			break;
 		else
 			tempIndex = rand() % subNet.size();

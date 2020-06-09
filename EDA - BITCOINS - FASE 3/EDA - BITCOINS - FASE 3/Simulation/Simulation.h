@@ -35,10 +35,12 @@ private:
 	Events ev;
 
 	void newNodes(bool);
-
+	void addAdders();
 	bool createNetwork();
 
 	void connectSPVs();
 
 	void generateMsg();
+
+	int size;
 };

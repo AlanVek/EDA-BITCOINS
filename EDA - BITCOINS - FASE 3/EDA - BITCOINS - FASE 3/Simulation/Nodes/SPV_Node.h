@@ -4,7 +4,7 @@
 
 class SPV_Node : public Node {
 public:
-	SPV_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int);
+	SPV_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&);
 	~SPV_Node();
 
 	virtual void perform();
@@ -21,7 +21,7 @@ public:
 
 	virtual void checkTimeout(const std::vector < Node*>&) {}
 
-	virtual const std::vector<Neighbor> getAdders() { return std::vector<Neighbor>(0); }
+	virtual std::vector<Neighbor> getAdders() { return std::vector<Neighbor>(0); }
 
 	virtual bool networkDone() { return true; }
 

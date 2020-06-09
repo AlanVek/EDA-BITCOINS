@@ -8,11 +8,12 @@ namespace {
 
 /*SPV_Node constructor. Uses Node constructor.*/
 SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
-	const unsigned int port, const unsigned int identifier) : Node(io_context, ip, port, identifier)
+	const unsigned int port, const unsigned int identifier, int& size) : Node(io_context, ip, port, identifier, size)
 {
 	actions[ConnectionType::POSTTRANS] = new POSTTrans(this);
 	actions[ConnectionType::POSTFILTER] = new POSTFilter(this);
 	actions[ConnectionType::GETHEADER] = new GETHeader(this);
+	actions[ConnectionType::PING] = new Ping(this);
 
 	publicKey = std::to_string(std::rand() % 99999999);
 }
@@ -43,6 +44,7 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
 		else {
+			//json merkle = json::parse(request.substr(data+5,content-data-5));
 		}
 	}
 	else {

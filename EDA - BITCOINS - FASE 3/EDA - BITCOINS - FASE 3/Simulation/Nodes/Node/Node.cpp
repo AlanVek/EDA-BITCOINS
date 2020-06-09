@@ -1,11 +1,11 @@
 #include "Node.h"
 
 /*Constructor. Sets callbacks in server.*/
-Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier)
+Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier, int& size)
 	: ip(ip), port(port), identifier(identifier), server(io_context,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&Node::ERRORResponse, this), port)
+		std::bind(&Node::ERRORResponse, this), port), size(size)
 {
 }
 
@@ -27,7 +27,13 @@ Node::~Node() {
 
 /*Adds new neighbor to 'neighbors' vector.*/
 void Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port) {
-	neighbors[id] = { ip, port };
+	bool addIt = true;
+	for (auto& neighbor : neighbors) {
+		if (neighbor.second.ip == ip && neighbor.second.port == port)
+			addIt = false;
+	}
+	if (addIt)
+		neighbors[id] = { ip, port };
 }
 
 /*Returns daytime string. If plusThirty is true, it returns
@@ -74,7 +80,7 @@ std::vector<stateOfConnection> Node::getServerState(void) {
 	return server.getState();
 }
 
-std::vector<unsigned int> Node::getClientPort(void) {
+std::vector<int> Node::getClientPort(void) {
 	auto temp = connectedClients;
 
 	connectedClients.clear();
@@ -89,5 +95,5 @@ void Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) 
 	}
 
 	if (connectedClients.size() == size)
-		connectedClients.push_back(0);
+		connectedClients.push_back(-1);
 }
