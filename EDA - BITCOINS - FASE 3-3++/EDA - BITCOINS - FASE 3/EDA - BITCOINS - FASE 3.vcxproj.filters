@@ -96,9 +96,6 @@
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
       <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\Nodes\Node\Action.cpp">
-      <Filter>Source Files\Node Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -180,9 +177,6 @@
       <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
-      <Filter>Header Files\Node Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Simulation\Nodes\Node\Action.h">
       <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\GUI.h">

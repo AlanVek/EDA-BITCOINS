@@ -2,7 +2,6 @@
 #include "Client/Client.h"
 #include "Server/Server.h"
 #include <map>
-#include "Action.h"
 
 const enum class ConnectionType : unsigned int {
 	GETBLOCK,
@@ -58,16 +57,6 @@ public:
 
 	virtual std::vector<Neighbor> getAdders() = 0;
 protected:
-	friend Action;
-	friend POSTBlock;
-	friend GETBlock;
-	friend POSTTrans;
-	friend POSTMerkle;
-	friend POSTFilter;
-	friend GETHeader;
-	friend Ping;
-	friend Layout;
-
 	virtual std::string makeDaytimeString(bool);
 
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&) = 0;
@@ -81,7 +70,6 @@ protected:
 	std::list<Client*> clients;
 	Server server;
 	std::map<unsigned int, Neighbor> neighbors;
-	std::map <ConnectionType, Action*> actions;
 
 	std::string ip;
 	unsigned int port, identifier;
@@ -89,4 +77,81 @@ protected:
 	json transactions;
 	std::vector<int> connectedClients;
 	std::string publicKey;
+
+	/*Node Actions*/
+	/****************************************************************************************************************/
+	class Action {
+	public:
+
+		Action(Node* node, const std::string& name) : name(name), node(node) {};
+
+		virtual ~Action(void) {};
+
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int) = 0;
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) = 0;
+
+		const std::string& getName() { return name; }
+		void setData(const json& data) { this->data = data; }
+
+		bool isDataNull() { return data.is_null(); }
+		void clearData() { data = json(); }
+
+	protected:
+		const std::string name;
+		Node* node;
+		json data;
+	};
+
+	class POSTBlock : public Action {
+	public:
+		POSTBlock(Node*);
+
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int = 0);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+	class POSTMerkle : public Action {
+	public:
+		POSTMerkle(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int) {};
+		virtual void Perform(const unsigned int, const std::string&, const std::string&);
+	};
+	class POSTTrans : public Action {
+	public:
+		POSTTrans(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+	class POSTFilter : public Action {
+	public:
+		POSTFilter(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+	class GETBlock : public Action {
+	public:
+		GETBlock(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+	class GETHeader : public Action {
+	public:
+		GETHeader(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+	class Ping : public Action {
+	public:
+		Ping(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+	class Layout : public Action {
+	public:
+		Layout(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
+
+	/************************************************************************************************************/
+	std::map <ConnectionType, Action*> actions;
 };

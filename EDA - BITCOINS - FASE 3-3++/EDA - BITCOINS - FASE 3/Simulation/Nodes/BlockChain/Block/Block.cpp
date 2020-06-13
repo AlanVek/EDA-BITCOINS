@@ -63,8 +63,11 @@ void Block::buildTree(void) {
 
 	std::list<std::string>::iterator itrTemp;
 
+	bool isOne = nodes.size() == 1;
+
 	/*While nodes list is not the Merkle Root...*/
-	while (nodes.size() > 1) {
+	while (nodes.size() > 1 || isOne) {
+		isOne = false;
 		/*If node amount is uneven, it copies the last one to the back of the list.*/
 		if (nodes.size() % 2)
 			nodes.push_back(nodes.back());
