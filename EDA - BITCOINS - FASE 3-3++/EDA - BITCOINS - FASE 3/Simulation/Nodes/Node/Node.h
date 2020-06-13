@@ -88,4 +88,5 @@ protected:
 
 	json transactions;
 	std::vector<int> connectedClients;
+	std::string publicKey;
 };

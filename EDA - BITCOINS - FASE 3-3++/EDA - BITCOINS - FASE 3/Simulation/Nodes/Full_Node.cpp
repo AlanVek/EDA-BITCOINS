@@ -198,8 +198,8 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 			int blockCount;
 			if (((blockCount = blockChain.getBlockAmount()) && blockChain.getBlock(blockCount - 1)["blockid"] != blockData["blockid"])
 				|| !blockCount) {
-				actions[ConnectionType::POSTBLOCK]->setData(blockData);
 				for (const auto& neighbor : neighbors) {
+					actions[ConnectionType::POSTBLOCK]->setData(blockData);
 					if ((neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1)
 						&& !neighbor.second.filter.length()) {
 						perform(ConnectionType::POSTBLOCK, neighbor.first, "", NULL);
@@ -207,6 +207,7 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 				}
 				result["status"] = true;
 				blockChain.addBlock(blockData);
+				transactions = json();
 			}
 		}
 	}
@@ -220,10 +221,10 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 			trans = json::parse(request.substr(data + 5, content - data - 5));
 
 			/*Checks if it's a new transaction or an old one...*/
-			if (trans.find("vout") != trans.end()) {
+			if (trans.find("vin") != trans.end()) {
 				bool resend = true;
 				for (const auto& transaction : transactions) {
-					if (transaction["vout"][0]["txid"] == trans["vout"][0]["txid"])
+					if (transaction["vin"][0]["txid"] == trans["vin"][0]["txid"])
 						resend = false;
 				}
 
@@ -234,7 +235,7 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 						if ((neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1)
 							&& !neighbor.second.filter.length()) {
 							actions[ConnectionType::POSTTRANS]->setData(trans);
-							perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"][0]["publicid"], trans["vout"][0]["amount"].get<unsigned int>());
+							perform(ConnectionType::POSTTRANS, neighbor.first, trans["vin"][0]["publicid"], trans["vin"][0]["amount"].get<unsigned int>());
 						}
 					}
 

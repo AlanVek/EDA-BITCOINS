@@ -36,15 +36,20 @@ void POSTTrans::Perform(const unsigned int id, const std::string& wallet, const 
 
 		tempData["nTxin"] = 0;
 		tempData["nTxout"] = 1;
-		tempData["vin"] = json();
+
+		json vin;
+		vin["amount"] = amount;
+		vin["publicid"] = wallet;
+		vin["txid"] = data["vout"][0]["txid"];
+
+		tempData["vout"].push_back(vin);
 
 		json vout;
-		vout["amount"] = amount;
-		vout["publicid"] = wallet;
-		vout["txid"] = data["vout"][0]["txid"];
 
-		tempData["vout"].push_back(vout);
+		vin["amount"] = amount;
+		vin["publicid"] = node->publicKey;
 
+		tempData["vin"].push_back(vin);
 		node->clients.push_back(new TransactionClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, tempData));
 	}
 }

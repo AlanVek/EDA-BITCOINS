@@ -31,7 +31,5 @@ private:
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 
-	std::string publicKey;
-
 	nlohmann::json headers;
 };

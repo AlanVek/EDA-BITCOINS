@@ -22,8 +22,7 @@ const std::list<std::string> Block::getIDs() {
 	/*For every transaction...*/
 	for (const auto& TX : tx) {
 		/*Loops through every 'mini header' in header['vin'].*/
-		for (const auto& miniJson : TX["vout"]) {
-			std::string mm = miniJson.dump();
+		for (const auto& miniJson : TX["vin"]) {
 			/*Gets string from header.*/
 			tx_id.append(miniJson["txid"].get<std::string>());
 		}
@@ -120,6 +119,8 @@ const std::string Block::getData(const BlockInfo& data) {
 std::string Block::printTree(void) {
 	if (!tree.size())
 		buildTree();
+	if (!tree.size())
+		return std::string();
 	int levels = log2(tree.size() + 1);
 
 	std::string result;

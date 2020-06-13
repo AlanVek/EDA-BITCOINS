@@ -50,10 +50,10 @@ void FullMiner_Node::mineBlock() {
 	block["nTx"] = transactions.size();
 
 	block["nonce"] = rand() % 65536;
-	char res[9];
 
 	int blockCount;
 	if ((blockCount = blockChain.getBlockAmount())) {
+		char res[9];
 		std::string tempID = blockChain.getBlockInfo(blockCount - 1, BlockInfo::BLOCKID);
 		block["previousblockid"] = tempID;
 		sprintf_s(res, "%08X", std::stoi(tempID) + 1);
@@ -64,12 +64,7 @@ void FullMiner_Node::mineBlock() {
 		block["blockid"] = "00000001";
 	}
 
-	const std::string tempMerkleRoot = BlockChain::calculateMerkleRoot(block);
-
-	if (tempMerkleRoot.length())
-		block["merkleroot"] = tempMerkleRoot;
-	else
-		block["merkleroot"] = "";
+	block["merkleroot"] = BlockChain::calculateMerkleRoot(block);
 
 	for (auto& neighbor : neighbors) {
 		actions[ConnectionType::POSTBLOCK]->setData(block);
@@ -77,6 +72,8 @@ void FullMiner_Node::mineBlock() {
 			Full_Node::perform(ConnectionType::POSTBLOCK, neighbor.first, "", NULL);
 		}
 	}
+
+	blockChain.addBlock(block);
 
 	transactions = json();
 }

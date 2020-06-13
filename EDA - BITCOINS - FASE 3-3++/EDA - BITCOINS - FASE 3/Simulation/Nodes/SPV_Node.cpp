@@ -14,8 +14,6 @@ SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 	actions[ConnectionType::POSTFILTER] = new POSTFilter(this);
 	actions[ConnectionType::GETHEADER] = new GETHeader(this);
 	actions[ConnectionType::PING] = new Ping(this);
-
-	publicKey = std::to_string(std::rand() % 99999999);
 }
 
 /*GET callback for server.*/

@@ -7,6 +7,7 @@ Node::Node(boost::asio::io_context& io_context, const std::string& ip, const uns
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::ERRORResponse, this), port), size(size)
 {
+	publicKey = std::to_string(std::rand() % 99999999);
 }
 
 /*Desctructor. Frees resources.*/
