@@ -17,15 +17,16 @@ void Block::transformData() {
 /*Gets transaction IDs from json.*/
 const std::list<std::string> Block::getIDs() {
 	std::list<std::string> IDs;
-
 	std::string tx_id;
 	bool mustAdd;
 	/*For every transaction...*/
 	for (const auto& TX : tx) {
 		/*Loops through every 'mini header' in header['vin'].*/
-		for (const auto& miniJson : TX["vin"])
+		for (const auto& miniJson : TX["vout"]) {
+			std::string mm = miniJson.dump();
 			/*Gets string from header.*/
 			tx_id.append(miniJson["txid"].get<std::string>());
+		}
 
 		/*Hashes id and appends it to IDs.*/
 		IDs.push_back(hash(tx_id));
@@ -58,6 +59,8 @@ inline const std::string Block::hash(const std::string& code) {
 void Block::buildTree(void) {
 	/*Gets IDs from transactions.*/
 	std::list<std::string> nodes = getIDs();
+
+	if (!nodes.size()) return;
 
 	std::list<std::string>::iterator itrTemp;
 

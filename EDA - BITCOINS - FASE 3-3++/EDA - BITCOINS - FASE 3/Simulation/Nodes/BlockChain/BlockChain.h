@@ -7,7 +7,11 @@ class BlockChain
 public:
 	BlockChain(const std::string&);
 
+	BlockChain() {};
+
 	void loadBlockChain(const std::string&);
+
+	static const std::string calculateMerkleRoot(const json& newBlock);
 
 	void addBlock(const json&);
 

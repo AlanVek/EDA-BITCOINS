@@ -25,6 +25,7 @@ const enum class Events : unsigned int {
 const enum class NodeTypes {
 	NEW_SPV,
 	NEW_FULL,
+	NEW_MINER,
 	UNDEFINED
 };
 
@@ -139,6 +140,7 @@ private:
 	void genesisConnection(void);
 	bool addNeighbor(bool, bool);
 	bool modifyNeighbor(int);
+	void addMiner();
 	/***********************/
 
 	/*Messages*/

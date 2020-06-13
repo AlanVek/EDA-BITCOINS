@@ -40,6 +40,8 @@ private:
 
 	void connectSPVs();
 
+	void addMiner();
+
 	void generateMsg();
 
 	int size;

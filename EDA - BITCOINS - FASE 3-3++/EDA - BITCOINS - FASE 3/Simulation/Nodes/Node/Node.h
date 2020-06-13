@@ -16,7 +16,7 @@ const enum class ConnectionType : unsigned int {
 };
 
 struct Neighbor {
-	std::string ip;
+	std::string ip, filter;
 	unsigned int port;
 };
 
@@ -26,7 +26,7 @@ public:
 		const unsigned int identifier, int& size);
 	virtual ~Node();
 
-	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port);
+	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port, const std::string&);
 	virtual const json& getData(void) = 0;
 
 	virtual void perform() = 0;
@@ -53,6 +53,8 @@ public:
 	virtual void checkTimeout(const std::vector < Node*>&) = 0;
 
 	virtual bool networkDone() = 0;
+
+	virtual const std::string getWallet() = 0;
 
 	virtual std::vector<Neighbor> getAdders() = 0;
 protected:
@@ -84,5 +86,6 @@ protected:
 	std::string ip;
 	unsigned int port, identifier;
 
+	json transactions;
 	std::vector<int> connectedClients;
 };

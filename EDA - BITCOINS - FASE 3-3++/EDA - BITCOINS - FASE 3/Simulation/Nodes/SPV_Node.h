@@ -25,6 +25,8 @@ public:
 
 	virtual bool networkDone() { return true; }
 
+	const std::string getWallet() { return publicKey; }
+
 private:
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);

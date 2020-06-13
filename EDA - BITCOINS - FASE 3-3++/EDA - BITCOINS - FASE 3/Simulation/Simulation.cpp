@@ -1,6 +1,8 @@
 #include "Simulation.h"
 #include "Nodes/Full_Node.h"
 #include "Nodes/SPV_Node.h"
+#include "Nodes/FullMiner_Node.h"
+#include <cstdlib>
 
 //Simulation constructor.
 Simulation::Simulation(void) : running(true), ev(Events::NOTHING), size(0)
@@ -21,9 +23,6 @@ void Simulation::mainScreen() {
 		/*Sets nodes and creates connections.*/
 		if (newNet) {
 			newNodes(false);
-
-			/*CREATE NEW NETWORK.*/
-
 			for (auto& node : nodes) {
 				node->startTimer();
 			}
@@ -214,8 +213,10 @@ void Simulation::newNodes(bool request) {
 			/*Creates new node.*/
 			if (nnds[i].type == NodeTypes::NEW_FULL)
 				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
-			else
+			else if (nnds[i].type == NodeTypes::NEW_SPV)
 				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
+			else
+				nodes.push_back(new FullMiner_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
 
 			/*If it was created from appendix mode, it must request (BLOCK if it's a FULL or HEADER if it's an SPV).
 			Parameters "0" and NULL mean "all the blocks/headers". */
@@ -228,18 +229,18 @@ void Simulation::newNodes(bool request) {
 					/*Sets neighbors*/
 					for (auto& node : nodes) {
 						if (node->getIP() == ngh.ip && node->getPort() == ngh.port) {
-							nodes.back()->newNeighbor(node->getID(), ngh.ip, ngh.port);
-							node->newNeighbor(nodes.back()->getID(), nodes.back()->getIP(), nodes.back()->getPort());
+							nodes.back()->newNeighbor(node->getID(), ngh.ip, ngh.port, node->getWallet());
+							node->newNeighbor(nodes.back()->getID(), nodes.back()->getIP(), nodes.back()->getPort(), nodes.back()->getWallet());
 							added = true;
 						}
 					}
 					if (!added) {
-						nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port);
+						nodes.back()->newNeighbor(ngh.index, ngh.ip, ngh.port, "");
 					}
 				}
 
 				/*Requests blockchain if it's a full node.*/
-				if (nnds[i].type == NodeTypes::NEW_FULL) {
+				if (nnds[i].type != NodeTypes::NEW_SPV) {
 					nodes.back()->perform(ConnectionType::GETBLOCK, (*nodes.back()->getNeighbors().begin()).first, "0", NULL);
 					nodes.back()->perform(ConnectionType::PING, NULL, (*nodes.back()->getNeighbors().begin()).second.ip, (*nodes.back()->getNeighbors().begin()).second.port);
 				}
@@ -336,8 +337,8 @@ void Simulation::connectSPVs() {
 
 				/*Selects random node and connects it to SPV (if it's a full node)*/
 				if (typeid(*neighbor) != typeid(SPV_Node)) {
-					node->newNeighbor(neighbor->getID(), neighbor->getIP(), neighbor->getPort());
-					neighbor->newNeighbor(node->getID(), node->getIP(), node->getPort());
+					node->newNeighbor(neighbor->getID(), neighbor->getIP(), neighbor->getPort(), "");
+					neighbor->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getWallet());
 				}
 			}
 		}
@@ -350,7 +351,7 @@ void Simulation::addAdders() {
 		for (auto& neighbor : node->getAdders()) {
 			for (auto& node_2 : nodes) {
 				if (node_2->getIP() == neighbor.ip && node_2->getPort() == neighbor.port) {
-					node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port);
+					node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, node_2->getWallet());
 				}
 			}
 		}

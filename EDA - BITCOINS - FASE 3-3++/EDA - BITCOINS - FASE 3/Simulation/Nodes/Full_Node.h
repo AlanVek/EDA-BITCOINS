@@ -30,20 +30,15 @@ const enum class NodeState : unsigned int {
 class Full_Node : public Node {
 public:
 	Full_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&);
-	~Full_Node();
+	virtual ~Full_Node();
 
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const unsigned int);
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const std::string&);
 	virtual void perform();
 
-	virtual const json& getData() {
-		return blockChain.getRawData();
-	}
+	virtual const json& getData() { return blockChain.getRawData(); }
 
-	virtual bool networkDone() { return state == NodeState::NETWORK_CREATED; };
-
-	/*
-	}*/
+	virtual bool networkDone() { return state == NodeState::NETWORK_CREATED; }
 
 	virtual const std::string printTree(unsigned int idx) { return blockChain.getBlockInfo(idx, BlockInfo::PRINT_TREE); }
 	virtual const std::string validateMRoot(unsigned int idx) { return blockChain.getBlockInfo(idx, BlockInfo::VALIDATE_MROOT); }
@@ -56,7 +51,9 @@ public:
 
 	virtual std::vector<Neighbor> getAdders() { auto temp = idsToAdd; idsToAdd.clear(); return idsToAdd; }
 
-private:
+	const std::string getWallet() { return std::string(); }
+
+protected:
 
 	std::string dispatcher(NodeEvents, const boost::asio::ip::tcp::endpoint& nodeInfo, const std::string&);		/**************************************/
 

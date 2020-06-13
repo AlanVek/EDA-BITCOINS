@@ -15,6 +15,9 @@ public:
 	const std::string& getName() { return name; }
 	void setData(const json& data) { this->data = data; }
 
+	bool isDataNull() { return data.is_null(); }
+	void clearData() { data = json(); }
+
 protected:
 	const std::string name;
 	Node* node;

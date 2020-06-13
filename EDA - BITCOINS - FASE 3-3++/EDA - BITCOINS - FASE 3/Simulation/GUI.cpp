@@ -8,7 +8,8 @@
 #include <functional>
 #include "Nodes/Node/Node.h"
 #include <fstream>
-#include "Nodes/Full_Node.h"
+#include "Nodes/FullMiner_Node.h"
+#include "Nodes/SPV_Node.h"
 
 /*GUI data.*/
 /***************************************/
@@ -163,6 +164,7 @@ bool GUI::nodeSelectionScreen(bool* newNet) {                         /*********
 					result = true;
 					*newNet = true;
 					endOfSetup = true;
+					addMiner();
 					break;
 				case States::APPENDIX_MODE:
 					/*Adds new node.*/
@@ -396,7 +398,11 @@ void GUI::genesisConnection() {
 	ImGui::NewLine();
 
 	/*Button to create network.*/
-	displayWidget("Create network", [this]() {if (j.size()) { filePath.clear(); state = States::NETWORK_CREATION; fileOK = FILECODES::NOTHING; j.clear(); }});
+	displayWidget("Create network", [this]() {if (j.size()) {
+		filePath.clear(); state = States::NETWORK_CREATION;
+		fileOK = FILECODES::NOTHING;
+		j.clear();
+	}});
 	ImGui::SameLine();
 
 	/*Button to switch to appendix mode.*/
@@ -580,36 +586,40 @@ void GUI::selectMessage() {
 	ImGui::NewLine();
 
 	/*Sets button setters for every type of message.*/
-	auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::PARAM_SELECTION; }); };
+	/*auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::PARAM_SELECTION; }); };
 	auto get_blocks = [this]() {displayWidget("Block (GET)", [this]() {action = Events::GET_BLOCKS; state = States::PARAM_SELECTION; }); };
 	auto get_headers = [this]() {displayWidget("Headers (GET)", [this]() {action = Events::GET_HEADERS;  state = States::PARAM_SELECTION; }); };
 	auto merkleblock = [this]() {displayWidget("Merkleblock (POST)", [this]() {action = Events::MERKLEBLOCK; state = States::PARAM_SELECTION; }); };
 	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::PARAM_SELECTION; }); };
-	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
+	*/auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
 
 	/*If sender is a Full Node...*/
 	if (nodes[sender].type == NodeTypes::NEW_FULL) {
 		/*If receiver is a Full Node...*/
 		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
-			/*Displays allowed messages.*/
-			get_blocks();  ImGui::SameLine();
-			post_block();  ImGui::SameLine();
+			///*Displays allowed messages.*/
+			//get_blocks();  ImGui::SameLine();
+			//post_block();  ImGui::SameLine();
 			transaction(); ImGui::NewLine();
 		}
+		else
+			state = States::INIT_DONE;
 
-		/*If receiver is an SPV Node, displays allowed messages.*/
-		else { merkleblock(); ImGui::NewLine(); }
+		///*If receiver is an SPV Node, displays allowed messages.*/
+		//else { merkleblock(); ImGui::NewLine(); }
 	}
 
 	/*If sender is an SPV Node...*/
 	else {
 		/*If receiver is a Full Node...*/
 		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
-			/*Displays allowed messages.*/
-			filter(); ImGui::SameLine();
-			get_headers(); ImGui::SameLine();
+			///*Displays allowed messages.*/
+			//filter(); ImGui::SameLine();
+			//get_headers(); ImGui::SameLine();
 			transaction(); ImGui::NewLine();
 		}
+		else
+			state = States::INIT_DONE;
 	}
 }
 
@@ -676,8 +686,8 @@ bool GUI::addNeighbor(bool local, bool type) {
 				for (const auto& node : allNodes) {
 					if (node->getPort() == neighbor.port) {
 						allNodes[currentIndex]->perform(ConnectionType::PING, NULL, node->getIP(), node->getPort());
-						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort());
-						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort());
+						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getWallet());
+						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort(), node->getWallet());
 					}
 				}
 				neighbor = NewNode();
@@ -691,7 +701,7 @@ bool GUI::addNeighbor(bool local, bool type) {
 					/*Sets new neighbor and saves node in nodes vector.*/
 					neighbor.index = nodes.size();
 					neighbor.type = NodeTypes::NEW_FULL;
-					allNodes[currentIndex]->newNeighbor(neighbor.index, neighbor.ip, neighbor.port);
+					allNodes[currentIndex]->newNeighbor(neighbor.index, neighbor.ip, neighbor.port, "");
 					allNodes[currentIndex]->perform(ConnectionType::PING, NULL, neighbor.ip, neighbor.port);
 					nodes.push_back(neighbor);
 
@@ -746,8 +756,8 @@ void GUI::showNodes() {
 
 	/*If a specific node has been selected...*/
 	else {
-		bool checker = typeid(*allNodes[currentIndex]) == typeid(Full_Node);
-		const std::string typeText = checker ? "FULL" : "SPV";
+		bool checker = typeid(*allNodes[currentIndex]) != typeid(SPV_Node);
+		const std::string typeText = !checker ? "SPV" : (typeid(*allNodes[currentIndex]) == typeid(Full_Node) ? "FULL" : "FULL MINER");
 		ImGui::Text(("Type: " + typeText).c_str());
 		ImGui::Text("Neighbors: ");
 		ImGui::SameLine();
@@ -762,6 +772,8 @@ void GUI::showNodes() {
 
 			/*Shows blocks*/
 			showBlocks();
+
+			//displayActions();
 		}
 
 		/*If it was SPV...*/
@@ -788,6 +800,25 @@ void GUI::showNodes() {
 			displayActions();
 		}
 	}
+}
+
+void GUI::addMiner() {
+	bool used = false;
+	int minerPort;
+
+	minerPort = rand() % 1000;
+	if (abs((int)nodes[0].port - minerPort) < 10) { used = true; }
+	while (used) {
+		used = false;
+		minerPort = rand() % 1000;
+		for (auto& node : nodes) {
+			if (abs((int)node.port - minerPort) < 5) { used = true; }
+		}
+	}
+
+	nodes.push_back(NewNode(NodeTypes::NEW_MINER, nodes.size(), true));
+	nodes.back().port = minerPort;
+	nodes.back().ip = "127.0.0.1";
 }
 
 /*Displays action buttons for SPV nodes.*/

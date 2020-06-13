@@ -66,3 +66,9 @@ void BlockChain::newTransaction(const json& trans) {
 	blocks.back().block["tx"].push_back(trans);
 	blocks.back().tx.push_back(trans);
 }
+
+const std::string BlockChain::calculateMerkleRoot(const json& newBlock) {
+	Block temp(newBlock);
+	temp.getData(BlockInfo::VALIDATE_MROOT);
+	return temp.calculatedMerkleRoot;
+}

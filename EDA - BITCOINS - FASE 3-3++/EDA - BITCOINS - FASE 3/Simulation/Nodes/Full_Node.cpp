@@ -1,7 +1,7 @@
 #include "Full_Node.h"
 #include <typeinfo>
 #include "Node/Client/AllClients.h"
-
+#include "SPV_Node.h"
 namespace {
 	const double timeMin = 0.1;
 	const double timeMax = 10;
@@ -27,7 +27,7 @@ const json error = { "error" };
 /*Constructor. Uses Node constructor.*/
 Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 	const unsigned int port, const unsigned int identifier, int& size)
-	: Node(io_context, ip, port, identifier, size), blockChain("Tests/blockChain.json"), state(NodeState::IDLE), pingSent(-1)
+	: Node(io_context, ip, port, identifier, size), state(NodeState::IDLE), pingSent(-1)
 {
 	/*Sets node's actions.*/
 	actions[ConnectionType::POSTBLOCK] = new POSTBlock(this);
@@ -67,20 +67,31 @@ const json& Full_Node::getBlock(const std::string& blockID) {
 
 /*Sets info (if necessary) and queues new action.*/
 void Full_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
-	if (type == ConnectionType::POSTBLOCK)
+	if (type == ConnectionType::POSTBLOCK && actions[ConnectionType::POSTBLOCK]->isDataNull())
 		actions[ConnectionType::POSTBLOCK]->setData(getBlock(blockID));
+
+	else if (type == ConnectionType::POSTTRANS && actions[ConnectionType::POSTTRANS]->isDataNull()) {
+		json temp, tot;
+
+		temp["txid"] = std::to_string(rand() % 999999);
+
+		tot["vout"].push_back(temp);
+		actions[ConnectionType::POSTTRANS]->setData(tot);
+	}
 	if (actions.find(type) != actions.end()) {
 		actions[type]->Perform(id, blockID, count);
+		actions[type]->clearData();
 	}
 }
 
 /*Sets info (if necessary) and queues new action.*/
 void Full_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
-	if (type == ConnectionType::POSTMERKLE)
+	if (type == ConnectionType::POSTMERKLE && actions[ConnectionType::POSTMERKLE]->isDataNull())
 		actions[ConnectionType::POSTMERKLE]->setData(getMerkleBlock(blockID, key));
 
 	if (actions.find(type) != actions.end()) {
 		actions[type]->Perform(id, blockID, key);
+		actions[type]->clearData();
 	}
 }
 
@@ -179,10 +190,24 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 	/*If it's POST block...*/
 	if (request.find(BLOCKPOST) != std::string::npos) {
 		/*Adds block to blockchain.*/
-		int content = request.find/*_last_of*/("Content-Type");
-		int data = request.find/*_last_of */("Data=");
+		int content = request.find("Content-Type");
+		int data = request.find("Data=");
 		if (content != std::string::npos && data != std::string::npos) {
-			blockChain.addBlock(json::parse(request.substr(data + 5, content - data - 5)));
+			json blockData = json::parse(request.substr(data + 5, content - data - 5));
+			/*Validates block*/
+			int blockCount;
+			if (((blockCount = blockChain.getBlockAmount()) && blockChain.getBlock(blockCount - 1)["blockid"] != blockData["blockid"])
+				|| !blockCount) {
+				actions[ConnectionType::POSTBLOCK]->setData(blockData);
+				for (const auto& neighbor : neighbors) {
+					if ((neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1)
+						&& !neighbor.second.filter.length()) {
+						perform(ConnectionType::POSTBLOCK, neighbor.first, "", NULL);
+					}
+				}
+				result["status"] = true;
+				blockChain.addBlock(blockData);
+			}
 		}
 	}
 
@@ -197,8 +222,8 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 			/*Checks if it's a new transaction or an old one...*/
 			if (trans.find("vout") != trans.end()) {
 				bool resend = true;
-				for (const auto& transaction : blockChain.getBlock(blockChain.getBlockAmount() - 1)["tx"]) {
-					if (transaction["txid"] == trans["txid"])
+				for (const auto& transaction : transactions) {
+					if (transaction["vout"][0]["txid"] == trans["vout"][0]["txid"])
 						resend = false;
 				}
 
@@ -206,21 +231,33 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 				if (resend) {
 					/*It sends it to it's neighbors (except the one who sent it).*/
 					for (const auto& neighbor : neighbors) {
-						if (neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1) {
-							perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"]["publicid"], trans["vout"]["amount"].get<unsigned int>());
+						if ((neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1)
+							&& !neighbor.second.filter.length()) {
+							actions[ConnectionType::POSTTRANS]->setData(trans);
+							perform(ConnectionType::POSTTRANS, neighbor.first, trans["vout"][0]["publicid"], trans["vout"][0]["amount"].get<unsigned int>());
 						}
 					}
 
 					/*Saves transaction.*/
-					blockChain.newTransaction(trans);
+					transactions.push_back(trans);
+					result["status"] = true;
 				}
-				result["status"] = true;
 			}
 		}
 	}
 
 	else if (request.find(FILTERPOST) != std::string::npos) {
-		result["status"] = true;
+		int content = request.find/*_last_of*/("Content-Type");
+		int data = request.find/*_last_of */("Data=");
+
+		if (content != std::string::npos && data != std::string::npos) {
+			for (auto& neighbor : neighbors) {
+				if (neighbor.second.ip == nodeInfo.address().to_string() && neighbor.second.port == (nodeInfo.port() - 1)) {
+					neighbor.second.filter = request.substr(data + 5, content - data - 5);
+					result["status"] = true;
+				}
+			}
+		}
 	}
 
 	/*Different types of messages. Sets dispatcher action*/
@@ -280,7 +317,7 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 		/*If it was collecting members...*/
 		else if (state == NodeState::COLLECTING_MEMBERS) {
 			/*Adds neighbor.*/
-			idsToAdd.push_back({ nodeInfo.address().to_string(), static_cast<unsigned int>(nodeInfo.port() - 1) });
+			idsToAdd.push_back({ nodeInfo.address().to_string(), "", static_cast<unsigned int>(nodeInfo.port() - 1) });
 
 			/*Performs net creation.*/
 			particularAlgorithm();
@@ -302,7 +339,7 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 			}
 
 			if (addIt) {
-				newNeighbor(size + 1, nodeInfo.address().to_string(), static_cast<unsigned int>(nodeInfo.port() - 1));
+				newNeighbor(size + 1, nodeInfo.address().to_string(), static_cast<unsigned int>(nodeInfo.port() - 1), "");
 				size++;
 			}
 
@@ -390,7 +427,7 @@ void Full_Node::checkTimeout(const std::vector<Node*>& nodes) {
 		/*Sends ping to node...*/
 		pingSent++;
 		if (pingSent < nodes.size()) {
-			if (typeid(*nodes[pingSent]) == typeid(Full_Node) && nodes[pingSent] != this) {
+			if (typeid(*nodes[pingSent]) != typeid(SPV_Node) && nodes[pingSent] != this) {
 				subNet.push_back(nodes[pingSent]);
 				perform(ConnectionType::PING, NULL, subNet.back()->getIP(), subNet.back()->getPort());
 			}
@@ -513,7 +550,7 @@ void Full_Node::neighborFromJSON(const std::string& request, bool fromServer) {
 				int id_real = std::stoi(id);
 				int pos2 = temp.find_first_of(':');
 				int port_real = std::stoi(temp.substr(pos2 + 1, temp.length() - pos2 - 1));
-				newNeighbor(id_real, ip, port_real);
+				newNeighbor(id_real, ip, port_real, "");
 			}
 		}
 	}

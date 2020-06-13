@@ -102,6 +102,9 @@
     <ClCompile Include="Simulation\GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\FullMiner_Node.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\Simulation.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\PingClient.h">
       <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\FullMiner_Node.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

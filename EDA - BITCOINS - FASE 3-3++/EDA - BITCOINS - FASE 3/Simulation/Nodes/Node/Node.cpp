@@ -26,14 +26,15 @@ Node::~Node() {
 }
 
 /*Adds new neighbor to 'neighbors' vector.*/
-void Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port) {
+void Node::newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port, const std::string& publicKey) {
 	bool addIt = true;
 	for (auto& neighbor : neighbors) {
 		if (neighbor.second.ip == ip && neighbor.second.port == port)
 			addIt = false;
 	}
-	if (addIt)
-		neighbors[id] = { ip, port };
+	if (addIt) {
+		neighbors[id] = { ip,publicKey, port };
+	}
 }
 
 /*Returns daytime string. If plusThirty is true, it returns
