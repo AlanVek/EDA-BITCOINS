@@ -21,15 +21,18 @@ const std::list<std::string> Block::getIDs() {
 	bool mustAdd;
 	/*For every transaction...*/
 	for (const auto& TX : tx) {
-		/*Loops through every 'mini header' in header['vin'].*/
-		for (const auto& miniJson : TX["vin"]) {
-			/*Gets string from header.*/
-			tx_id.append(miniJson["txid"].get<std::string>());
+		if (TX.find("vin") != TX.end() && TX["vin"].is_null())
+			IDs.push_back(TX["txid"]);
+		else {
+			/*Loops through every 'mini header' in header['vin'].*/
+			for (const auto& miniJson : TX["vin"]) {
+				/*Gets string from header.*/
+				tx_id.append(miniJson["txid"].get<std::string>());
+			}
+
+			/*Hashes id and appends it to IDs.*/
+			IDs.push_back(hash(tx_id));
 		}
-
-		/*Hashes id and appends it to IDs.*/
-		IDs.push_back(hash(tx_id));
-
 		tx_id.clear();
 	}
 

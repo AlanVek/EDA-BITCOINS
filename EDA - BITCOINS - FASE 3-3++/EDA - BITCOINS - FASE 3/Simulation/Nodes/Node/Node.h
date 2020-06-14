@@ -74,7 +74,6 @@ protected:
 	std::string ip;
 	unsigned int port, identifier;
 
-	json transactions;
 	std::vector<int> connectedClients;
 	std::string publicKey;
 

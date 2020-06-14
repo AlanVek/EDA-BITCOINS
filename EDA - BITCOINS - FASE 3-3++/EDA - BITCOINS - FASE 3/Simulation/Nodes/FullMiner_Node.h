@@ -7,6 +7,8 @@ public:
 	virtual ~FullMiner_Node();
 
 	virtual void perform();
+
+	virtual const json getFeeTrans();
 protected:
 
 	void mineBlock(void);

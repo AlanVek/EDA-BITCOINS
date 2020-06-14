@@ -1,5 +1,6 @@
 #include "Node.h"
 #include "Client/AllClients.h"
+#include <iostream>
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier, int& size)
@@ -9,6 +10,7 @@ Node::Node(boost::asio::io_context& io_context, const std::string& ip, const uns
 		std::bind(&Node::ERRORResponse, this), port), size(size)
 {
 	publicKey = std::to_string(std::rand() % 99999999);
+	std::cout << "Node: " << identifier << ", key: " << publicKey << std::endl;
 }
 
 /*Desctructor. Frees resources.*/
@@ -126,6 +128,8 @@ void Node::POSTBlock::Perform(const unsigned int id, const std::string& blockID,
 		/*If id is a neighbor and count isn't null...*/
 	if (node->neighbors.find(id) != node->neighbors.end()) {
 		/*Sets new BlockClient for POST request.*/
+
+		std::string dd = data.dump();
 		node->clients.push_back(new BlockClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data/*getBlock(blockID)*/));
 	}
 }
@@ -135,25 +139,8 @@ Node::POSTTrans::POSTTrans(Node* node) : Action(node, "Transaction (POST)") {
 void Node::POSTTrans::Perform(const unsigned int id, const std::string& wallet, const unsigned int amount) {
 	/*If id is a neighbor...*/
 	if (node->neighbors.find(id) != node->neighbors.end()) {
-		json tempData;
-
-		tempData["nTxin"] = 0;
-		tempData["nTxout"] = 1;
-
-		json vin;
-		vin["amount"] = amount;
-		vin["publicid"] = wallet;
-		vin["txid"] = data["vout"][0]["txid"];
-
-		tempData["vout"].push_back(vin);
-
-		json vout;
-
-		vin["amount"] = amount;
-		vin["publicid"] = node->publicKey;
-
-		tempData["vin"].push_back(vin);
-		node->clients.push_back(new TransactionClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, tempData));
+		if (!data.is_null())
+			node->clients.push_back(new TransactionClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));
 	}
 }
 

@@ -72,3 +72,28 @@ const std::string BlockChain::calculateMerkleRoot(const json& newBlock) {
 	temp.getData(BlockInfo::VALIDATE_MROOT);
 	return temp.calculatedMerkleRoot;
 }
+
+const std::string BlockChain::calculateBlockID(const json& block) {
+	Block temp(block);
+	auto& header = temp.header;
+
+	std::string result;
+
+	if (header.find("blockid") != header.end())
+		header.erase("blockid");
+
+	for (auto& member : header) {
+		result.append(member.get<std::string>());
+	}
+
+	return Block::hash(result);
+};
+
+const std::string BlockChain::calculateTXID(const json& trans) {
+	std::string result;
+	for (auto& input : trans["vin"]) {
+		result.append(input["txid"].get<std::string>());
+	}
+
+	return Block::hash(result);
+};

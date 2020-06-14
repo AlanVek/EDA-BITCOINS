@@ -245,13 +245,11 @@ Events GUI::checkStatus(void) {
 		ImGui::NewLine();
 
 		static int cantDots = 0;
-		static int count = 0;
 
 		/*Performs action according to state.*/
 		switch (state) {
 			/*Loading screen while program is creating network.*/
 		case States::NETWORK_CREATION:
-			count++;
 			/*FOR NOW, HARDCODED DOTS APPEARING.*/
 			if (cantDots >= 1000) cantDots = 0;
 			ImGui::Text((data::word + std::string(cantDots / 300, '.')).c_str());
@@ -594,9 +592,9 @@ void GUI::selectMessage() {
 	*/auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
 
 	/*If sender is a Full Node...*/
-	if (nodes[sender].type == NodeTypes::NEW_FULL) {
+	if (nodes[sender].type != NodeTypes::NEW_SPV) {
 		/*If receiver is a Full Node...*/
-		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
+		if (nodes[receiver].type != NodeTypes::NEW_SPV) {
 			///*Displays allowed messages.*/
 			//get_blocks();  ImGui::SameLine();
 			//post_block();  ImGui::SameLine();
@@ -612,7 +610,7 @@ void GUI::selectMessage() {
 	/*If sender is an SPV Node...*/
 	else {
 		/*If receiver is a Full Node...*/
-		if (nodes[receiver].type == NodeTypes::NEW_FULL) {
+		if (nodes[receiver].type != NodeTypes::NEW_SPV) {
 			///*Displays allowed messages.*/
 			//filter(); ImGui::SameLine();
 			//get_headers(); ImGui::SameLine();

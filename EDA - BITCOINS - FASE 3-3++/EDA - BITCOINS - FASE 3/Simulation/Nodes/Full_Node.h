@@ -78,5 +78,15 @@ protected:
 	ALLEGRO_EVENT_QUEUE* queue;
 	ALLEGRO_EVENT timeEvent;
 
+	json transactions;
+	std::map<std::string, json> UTXOs;
+
+	bool validateTransaction(const json&);
+	bool validateBlock(const json&);
+
+	const json generateTransJSON(const std::string&, const unsigned int);
+
+	void updateUTXOs(const json&);
+
 	int pingSent;
 };

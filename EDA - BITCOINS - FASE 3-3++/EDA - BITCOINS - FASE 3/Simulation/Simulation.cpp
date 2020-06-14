@@ -165,21 +165,19 @@ void Simulation::generateMsg() {
 		for (unsigned int j = 0; j < serverStates.size(); j++)
 			/*Sets string according to server state.*/
 			switch (serverStates[j].st) {
-				int client_reception;
-
 				/*Connection OK string.*/
 			case ServerState::PERFORMING:
 
 				/*With known neighbor.*/
-				if (ports.size() > j && (client_reception = ports[j]) != -1) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(client_reception));
+				if (ports.size() && (ports.back() + 1)) {
+					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(ports.back()));
 				}
 				else
 					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from an unknown node.");
 				break;
 				/*Finished string.*/
 			case ServerState::FINISHED:
-				if (ports.size() && ports.back() + 1) {
+				if (ports.size() && (ports.back() + 1)) {
 					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered to node " + std::to_string(ports.back()));
 				}
 				else
@@ -351,7 +349,11 @@ void Simulation::addAdders() {
 		for (auto& neighbor : node->getAdders()) {
 			for (auto& node_2 : nodes) {
 				if (node_2->getIP() == neighbor.ip && node_2->getPort() == neighbor.port) {
-					node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, node_2->getWallet());
+					if (typeid(*node_2) == typeid(Full_Node)) {
+						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, "");
+					}
+					else
+						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, node_2->getWallet());
 				}
 			}
 		}

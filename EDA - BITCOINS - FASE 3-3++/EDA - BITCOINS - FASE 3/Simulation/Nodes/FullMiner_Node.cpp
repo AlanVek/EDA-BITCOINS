@@ -2,7 +2,8 @@
 #include "Node/Client/GETBlockClient.h"
 #include <chrono>
 
-const double timeElapsed = 30.0;
+const double timeElapsed = 40.0;
+const double minerFee = 10;
 
 FullMiner_Node::FullMiner_Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
 	const unsigned int identifier, int& size) : Full_Node(io_context, ip, port, identifier, size)
@@ -43,28 +44,28 @@ void FullMiner_Node::perform() {
 
 void FullMiner_Node::mineBlock() {
 	json block;
+
 	for (const auto& trans : transactions) {
-		block["tx"].push_back(trans);
+		block["tx"].push_back(UTXOs[trans]);
 	}
+
+	block["tx"].push_back(getFeeTrans());
+
 	block["height"] = blockChain.getBlockAmount();
-	block["nTx"] = transactions.size();
+	block["nTx"] = transactions.size() + 1;
 
 	block["nonce"] = rand() % 65536;
 
 	int blockCount;
 	if ((blockCount = blockChain.getBlockAmount())) {
-		char res[9];
-		std::string tempID = blockChain.getBlockInfo(blockCount - 1, BlockInfo::BLOCKID);
-		block["previousblockid"] = tempID;
-		sprintf_s(res, "%08X", std::stoi(tempID) + 1);
-		block["blockid"] = std::string(res);
+		block["previousblockid"] = blockChain.getBlockInfo(blockCount - 1, BlockInfo::BLOCKID);
 	}
 	else {
 		block["previousblockid"] = "00000000";
-		block["blockid"] = "00000001";
 	}
 
 	block["merkleroot"] = BlockChain::calculateMerkleRoot(block);
+	block["blockid"] = BlockChain::calculateBlockID(block);
 
 	for (auto& neighbor : neighbors) {
 		actions[ConnectionType::POSTBLOCK]->setData(block);
@@ -76,6 +77,27 @@ void FullMiner_Node::mineBlock() {
 	blockChain.addBlock(block);
 
 	transactions = json();
+}
+
+const json FullMiner_Node::getFeeTrans() {
+	json result;
+
+	result["vin"];
+
+	json vout;
+
+	vout["publicid"] = publicKey;
+	vout["amount"] = minerFee;
+	result["vout"].push_back(vout);
+	result["nTxin"] = 0;
+	result["nTxout"] = 1;
+	result["txid"] = BlockChain::generateID(std::to_string(rand()));
+
+	UTXOs[result["txid"]] = result;
+
+	std::string res = result.dump();
+
+	return result;
 }
 
 FullMiner_Node::~FullMiner_Node() {}

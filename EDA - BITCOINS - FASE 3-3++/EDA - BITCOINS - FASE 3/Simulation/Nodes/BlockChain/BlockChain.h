@@ -15,6 +15,12 @@ public:
 
 	void addBlock(const json&);
 
+	static const std::string generateID(const std::string& block) { return Block::hash(block); }
+
+	static const std::string calculateBlockID(const json&);
+
+	static const std::string calculateTXID(const json&);
+
 	/*Info getters*/
 	/************************************************************/
 	const std::string getBlockInfo(int index, const BlockInfo&);
