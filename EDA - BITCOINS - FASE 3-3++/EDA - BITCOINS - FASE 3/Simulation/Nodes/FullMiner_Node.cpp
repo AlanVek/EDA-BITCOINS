@@ -2,7 +2,7 @@
 #include "Node/Client/GETBlockClient.h"
 #include <chrono>
 
-const double timeElapsed = 40.0;
+const double timeElapsed = 15.0;
 const double minerFee = 10;
 
 FullMiner_Node::FullMiner_Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
@@ -12,11 +12,13 @@ FullMiner_Node::FullMiner_Node(boost::asio::io_context& io_context, const std::s
 
 /*Performs client mode. */
 void FullMiner_Node::perform() {
-	static auto start = std::chrono::steady_clock::now();
+	using namespace std::chrono;
 
-	auto end = std::chrono::steady_clock::now();
+	static auto start = steady_clock::now();
 
-	if (std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > timeElapsed) {
+	auto end = steady_clock::now();
+
+	if (duration_cast<seconds>(end - start).count() > timeElapsed) {
 		/*MINE BLOCK*/
 		mineBlock();
 		start = end;

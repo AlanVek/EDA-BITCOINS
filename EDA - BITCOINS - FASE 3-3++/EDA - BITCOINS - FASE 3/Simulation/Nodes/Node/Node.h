@@ -2,6 +2,9 @@
 #include "Client/Client.h"
 #include "Server/Server.h"
 #include <map>
+#include <iostream>
+
+auto print = [](const std::string& text) {std::cout << text << std::endl; };
 
 const enum class ConnectionType : unsigned int {
 	GETBLOCK,
@@ -53,8 +56,6 @@ public:
 
 	virtual bool networkDone() = 0;
 
-	virtual const std::string getWallet() = 0;
-
 	virtual std::vector<Neighbor> getAdders() = 0;
 protected:
 	virtual std::string makeDaytimeString(bool);
@@ -76,6 +77,7 @@ protected:
 
 	std::vector<int> connectedClients;
 	std::string publicKey;
+	std::map<std::string, json> UTXOs;
 
 	/*Node Actions*/
 	/****************************************************************************************************************/

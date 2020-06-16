@@ -82,7 +82,7 @@ public:
 	const NewNode& getNode(unsigned int index);
 
 	const int getAmount();
-	const std::string& getWallet();
+	const std::string& getKey();
 
 	void updateMsg(const std::string&);
 

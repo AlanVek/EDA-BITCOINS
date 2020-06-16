@@ -51,8 +51,6 @@ public:
 
 	virtual std::vector<Neighbor> getAdders() { auto temp = idsToAdd; idsToAdd.clear(); return idsToAdd; }
 
-	const std::string getWallet() { return std::string(); }
-
 protected:
 
 	std::string dispatcher(NodeEvents, const boost::asio::ip::tcp::endpoint& nodeInfo, const std::string&);		/**************************************/
@@ -79,9 +77,8 @@ protected:
 	ALLEGRO_EVENT timeEvent;
 
 	json transactions;
-	std::map<std::string, json> UTXOs;
 
-	bool validateTransaction(const json&);
+	bool validateTransaction(const json&, bool);
 	bool validateBlock(const json&);
 
 	const json generateTransJSON(const std::string&, const unsigned int);

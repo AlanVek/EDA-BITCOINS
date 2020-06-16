@@ -684,8 +684,8 @@ bool GUI::addNeighbor(bool local, bool type) {
 				for (const auto& node : allNodes) {
 					if (node->getPort() == neighbor.port) {
 						allNodes[currentIndex]->perform(ConnectionType::PING, NULL, node->getIP(), node->getPort());
-						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getWallet());
-						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort(), node->getWallet());
+						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getKey());
+						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort(), node->getKey());
 					}
 				}
 				neighbor = NewNode();
@@ -983,7 +983,7 @@ const unsigned int& GUI::getSenderID() { return nodes[sender].index; }
 const unsigned int& GUI::getReceiverID() { return nodes[receiver].index; }
 const GUI::NewNode& GUI::getNode(unsigned int index) { return nodes[index]; }
 const int GUI::getAmount() { return amount; }
-const std::string& GUI::getWallet() { return wallet; }
+const std::string& GUI::getKey() { return wallet; }
 
 /*Setters*/
 void GUI::networkDone() { state = States::INIT_DONE; }

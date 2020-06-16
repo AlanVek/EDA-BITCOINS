@@ -71,9 +71,15 @@ void Server::closeConnection(Connection* connector) {
 	/*If there are more sockets, it erases the current one.*/
 	if (sockets.size() > 1) {
 		auto ptr = sockets.begin();
-		for (auto i = sockets.begin(); i != sockets.end(); i++)
+		for (auto i = sockets.begin(); i != sockets.end(); i++) {
 			if (&(*i) == connector)
 				ptr = i;
+		}
+
+		/*It clears the reader and reconnects.*/
+		for (unsigned int i = 0; i < MAXSIZE; i++)
+			connector->reader[i] = NULL;
+
 		sockets.erase(ptr);
 		newConnector();
 	}

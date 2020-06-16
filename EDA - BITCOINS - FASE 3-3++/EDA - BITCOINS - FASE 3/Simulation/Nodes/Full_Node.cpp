@@ -2,6 +2,7 @@
 #include <typeinfo>
 #include "Node/Client/AllClients.h"
 #include "SPV_Node.h"
+
 namespace {
 	const double timeMin = 0.1;
 	const double timeMax = 10;
@@ -102,8 +103,6 @@ Full_Node::~Full_Node() {
 	}
 }
 
-#include <iostream>
-
 const json Full_Node::generateTransJSON(const std::string& wallet, const unsigned int amount) {
 	std::map<std::string, int> utxos;
 	json result;
@@ -145,11 +144,11 @@ const json Full_Node::generateTransJSON(const std::string& wallet, const unsigne
 				result["nTxin"] = result["vin"].size();
 				result["nTxout"] = result["vout"].size();
 
-				std::string res = result.dump();
+				//print("Generated ID = " + result["txid"].get<std::string>());
 
-				//for (auto& tx : utxos) {
-				//	UTXOs[tx.first]["vout"].erase(tx.second);
-				//}
+				for (auto& tx : utxos) {
+					UTXOs[tx.first]["vout"][tx.second] = json();
+				}
 
 				UTXOs[result["txid"]] = result;
 				transactions.push_back(result["txid"]);
@@ -213,10 +212,14 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 						response.push_back(blockChain.getHeader(abs));
 					}
 					count--;
+					abs++;
 				}
 
 				/*Appends response to result.*/
 				result["result"] = response;
+
+				std::string res = response.dump();
+				std::string fuckingRealRes = blockChain.getRawData().dump();
 			}
 		}
 		/*Format error.*/
@@ -258,8 +261,20 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 						perform(ConnectionType::POSTBLOCK, neighbor.first, "", NULL);
 					}
 				}
-				result["status"] = true;
 				blockChain.addBlock(blockData);
+
+				for (auto& trans : blockData["tx"]) {
+					for (auto& vout : trans["vout"]) {
+						for (auto& neighbor : neighbors) {
+							if (vout["publicid"] == neighbor.second.filter) {
+								actions[ConnectionType::POSTMERKLE]->setData(getMerkleBlock(blockData["blockid"], trans["txid"]));
+								perform(ConnectionType::POSTMERKLE, neighbor.first, "", "");
+							}
+						}
+					}
+				}
+
+				result["status"] = true;
 
 				for (auto& transaction : blockData["tx"]) {
 					if (UTXOs.find(transaction["txid"]) == UTXOs.end()) {
@@ -279,14 +294,9 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 		if (content != std::string::npos && data != std::string::npos) {
 			trans = json::parse(request.substr(data + 5, content - data - 5));
 
-			/*If it's a new one...*/
-			if (validateTransaction(trans)) {
-				bool resend = true;
-				for (const auto& transaction : transactions) {
-					if (transaction == trans["txid"])
-						resend = false;
-				}
-				if (resend) {
+			if (UTXOs.find(trans["txid"]) == UTXOs.end()) {
+				/*If it's a new one...*/
+				if (validateTransaction(trans, false)) {
 					/*It sends it to it's neighbors (except the one who sent it).*/
 					for (const auto& neighbor : neighbors) {
 						if ((neighbor.second.ip != nodeInfo.address().to_string() || neighbor.second.port != nodeInfo.port() - 1)
@@ -295,10 +305,10 @@ const std::string Full_Node::POSTResponse(const std::string& request, const boos
 							perform(ConnectionType::POSTTRANS, neighbor.first, "", NULL);
 						}
 					}
-					result["status"] = true;
 					/*Saves transaction.*/
 					updateUTXOs(trans);
 				}
+				result["status"] = true;
 			}
 		}
 	}
@@ -339,8 +349,7 @@ void Full_Node::updateUTXOs(const json& trans) {
 		if (UTXOs.find(input["txid"]) != UTXOs.end()) {
 			std::string inp = input.dump();
 			if (UTXOs[input["txid"]]["vout"].size() > input["outputIndex"].get<int>()) {
-				UTXOs[input["txid"]]["vout"][input["outputIndex"].get<int>()].erase("publicid");
-				UTXOs[input["txid"]]["vout"][input["outputIndex"].get<int>()].erase("amount");
+				UTXOs[input["txid"]]["vout"][input["outputIndex"].get<int>()] = json();
 			}
 		}
 	}
@@ -349,7 +358,7 @@ void Full_Node::updateUTXOs(const json& trans) {
 	UTXOs[trans["txid"]] = trans;
 }
 
-bool Full_Node::validateTransaction(const json& trans) {
+bool Full_Node::validateTransaction(const json& trans, bool alreadyChecked) {
 	bool result = false;
 
 	std::map<std::string, int> usedIds;
@@ -359,6 +368,8 @@ bool Full_Node::validateTransaction(const json& trans) {
 		result = true;
 
 		int totout = 0;
+
+		//print("Validating vins.");
 		for (const auto& input : trans["vin"]) {
 			if (usedIds.find(input["txid"]) != usedIds.end() && usedIds[input["txid"]] == input["outputIndex"]) {
 				result = false;
@@ -367,25 +378,34 @@ bool Full_Node::validateTransaction(const json& trans) {
 				usedIds[input["txid"]] = input["outputIndex"];
 			}
 		}
-		for (const auto& output : trans["vout"]) {
-			totout += output["amount"];
-		}
 
-		int totin = 0;
-		for (const auto& utxo : usedIds) {
-			if (UTXOs.find(utxo.first) == UTXOs.end()) {
+		if (!alreadyChecked) {
+			//print("Adding outputs");
+			for (const auto& output : trans["vout"]) {
+				totout += output["amount"];
+			}
+
+			int totin = 0;
+
+			//print("Adding inputs");
+			for (const auto& utxo : usedIds) {
+				if (UTXOs.find(utxo.first) == UTXOs.end()) {
+					result = false;
+				}
+				else if ((UTXOs[utxo.first]["vout"].size() > utxo.second) && !UTXOs[utxo.first]["vout"][utxo.second].is_null()) {
+					totin += UTXOs[utxo.first]["vout"][utxo.second]["amount"];
+					//UTXOs[utxo.first]["vout"].erase(utxo.second);
+				}
+			}
+
+			if (totin != totout) {
+				std::string ttttfuckingtttetosofuckingtt = trans.dump();
 				result = false;
 			}
-			else if ((UTXOs[utxo.first]["vout"].size() > utxo.second) && !UTXOs[utxo.first]["vout"][utxo.second].is_null()) {
-				totin += UTXOs[utxo.first]["vout"][utxo.second]["amount"];
-				UTXOs[utxo.first]["vout"].erase(utxo.second);
-			}
 		}
-
-		if (totin != totout)
-			result = false;
 	}
 
+	//print("Returning result of block validation");
 	return result;
 }
 
@@ -407,10 +427,10 @@ bool Full_Node::validateBlock(const json& block) {
 			if (trans["vin"].is_null() && !doneMiner) {
 				doneMiner = true;
 			}
-			//else {
-			//	if (!validateTransaction(trans))
-			//		result = false;
-			//}
+			else {
+				if (!validateTransaction(trans, true))
+					result = false;
+			}
 		}
 	}
 
@@ -531,23 +551,39 @@ std::string Full_Node::dispatcher(NodeEvents Event, const boost::asio::ip::tcp::
 
 /*Gets merkleblock from block ID and transaction ID.*/
 const json Full_Node::getMerkleBlock(const std::string& blockID, const std::string& transID) {
-	//int k = blockChain.getBlockIndex(blockID);
-	unsigned int k = 0;
-	auto tree = blockChain.getTree(k);
-	json result;
+	int index = blockChain.getBlockIndex(blockID);
+	int k;
+
+	//print("Requesting block for merkleblock");
+	auto& tx = blockChain.getBlock(index)["tx"];
+
+	//print("Requesting ids.");
+
+	for (int i = 0; i < tx.size(); i++) {
+		if (tx[i]["txid"] == transID) {
+			k = i;
+		}
+	}
+	json result, merklePath, temp;
+	result["txPos"] = k;
+
+	auto tree = blockChain.getTree(index);
 	int size = static_cast<int>(log2(tree.size() + 1));
-	std::vector<std::string> merklePath;
 	while (k < (tree.size() - 1)) {
-		if (k % 2) merklePath.push_back(tree[--k]);
-		else merklePath.push_back(tree[k + 1]);
+		if (k % 2) temp["id"] = tree[--k];
+		else temp["id"] = tree[k + 1];
+
+		merklePath.push_back(temp);
 
 		k = static_cast<unsigned int>(k / 2 + pow(2, size - 1));
 	}
 
 	result["blockid"] = blockID;
-	result["tx"] = blockChain.getBlock(0)["tx"];
-	result["txPos"] = 0;
+
+	result["tx"] = tx;
 	result["merklePath"] = merklePath;
+
+	//print("Returning merkleblock");
 
 	return result;
 }

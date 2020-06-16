@@ -1,6 +1,7 @@
 #include "SPV_Node.h"
 #include "Node/Client/AllClients.h"
 #include <typeinfo>
+#include "BlockChain/BlockChain.h"
 
 namespace {
 	const char* MERKLEPOST = "send_merkle_block";
@@ -28,6 +29,24 @@ const std::string SPV_Node::GETResponse(const std::string& request, const boost:
 	return headerFormat(result.dump());
 }
 
+unsigned int generateID(unsigned char* str) {
+	unsigned int ID = 0;
+	int c;
+	while (c = *str++)
+		ID = c + (ID << 6) + (ID << 16) - ID;
+	return ID;
+}
+/*Transforms int into hex Coded ASCII.*/
+inline const std::string hexCodedASCII(unsigned int number) {
+	char res[9];
+	sprintf_s(res, "%08X", number);
+
+	return res;
+}
+
+inline const std::string hash(const std::string& code) {
+	return hexCodedASCII(generateID((unsigned char*)code.c_str()));
+}
 /*POST callback for server.*/
 const std::string SPV_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
 	setConnectedClientID(nodeInfo);
@@ -42,7 +61,13 @@ const std::string SPV_Node::POSTResponse(const std::string& request, const boost
 		if (content == std::string::npos || data == std::string::npos)
 			result["status"] = false;
 		else {
-			//json merkle = json::parse(request.substr(data+5,content-data-5));
+			json merkle = json::parse(request.substr(data + 5, content - data - 5));
+
+			if (!validateMerkleBlock(merkle)) {
+				merkles.push_back(merkle);
+
+				perform(ConnectionType::GETHEADER, (*std::begin(neighbors)).first, "0", NULL);
+			}
 		}
 	}
 	else {
@@ -58,13 +83,19 @@ SPV_Node::~SPV_Node() {}
 
 void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
 	if (actions.find(type) != actions.end()) {
+		if (type == ConnectionType::POSTTRANS && actions[type]->isDataNull()) {
+			actions[type]->setData(generateTransJSON(blockID, count));
+		}
+
 		actions[type]->Perform(id, blockID, count);
+		actions[type]->clearData();
 	}
 }
 
 void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
 	if (actions.find(type) != actions.end()) {
 		actions[type]->Perform(id, blockID, key);
+		actions[type]->clearData();
 	}
 }
 
@@ -76,13 +107,115 @@ void SPV_Node::perform() {
 			const json& temp = clients.front()->getAnswer();
 			if (temp.find("status") != temp.end() && temp["status"]) {
 				if (temp.find("result") != temp.end()) {
+					std::string res = temp["result"].dump();
 					for (const auto& header : temp["result"])
-						headers.push_back(header);
+						headers[header["blockid"]] = header;
 				}
 			}
+
+			for (auto& merkle : merkles) {
+				if (validateMerkleBlock(merkle)) {
+					/*OK TRANS*/
+				}
+				else {
+				}
+			}
+			merkles = json();
 		}
 		/*Deletes client and set pointer to null.*/
 		delete clients.front();
 		clients.pop_front();
 	}
+}
+
+bool SPV_Node::validateMerkleBlock(const json& merkle) {
+	std::string calculatedMerkleRoot = merkle["tx"][merkle["txPos"].get<int>()]["txid"];
+	if (merkle.find("merklePath") == merkle.end()) {
+		//print("Failed to fin merklePath");
+	}
+	else {
+		for (auto& step : merkle["merklePath"]) {
+			calculatedMerkleRoot.append(step["id"].get<std::string>());
+			calculatedMerkleRoot = hash(calculatedMerkleRoot);
+		}
+		//print("About to check merkle");
+		if (headers.find(merkle["blockid"]) != headers.end()) {
+			if (headers[merkle["blockid"]]["merkleroot"] == calculatedMerkleRoot) {
+				/*TRANSACTION WAS OK.*/
+
+				//print("Transaction was OK.");
+
+				UTXOs[merkle["tx"][merkle["txPos"].get<int>()]["txid"]] = merkle["tx"][merkle["txPos"].get<int>()];
+
+				//print("Updated UTXO.");
+				return true;
+			}
+			else {
+				//print("Merkleroot was different.");
+			}
+		}
+		else {
+			//print("Failed to find blockid in headers.");
+
+			return false;
+		}
+	}
+}
+
+const json SPV_Node::generateTransJSON(const std::string& wallet, const unsigned int amount) {
+	std::map<std::string, int> utxos;
+	json result;
+	int tot = 0;
+
+	for (auto& utxo : UTXOs) {
+		auto& output = utxo.second["vout"];
+		for (unsigned int i = 0; i < output.size(); i++) {
+			if (output[i].find("publicid") != output[i].end() && output[i]["publicid"] == publicKey) {
+				tot += output[i]["amount"];
+				utxos[utxo.first] = i;
+			}
+
+			if (tot >= amount) {
+				json vin, vout;
+
+				for (auto& input : utxos) {
+					json temp;
+
+					temp["txid"] = input.first;
+					temp["outputIndex"] = input.second;
+
+					vin.push_back(temp);
+				}
+
+				json tempVout;
+				tempVout["publicid"] = wallet;
+				tempVout["amount"] = amount;
+				vout.push_back(tempVout);
+
+				if (tot > amount) {
+					tempVout["publicid"] = publicKey;
+					tempVout["amount"] = tot - amount;
+					vout.push_back(tempVout);
+				}
+
+				result["vin"] = vin;
+				result["vout"] = vout;
+				result["txid"] = BlockChain::calculateTXID(result);
+				result["nTxin"] = result["vin"].size();
+				result["nTxout"] = result["vout"].size();
+
+				for (auto& tx : utxos) {
+					UTXOs.erase(tx.first);
+				}
+
+				std::string res = result.dump();
+
+				UTXOs[result["txid"]] = result;
+
+				return result;
+			}
+		}
+	}
+
+	return json();
 }

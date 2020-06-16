@@ -1,6 +1,5 @@
 #include "Node.h"
 #include "Client/AllClients.h"
-#include <iostream>
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier, int& size)
@@ -139,7 +138,7 @@ Node::POSTTrans::POSTTrans(Node* node) : Action(node, "Transaction (POST)") {
 void Node::POSTTrans::Perform(const unsigned int id, const std::string& wallet, const unsigned int amount) {
 	/*If id is a neighbor...*/
 	if (node->neighbors.find(id) != node->neighbors.end()) {
-		if (!data.is_null())
+		if (!data.is_null() && data.size())
 			node->clients.push_back(new TransactionClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));
 	}
 }
@@ -171,7 +170,7 @@ Node::POSTMerkle::POSTMerkle(Node* node) : Action(node, "MerkleBlock (POST)") {
 }
 
 /*POST merkleblock connection.*/
-void Node::POSTMerkle::Perform(const unsigned int id, const std::string& blockID, const std::string& transID) {
+void Node::POSTMerkle::Perform(const unsigned int id, const std::string&, const std::string&) {
 	/*If id is a neighbor...*/
 	if (node->neighbors.find(id) != node->neighbors.end()) {
 		node->clients.push_back(new MerkleClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));

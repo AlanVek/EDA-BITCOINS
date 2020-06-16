@@ -25,11 +25,14 @@ public:
 
 	virtual bool networkDone() { return true; }
 
-	const std::string getWallet() { return publicKey; }
-
 private:
 	virtual const std::string GETResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 
-	nlohmann::json headers;
+	bool validateMerkleBlock(const json&);
+	const json generateTransJSON(const std::string& wallet, const unsigned int amount);
+
+	std::map<std::string, json> headers;
+
+	json merkles;
 };

@@ -49,54 +49,15 @@ void Simulation::dispatch(const Events& code) {
 		//gui->setRealNodes(nodes);
 		break;
 
-		/*Filter (POST).*/
-	case Events::FILTER:
-		ev = Events::FILTER;
-		nodes[getIndex()]->perform(ConnectionType::POSTFILTER, gui->getReceiverID(), (std::string) "0", NULL/*gui->getKey()*/);
-		gui->infoGotten();
-
-		break;
-
-		/*Blocks (GET).*/
-	case Events::GET_BLOCKS:
-		ev = Events::GET_BLOCKS;
-		nodes[getIndex()]->perform(ConnectionType::GETBLOCK, gui->getReceiverID(), "84CB2573", 1);
-		gui->infoGotten();
-
-		break;
-
-		/*Headers (GET).*/
-	case Events::GET_HEADERS:
-		ev = Events::GET_HEADERS;
-		nodes[getIndex()]->perform(ConnectionType::GETHEADER, gui->getReceiverID(), "84CB2573", 1);
-		gui->infoGotten();
-
-		break;
-
-		/*Merkleblock (POST).*/
-	case Events::MERKLEBLOCK:
-		ev = Events::MERKLEBLOCK;
-		nodes[getIndex()]->perform(ConnectionType::POSTMERKLE, gui->getReceiverID(), "84CB2573", "7B857A14"/*gui->getTransactionID()*/);
-		gui->infoGotten();
-		break;
-
-		/*Block (POST).*/
-	case Events::POST_BLOCK:
-		ev = Events::POST_BLOCK;
-		nodes[getIndex()]->perform(ConnectionType::POSTBLOCK, gui->getReceiverID(),/* gui->getBlockID()*/"84CB2573", NULL);
-		gui->infoGotten();
-		break;
-
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
 		ev = Events::TRANSACTION;
-		nodes[getIndex()]->perform(ConnectionType::POSTTRANS, gui->getReceiverID(), gui->getWallet(), gui->getAmount());
+		nodes[getIndex()]->perform(ConnectionType::POSTTRANS, gui->getReceiverID(), gui->getKey(), gui->getAmount());
 		gui->infoGotten();
 
 		break;
 
-		/*New nodes have been added, so the nodes vector
-		must be updated.*/
+		/*New nodes have been added, so the nodes vector must be updated.*/
 	case Events::UPDATE:
 
 		/*Sets new nodes.*/
@@ -227,8 +188,8 @@ void Simulation::newNodes(bool request) {
 					/*Sets neighbors*/
 					for (auto& node : nodes) {
 						if (node->getIP() == ngh.ip && node->getPort() == ngh.port) {
-							nodes.back()->newNeighbor(node->getID(), ngh.ip, ngh.port, node->getWallet());
-							node->newNeighbor(nodes.back()->getID(), nodes.back()->getIP(), nodes.back()->getPort(), nodes.back()->getWallet());
+							nodes.back()->newNeighbor(node->getID(), ngh.ip, ngh.port, node->getKey());
+							node->newNeighbor(nodes.back()->getID(), nodes.back()->getIP(), nodes.back()->getPort(), nodes.back()->getKey());
 							added = true;
 						}
 					}
@@ -336,7 +297,7 @@ void Simulation::connectSPVs() {
 				/*Selects random node and connects it to SPV (if it's a full node)*/
 				if (typeid(*neighbor) != typeid(SPV_Node)) {
 					node->newNeighbor(neighbor->getID(), neighbor->getIP(), neighbor->getPort(), "");
-					neighbor->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getWallet());
+					neighbor->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getKey());
 				}
 			}
 		}
@@ -353,7 +314,7 @@ void Simulation::addAdders() {
 						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, "");
 					}
 					else
-						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, node_2->getWallet());
+						node->newNeighbor(node_2->getID(), neighbor.ip, neighbor.port, node_2->getKey());
 				}
 			}
 		}

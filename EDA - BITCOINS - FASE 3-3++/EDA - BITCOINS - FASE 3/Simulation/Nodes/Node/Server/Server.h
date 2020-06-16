@@ -3,7 +3,7 @@
 #include <string>
 #include <functional>
 
-#define MAXSIZE 100000
+#define MAXSIZE 50000
 
 const enum class ServerState : unsigned int {
 	FREE,

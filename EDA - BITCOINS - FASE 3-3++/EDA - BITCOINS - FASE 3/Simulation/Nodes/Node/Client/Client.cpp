@@ -68,8 +68,6 @@ bool Client::perform(void) {
 					throw std::exception(excpt.dump().c_str());
 				}
 
-				std::cout << "Received: " << answer << std::endl;
-
 				//Sets result to 'FALSE', to end loop.
 				stillOn = false;
 			}
