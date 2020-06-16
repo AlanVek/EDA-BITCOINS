@@ -74,6 +74,7 @@ void Full_Node::perform(ConnectionType type, const unsigned int id, const std::s
 	else if (type == ConnectionType::POSTTRANS && actions[ConnectionType::POSTTRANS]->isDataNull()) {
 		actions[ConnectionType::POSTTRANS]->setData(generateTransJSON(blockID, count));
 	}
+
 	if (actions.find(type) != actions.end()) {
 		actions[type]->Perform(id, blockID, count);
 		actions[type]->clearData();

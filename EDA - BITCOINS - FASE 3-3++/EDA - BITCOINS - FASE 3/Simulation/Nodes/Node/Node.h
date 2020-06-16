@@ -14,7 +14,8 @@ const enum class ConnectionType : unsigned int {
 	POSTTRANS,
 	POSTFILTER,
 	PING,
-	LAYOUT
+	LAYOUT,
+	FALSEBLOCK
 };
 
 struct Neighbor {
@@ -152,6 +153,12 @@ protected:
 		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
 		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
 	};
+	//class FalseBlock : public Action {
+	//public:
+	//	FalseBlock(Node*);
+	//	virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+	//	virtual void Perform(const unsigned int, const std::string&, const std::string&);
+	//};
 
 	/************************************************************************************************************/
 	std::map <ConnectionType, Action*> actions;

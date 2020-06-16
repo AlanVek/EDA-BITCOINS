@@ -192,4 +192,19 @@ Node::Layout::Layout(Node* node) : Action(node, "Ping") {
 void Node::Layout::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
 	node->clients.push_back(new LayoutClient(ip, node->port + 1, port, data));
 }
+
+//Node::FalseBlock::FalseBlock(Node* node) : Action(node, "False Block") {
+//}
+//
+///*Layout connection.*/
+//void Node::FalseBlock::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
+//	/*If node is in client mode...*/
+//		/*If id is a neighbor and count isn't null...*/
+//	if (node->neighbors.find(id) != node->neighbors.end()) {
+//		/*Sets new BlockClient for POST request.*/
+//
+//		std::string dd = data.dump();
+//		node->clients.push_back(new BlockClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data/*getBlock(blockID)*/));
+//	}
+//}
 /*********************************************************************************************************************************************************/

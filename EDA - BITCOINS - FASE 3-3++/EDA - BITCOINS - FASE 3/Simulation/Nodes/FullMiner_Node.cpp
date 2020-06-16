@@ -20,7 +20,7 @@ void FullMiner_Node::perform() {
 
 	if (duration_cast<seconds>(end - start).count() > timeElapsed) {
 		/*MINE BLOCK*/
-		mineBlock();
+		mineBlock(true);
 		start = end;
 	}
 
@@ -44,14 +44,14 @@ void FullMiner_Node::perform() {
 	}
 }
 
-void FullMiner_Node::mineBlock() {
+void FullMiner_Node::mineBlock(bool real) {
 	json block;
 
 	for (const auto& trans : transactions) {
 		block["tx"].push_back(UTXOs[trans]);
 	}
 
-	block["tx"].push_back(getFeeTrans());
+	block["tx"].push_back(getFeeTrans(real));
 
 	block["height"] = blockChain.getBlockAmount();
 	block["nTx"] = transactions.size() + 1;
@@ -69,19 +69,43 @@ void FullMiner_Node::mineBlock() {
 	block["merkleroot"] = BlockChain::calculateMerkleRoot(block);
 	block["blockid"] = BlockChain::calculateBlockID(block);
 
+	if (real) {
+		blockChain.addBlock(block);
+
+		transactions = json();
+	}
+	else {
+		block["merkleroot"] = BlockChain::generateID(block["merkleroot"]);
+	}
+
 	for (auto& neighbor : neighbors) {
 		actions[ConnectionType::POSTBLOCK]->setData(block);
 		if (!neighbor.second.filter.length()) {
 			Full_Node::perform(ConnectionType::POSTBLOCK, neighbor.first, "", NULL);
 		}
 	}
-
-	blockChain.addBlock(block);
-
-	transactions = json();
 }
 
-const json FullMiner_Node::getFeeTrans() {
+void FullMiner_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
+	if (type == ConnectionType::POSTBLOCK && actions[ConnectionType::POSTBLOCK]->isDataNull())
+		actions[ConnectionType::POSTBLOCK]->setData(getBlock(blockID));
+
+	else if (type == ConnectionType::POSTTRANS && actions[ConnectionType::POSTTRANS]->isDataNull()) {
+		actions[ConnectionType::POSTTRANS]->setData(generateTransJSON(blockID, count));
+	}
+
+	else if (type == ConnectionType::FALSEBLOCK) {
+		mineBlock(false);
+		return;
+	}
+
+	if (actions.find(type) != actions.end()) {
+		actions[type]->Perform(id, blockID, count);
+		actions[type]->clearData();
+	}
+}
+
+const json FullMiner_Node::getFeeTrans(bool real) {
 	json result;
 
 	result["vin"];
@@ -95,9 +119,8 @@ const json FullMiner_Node::getFeeTrans() {
 	result["nTxout"] = 1;
 	result["txid"] = BlockChain::generateID(std::to_string(rand()));
 
-	UTXOs[result["txid"]] = result;
-
-	std::string res = result.dump();
+	if (real)
+		UTXOs[result["txid"]] = result;
 
 	return result;
 }

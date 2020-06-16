@@ -10,15 +10,16 @@ class Node;
 const enum class Events : unsigned int {
 	NOTHING = 0,
 	END,
-	FILTER,
+	/*FILTER,
 	MERKLEBLOCK,
 	GET_BLOCKS,
 	GET_HEADERS,
-	TRANSACTION,
 	POST_BLOCK,
+	*/TRANSACTION,
 	UPDATE,
 	NEWNET,
-	KEEPCREATING
+	KEEPCREATING,
+	FALSEBLOCK
 };
 
 /********************************/

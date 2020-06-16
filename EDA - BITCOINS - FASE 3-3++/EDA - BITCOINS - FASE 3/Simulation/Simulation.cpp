@@ -37,6 +37,8 @@ void Simulation::mainScreen() {
 
 //Dispatches according to event code.
 void Simulation::dispatch(const Events& code) {
+	int index = getIndex();
+
 	switch (code) {
 		/*User asked to exit.*/
 	case Events::END:
@@ -46,14 +48,25 @@ void Simulation::dispatch(const Events& code) {
 		/*Nothing happened.*/
 	case Events::NOTHING:
 		perform();
-		//gui->setRealNodes(nodes);
 		break;
 
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
 		ev = Events::TRANSACTION;
-		nodes[getIndex()]->perform(ConnectionType::POSTTRANS, gui->getReceiverID(), gui->getKey(), gui->getAmount());
-		gui->infoGotten();
+
+		if (index != -1) {
+			nodes[index]->perform(ConnectionType::POSTTRANS, gui->getReceiverID(), gui->getKey(), gui->getAmount());
+			gui->infoGotten();
+		}
+
+		break;
+
+	case Events::FALSEBLOCK:
+
+		if (index != -1) {
+			nodes[index]->perform(ConnectionType::FALSEBLOCK, gui->getReceiverID(), "", NULL);
+			gui->infoGotten();
+		}
 
 		break;
 

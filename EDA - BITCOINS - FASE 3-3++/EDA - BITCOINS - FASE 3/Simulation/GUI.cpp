@@ -590,6 +590,7 @@ void GUI::selectMessage() {
 	auto merkleblock = [this]() {displayWidget("Merkleblock (POST)", [this]() {action = Events::MERKLEBLOCK; state = States::PARAM_SELECTION; }); };
 	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::PARAM_SELECTION; }); };
 	*/auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
+	auto falseBlock = [this]() {displayWidget("False Block", [this]() {action = Events::FALSEBLOCK; state = States::INIT_DONE; }); };
 
 	/*If sender is a Full Node...*/
 	if (nodes[sender].type != NodeTypes::NEW_SPV) {
@@ -598,7 +599,14 @@ void GUI::selectMessage() {
 			///*Displays allowed messages.*/
 			//get_blocks();  ImGui::SameLine();
 			//post_block();  ImGui::SameLine();
-			transaction(); ImGui::NewLine();
+			transaction();
+
+			if (nodes[sender].type == NodeTypes::NEW_MINER) {
+				ImGui::SameLine();
+				falseBlock();
+			}
+
+			ImGui::NewLine();
 		}
 		else
 			state = States::INIT_DONE;
@@ -624,29 +632,29 @@ void GUI::selectMessage() {
 void GUI::selectParameters() {
 	switch (action) {
 		/*Filter (POST).*/
-	case Events::FILTER:
-		state = States::INIT_DONE;
-		break;
+	//case Events::FILTER:
+	//	state = States::INIT_DONE;
+	//	break;
 
-		/*Blocks (GET).*/
-	case Events::GET_BLOCKS:
-		state = States::INIT_DONE;
-		break;
+	//	/*Blocks (GET).*/
+	//case Events::GET_BLOCKS:
+	//	state = States::INIT_DONE;
+	//	break;
 
-		/*Headers (GET).*/
-	case Events::GET_HEADERS:
-		state = States::INIT_DONE;
-		break;
+	//	/*Headers (GET).*/
+	//case Events::GET_HEADERS:
+	//	state = States::INIT_DONE;
+	//	break;
 
-		/*Merkleblock (POST).*/
-	case Events::MERKLEBLOCK:
-		state = States::INIT_DONE;
-		break;
+	//	/*Merkleblock (POST).*/
+	//case Events::MERKLEBLOCK:
+	//	state = States::INIT_DONE;
+	//	break;
 
-		/*Block (POST).*/
-	case Events::POST_BLOCK:
-		state = States::INIT_DONE;
-		break;
+	//	/*Block (POST).*/
+	//case Events::POST_BLOCK:
+	//	state = States::INIT_DONE;
+	//	break;
 
 		/*Transaction (POST).*/
 	case Events::TRANSACTION:
