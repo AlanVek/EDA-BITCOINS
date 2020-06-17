@@ -3,7 +3,8 @@
 class FullMiner_Node : public Full_Node
 {
 public:
-	FullMiner_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&);
+	FullMiner_Node(boost::asio::io_context&, const std::string&, const unsigned int,
+		const unsigned int, int&, const GUIMsg&);
 	virtual ~FullMiner_Node();
 
 	virtual void perform();

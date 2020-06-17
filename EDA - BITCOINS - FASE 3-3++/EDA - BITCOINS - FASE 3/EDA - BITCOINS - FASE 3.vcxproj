@@ -155,6 +155,7 @@
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\GUIMsg.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp" />
     <ClCompile Include="Simulation\Nodes\SPV_Node.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="Simulation\Nodes\Node\Client\PingClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\POSTClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\TransactionClient.h" />
+    <ClInclude Include="Simulation\Nodes\Node\GUIMsg.h" />
     <ClInclude Include="Simulation\Nodes\Node\Node.h" />
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h" />
     <ClInclude Include="Simulation\Nodes\SPV_Node.h" />

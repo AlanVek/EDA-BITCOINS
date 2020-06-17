@@ -2,11 +2,12 @@
 #include "Client/AllClients.h"
 
 /*Constructor. Sets callbacks in server.*/
-Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port, const unsigned int identifier, int& size)
+Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
+	const unsigned int identifier, int& size, const GUIMsg& messenger)
 	: ip(ip), port(port), identifier(identifier), server(io_context,
 		std::bind(&Node::GETResponse, this, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&Node::POSTResponse, this, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&Node::ERRORResponse, this), port), size(size)
+		std::bind(&Node::ERRORResponse, this), port), size(size), messenger(messenger)
 {
 	publicKey = std::to_string(std::rand() % 99999999);
 	std::cout << "Node: " << identifier << ", key: " << publicKey << std::endl;
@@ -70,37 +71,16 @@ const std::string Node::headerFormat(const std::string& result) {
 		"\r\nContent-Type: " + "text/html" + "; charset=iso-8859-1\r\n\r\n" + result;
 }
 
-/*Getters*/
-const unsigned int Node::getID() { return identifier; }
-std::vector<ClientState> Node::getClientState(void) {
-	std::vector<ClientState> temp;
-	for (const auto& client : clients) {
-		temp.push_back(client->getState());
-	}
-	return temp;
-}
-
-/*Returns server's connections.*/
-std::vector<stateOfConnection> Node::getServerState(void) { return server.getState(); }
-
-/*Returns connected clients and clears vector.*/
-std::vector<int> Node::getClientPort(void) {
-	auto temp = connectedClients;
-
-	connectedClients.clear();
-	return temp;
-}
-
 /*Sets new connected client in vector.*/
-void Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
-	int size = connectedClients.size();
+int Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
+	int result = -1;
+
 	for (const auto& neighbor : neighbors) {
 		if (neighbor.second.port + 1 == nodeInfo.port() && neighbor.second.ip == nodeInfo.address().to_string())
-			connectedClients.push_back(neighbor.first);
+			return neighbor.first;
 	}
 
-	if (connectedClients.size() == size)
-		connectedClients.push_back(-1);
+	return -1;
 }
 
 /*********************************************************************************************************************************************************/

@@ -43,6 +43,12 @@
     <Filter Include="Header Files\Node Headers\Client Headers\POST Clients Headers">
       <UniqueIdentifier>{5edc47f9-0f62-4294-91fd-84c839e2b09c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GUI Headers">
+      <UniqueIdentifier>{c5ec9366-9835-4774-80b6-0afa95072b00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI Sources">
+      <UniqueIdentifier>{795a1736-9cea-4b6e-9cc3-ab3fa296a996}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Simulation\Simulation.cpp">
@@ -96,11 +102,14 @@
     <ClCompile Include="Simulation\Nodes\Node\Server\Server.cpp">
       <Filter>Source Files\Node Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation\GUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Simulation\Nodes\FullMiner_Node.cpp">
       <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\GUIMsg.cpp">
+      <Filter>Source Files\GUI Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\GUI.cpp">
+      <Filter>Source Files\GUI Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -179,17 +188,20 @@
     <ClInclude Include="Simulation\Nodes\Node\Server\Server.h">
       <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation\GUI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\LayoutClient.h">
       <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\Node\Client\PingClient.h">
       <Filter>Header Files\Node Headers\Client Headers\POST Clients Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\GUIMsg.h">
+      <Filter>Header Files\GUI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\GUI.h">
+      <Filter>Header Files\GUI Headers</Filter>
+    </ClInclude>
     <ClInclude Include="Simulation\Nodes\FullMiner_Node.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

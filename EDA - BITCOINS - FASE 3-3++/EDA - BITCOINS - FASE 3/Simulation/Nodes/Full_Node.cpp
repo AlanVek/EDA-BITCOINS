@@ -27,8 +27,8 @@ const json error = { "error" };
 
 /*Constructor. Uses Node constructor.*/
 Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
-	const unsigned int port, const unsigned int identifier, int& size)
-	: Node(io_context, ip, port, identifier, size), state(NodeState::IDLE), pingSent(-1)
+	const unsigned int port, const unsigned int identifier, int& size, const GUIMsg& messenger)
+	: Node(io_context, ip, port, identifier, size, messenger), state(NodeState::IDLE), pingSent(-1)
 {
 	/*Sets node's actions.*/
 	actions[ConnectionType::POSTBLOCK] = new POSTBlock(this);
@@ -76,6 +76,8 @@ void Full_Node::perform(ConnectionType type, const unsigned int id, const std::s
 	}
 
 	if (actions.find(type) != actions.end()) {
+		if (!actions[type]->isDataNull()) messenger.setMessage("Node " + std::to_string(identifier) + " is performing a client request.");
+
 		actions[type]->Perform(id, blockID, count);
 		actions[type]->clearData();
 	}
@@ -87,6 +89,8 @@ void Full_Node::perform(ConnectionType type, const unsigned int id, const std::s
 		actions[ConnectionType::POSTMERKLE]->setData(getMerkleBlock(blockID, key));
 
 	if (actions.find(type) != actions.end()) {
+		if (!actions[type]->isDataNull()) messenger.setMessage("Node " + std::to_string(identifier) + " is performing a client request.");
+
 		actions[type]->Perform(id, blockID, key);
 		actions[type]->clearData();
 	}
@@ -154,17 +158,22 @@ const json Full_Node::generateTransJSON(const std::string& wallet, const unsigne
 				UTXOs[result["txid"]] = result;
 				transactions.push_back(result["txid"]);
 
+				messenger.setMessage("Node " + std::to_string(identifier) + " made a transaction for " + std::to_string(amount) + " EDA coin(s)");
+
 				return result;
 			}
 		}
 	}
+	messenger.setMessage("Node " + std::to_string(identifier) + " doesn´t have " + std::to_string(amount) + " EDA coin(s) to perform a transaction");
 
 	return json();
 }
-
 /*GET callback for server.*/
 const std::string Full_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
-	setConnectedClientID(nodeInfo);
+	int neighbor = setConnectedClientID(nodeInfo);
+
+	messenger.setMessage("Node " + std::to_string(identifier) + " is answering a request from "
+		+ (neighbor == -1 ? "an unknown node." : "node " + std::to_string(neighbor)));
 	json result;
 	result["status"] = true;
 	int block;
@@ -240,7 +249,10 @@ const std::string Full_Node::GETResponse(const std::string& request, const boost
 
 /*POST callback for server.*/
 const std::string Full_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
-	setConnectedClientID(nodeInfo);
+	int neighbor = setConnectedClientID(nodeInfo);
+
+	messenger.setMessage("Node " + std::to_string(identifier) + " is answering a request from "
+		+ (neighbor == -1 ? "an unknown node." : "node " + std::to_string(neighbor)));
 
 	json result;
 	result["status"] = false;
@@ -406,6 +418,9 @@ bool Full_Node::validateTransaction(const json& trans, bool alreadyChecked) {
 		}
 	}
 
+	std::string message = "Node " + std::to_string(identifier) + " is " +
+		(result ? "rejecting" : "accepting") + " a transaction";
+
 	//print("Returning result of block validation");
 	return result;
 }
@@ -417,22 +432,24 @@ bool Full_Node::validateBlock(const json& block) {
 
 	bool result = false;
 
-	if (((blockCount && blockChain.getBlock(blockCount - 1)["blockid"] != block["blockid"])
+	if ((blockCount && blockChain.getBlock(blockCount - 1)["blockid"] != block["blockid"]) || !blockCount) {
+		if (BlockChain::calculateMerkleRoot(block) == block["merkleroot"]
 
-		|| !blockCount) && BlockChain::calculateMerkleRoot(block) == block["merkleroot"]
-
-		&& BlockChain::calculateBlockID(block) == block["blockid"]) {
-		result = true;
-		std::string bl = block.dump();
-		for (auto& trans : block["tx"]) {
-			if (trans["vin"].is_null() && !doneMiner) {
-				doneMiner = true;
-			}
-			else {
-				if (!validateTransaction(trans, true))
-					result = false;
+			&& BlockChain::calculateBlockID(block) == block["blockid"]) {
+			result = true;
+			std::string bl = block.dump();
+			for (auto& trans : block["tx"]) {
+				if (trans["vin"].is_null() && !doneMiner) {
+					doneMiner = true;
+				}
+				else {
+					if (!validateTransaction(trans, true))
+						result = false;
+				}
 			}
 		}
+		else
+			messenger.setMessage("Node " + std::to_string(identifier) + " is rejecting a block.");
 	}
 
 	return result;

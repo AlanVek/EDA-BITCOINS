@@ -4,7 +4,7 @@
 
 class SPV_Node : public Node {
 public:
-	SPV_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&);
+	SPV_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&, const GUIMsg&);
 	~SPV_Node();
 
 	virtual void perform();
@@ -30,7 +30,7 @@ private:
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 
 	bool validateMerkleBlock(const json&);
-	const json generateTransJSON(const std::string& wallet, const unsigned int amount);
+	virtual const json generateTransJSON(const std::string& wallet, const unsigned int amount);
 
 	std::map<std::string, json> headers;
 

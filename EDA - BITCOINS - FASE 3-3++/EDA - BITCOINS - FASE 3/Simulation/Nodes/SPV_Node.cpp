@@ -9,7 +9,8 @@ namespace {
 
 /*SPV_Node constructor. Uses Node constructor.*/
 SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
-	const unsigned int port, const unsigned int identifier, int& size) : Node(io_context, ip, port, identifier, size)
+	const unsigned int port, const unsigned int identifier, int& size, const GUIMsg& messenger) :
+	Node(io_context, ip, port, identifier, size, messenger)
 {
 	actions[ConnectionType::POSTTRANS] = new POSTTrans(this);
 	actions[ConnectionType::POSTFILTER] = new POSTFilter(this);
@@ -19,7 +20,10 @@ SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 
 /*GET callback for server.*/
 const std::string SPV_Node::GETResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
-	setConnectedClientID(nodeInfo);
+	int neighbor = setConnectedClientID(nodeInfo);
+
+	messenger.setMessage("Node " + std::to_string(identifier) + " is answering a request from "
+		+ (neighbor == -1 ? "an unknown node." : "node " + std::to_string(neighbor)));
 
 	json result;
 	result["status"] = false;
@@ -49,7 +53,10 @@ inline const std::string hash(const std::string& code) {
 }
 /*POST callback for server.*/
 const std::string SPV_Node::POSTResponse(const std::string& request, const boost::asio::ip::tcp::endpoint& nodeInfo) {
-	setConnectedClientID(nodeInfo);
+	int neighbor = setConnectedClientID(nodeInfo);
+
+	messenger.setMessage("Node " + std::to_string(identifier) + " is answering a request from "
+		+ (neighbor == -1 ? "an unknown node." : "node " + std::to_string(neighbor)));
 	json result;
 	result["status"] = true;
 	result["result"] = NULL;
@@ -87,6 +94,7 @@ void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::st
 			actions[type]->setData(generateTransJSON(blockID, count));
 		}
 
+		if (!actions[type]->isDataNull()) messenger.setMessage("Node " + std::to_string(identifier) + " is performing a client request.");
 		actions[type]->Perform(id, blockID, count);
 		actions[type]->clearData();
 	}
@@ -94,6 +102,8 @@ void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::st
 
 void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const std::string& key) {
 	if (actions.find(type) != actions.end()) {
+		if (!actions[type]->isDataNull()) messenger.setMessage("Node " + std::to_string(identifier) + " is performing a client request.");
+
 		actions[type]->Perform(id, blockID, key);
 		actions[type]->clearData();
 	}
@@ -212,10 +222,13 @@ const json SPV_Node::generateTransJSON(const std::string& wallet, const unsigned
 
 				UTXOs[result["txid"]] = result;
 
+				messenger.setMessage("Node " + std::to_string(identifier) + " made a transaction for " + std::to_string(amount) + " EDA coin(s)");
+
 				return result;
 			}
 		}
 	}
 
+	messenger.setMessage("Node " + std::to_string(identifier) + " doesn´t have " + std::to_string(amount) + " EDA coin(s) to perform a transaction");
 	return json();
 }

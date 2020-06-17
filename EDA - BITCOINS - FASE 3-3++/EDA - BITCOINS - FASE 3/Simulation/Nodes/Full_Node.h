@@ -29,7 +29,8 @@ const enum class NodeState : unsigned int {
 
 class Full_Node : public Node {
 public:
-	Full_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&);
+	Full_Node(boost::asio::io_context&, const std::string&, const unsigned int, const unsigned int, int&,
+		const GUIMsg&);
 	virtual ~Full_Node();
 
 	virtual void perform(ConnectionType, const unsigned int, const std::string&, const unsigned int);

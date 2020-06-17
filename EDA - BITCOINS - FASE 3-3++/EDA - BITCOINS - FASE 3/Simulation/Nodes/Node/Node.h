@@ -3,6 +3,7 @@
 #include "Server/Server.h"
 #include <map>
 #include <iostream>
+#include "GUIMsg.h"
 
 auto print = [](const std::string& text) {std::cout << text << std::endl; };
 
@@ -26,20 +27,17 @@ struct Neighbor {
 class Node {
 public:
 	Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
-		const unsigned int identifier, int& size);
+		const unsigned int identifier, int& size, const GUIMsg& messenger);
 	virtual ~Node();
 
 	virtual void newNeighbor(const unsigned int id, const std::string& ip, const unsigned int port, const std::string&);
 	virtual const json& getData(void) = 0;
 
 	virtual void perform() = 0;
-	virtual const unsigned int getID();
+	virtual const unsigned int getID() { return identifier; }
 
 	const std::string& getIP() { return ip; }
 
-	std::vector<ClientState> getClientState(void);
-	std::vector<stateOfConnection> getServerState(void);
-	virtual std::vector<int> getClientPort(void);
 	const std::map<unsigned int, Neighbor>& getNeighbors() { return neighbors; }
 	const unsigned int getPort() { return port; }
 	int& size;
@@ -67,7 +65,8 @@ protected:
 
 	virtual const std::string headerFormat(const std::string&);
 
-	virtual void setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
+	virtual int setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
+	virtual const json generateTransJSON(const std::string& wallet, const unsigned int amount) = 0;
 
 	std::list<Client*> clients;
 	Server server;
@@ -76,9 +75,10 @@ protected:
 	std::string ip;
 	unsigned int port, identifier;
 
-	std::vector<int> connectedClients;
 	std::string publicKey;
 	std::map<std::string, json> UTXOs;
+
+	GUIMsg messenger;
 
 	/*Node Actions*/
 	/****************************************************************************************************************/

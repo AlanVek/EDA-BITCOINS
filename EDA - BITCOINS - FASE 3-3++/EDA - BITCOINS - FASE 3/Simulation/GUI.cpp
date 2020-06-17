@@ -996,4 +996,4 @@ const std::string& GUI::getKey() { return wallet; }
 /*Setters*/
 void GUI::networkDone() { state = States::INIT_DONE; }
 void GUI::infoGotten() { wallet.clear(); amount = 0; action = Events::NOTHING; }
-void GUI::updateMsg(const std::string& info) { networkingInfo.append(info); }
+void GUI::updateMsg(const std::string& info) { networkingInfo.append(info + '\n'); }

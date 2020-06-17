@@ -6,7 +6,8 @@ const double timeElapsed = 15.0;
 const double minerFee = 10;
 
 FullMiner_Node::FullMiner_Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
-	const unsigned int identifier, int& size) : Full_Node(io_context, ip, port, identifier, size)
+	const unsigned int identifier, int& size, const GUIMsg& messenger)
+	: Full_Node(io_context, ip, port, identifier, size, messenger)
 {
 }
 
@@ -46,6 +47,8 @@ void FullMiner_Node::perform() {
 
 void FullMiner_Node::mineBlock(bool real) {
 	json block;
+
+	messenger.setMessage("Node " + std::to_string(identifier) + " is mining a block.");
 
 	for (const auto& trans : transactions) {
 		block["tx"].push_back(UTXOs[trans]);
@@ -100,6 +103,8 @@ void FullMiner_Node::perform(ConnectionType type, const unsigned int id, const s
 	}
 
 	if (actions.find(type) != actions.end()) {
+		if (!actions[type]->isDataNull()) messenger.setMessage("Node " + std::to_string(identifier) + " is performing a client request.");
+
 		actions[type]->Perform(id, blockID, count);
 		actions[type]->clearData();
 	}

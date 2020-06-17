@@ -94,73 +94,8 @@ const Events Simulation::eventGenerator() {
 	/*Polls io_context.*/
 	io_context.poll();
 
-	/*Sets networking message in GUI.*/
-	generateMsg();
-
 	/*Generates and returns event.*/
 	return gui->checkStatus();
-}
-
-/*Generates and sets message in GUI.*/
-void Simulation::generateMsg() {
-	/*Vector to block from setting the same string when client is taking too long.*/
-	static std::vector<bool> canPrint(nodes.size(), true);
-
-	/*Updates vector's size in case new nodes have been added.*/
-	if (nodes.size() > canPrint.size()) {
-		std::vector<bool>temp(nodes.size() - canPrint.size(), true);
-		canPrint.insert(canPrint.end(), temp.begin(), temp.end());
-	}
-
-	/*For every node...*/
-	for (unsigned int i = 0; i < nodes.size(); i++) {
-		/*Sets string according to client state.*/
-		for (auto& state : nodes[i]->getClientState()) {
-			switch (state) {
-				/*Performing string.*/
-			case ClientState::PERFORMING:
-				if (canPrint[i]) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is performing a client request.");
-					canPrint[i] = false;
-				}
-				break;
-
-				/*Finished string.*/
-			case ClientState::FINISHED:
-				gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " finished the request.");
-				canPrint[i] = true;
-				break;
-			default:
-				break;
-			}
-		}
-		auto serverStates = nodes[i]->getServerState();
-		auto ports = nodes[i]->getClientPort();
-		for (unsigned int j = 0; j < serverStates.size(); j++)
-			/*Sets string according to server state.*/
-			switch (serverStates[j].st) {
-				/*Connection OK string.*/
-			case ServerState::PERFORMING:
-
-				/*With known neighbor.*/
-				if (ports.size() && (ports.back() + 1)) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from node " + std::to_string(ports.back()));
-				}
-				else
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " is answering a request from an unknown node.");
-				break;
-				/*Finished string.*/
-			case ServerState::FINISHED:
-				if (ports.size() && (ports.back() + 1)) {
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered to node " + std::to_string(ports.back()));
-				}
-				else
-					gui->updateMsg("\nNode " + std::to_string(nodes[i]->getID()) + " answered to an unknown node.");
-				break;
-			default:
-				break;
-			}
-	}
 }
 
 /*Sets new nodes in nodes vector.*/
@@ -184,11 +119,11 @@ void Simulation::newNodes(bool request) {
 		if (nnds[i].local && goOn) {
 			/*Creates new node.*/
 			if (nnds[i].type == NodeTypes::NEW_FULL)
-				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
+				nodes.push_back(new Full_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size, GUIMsg(gui)));
 			else if (nnds[i].type == NodeTypes::NEW_SPV)
-				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
+				nodes.push_back(new SPV_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size, GUIMsg(gui)));
 			else
-				nodes.push_back(new FullMiner_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size));
+				nodes.push_back(new FullMiner_Node(io_context, nnds[i].ip, nnds[i].port, nnds[i].index, size, GUIMsg(gui)));
 
 			/*If it was created from appendix mode, it must request (BLOCK if it's a FULL or HEADER if it's an SPV).
 			Parameters "0" and NULL mean "all the blocks/headers". */
@@ -273,9 +208,6 @@ bool Simulation::createNetwork() {
 
 	/*Performs client requests.*/
 	perform();
-
-	/*Sets message in GUI.*/
-	generateMsg();
 
 	for (auto& node : nodes) {
 		/*Checks for timeouts and pings.*/
