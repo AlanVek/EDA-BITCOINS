@@ -152,6 +152,7 @@
     <ClCompile Include="Simulation\Nodes\BlockChain\Block\Block.cpp" />
     <ClCompile Include="Simulation\Nodes\FullMiner_Node.cpp" />
     <ClCompile Include="Simulation\Nodes\Full_Node.cpp" />
+    <ClCompile Include="Simulation\Nodes\Node\Actions.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\Client.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\GETClient.cpp" />
     <ClCompile Include="Simulation\Nodes\Node\Client\POSTClient.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Simulation\Nodes\BlockChain\Block\Block.h" />
     <ClInclude Include="Simulation\Nodes\FullMiner_Node.h" />
     <ClInclude Include="Simulation\Nodes\Full_Node.h" />
+    <ClInclude Include="Simulation\Nodes\Node\Actions.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\AllClients.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\BlockClient.h" />
     <ClInclude Include="Simulation\Nodes\Node\Client\Client.h" />

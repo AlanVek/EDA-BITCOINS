@@ -2,6 +2,7 @@
 #include <typeinfo>
 #include "Node/Client/AllClients.h"
 #include "SPV_Node.h"
+#include "Node/Actions.h"
 
 namespace {
 	const double timeMin = 0.1;
@@ -482,11 +483,9 @@ void Full_Node::perform() {
 		if (typeid(*clients.front()) == typeid(GETBlockClient)) {
 			/*Saves blocks.*/
 			const json& temp = clients.front()->getAnswer();
-			if (temp.find("status") != temp.end() && temp["status"]) {
-				if (temp.find("result") != temp.end()) {
-					for (const auto& block : temp["result"]) {
-						blockChain.addBlock(block);
-					}
+			if (temp.find("status") != temp.end() && temp["status"] && temp.find("result") != temp.end()) {
+				for (const auto& block : temp["result"]) {
+					blockChain.addBlock(block);
 				}
 			}
 		}

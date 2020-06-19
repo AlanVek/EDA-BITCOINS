@@ -1,6 +1,7 @@
 #include "SPV_Node.h"
 #include "Node/Client/AllClients.h"
 #include <typeinfo>
+#include "Node/Actions.h"
 #include "BlockChain/BlockChain.h"
 
 namespace {

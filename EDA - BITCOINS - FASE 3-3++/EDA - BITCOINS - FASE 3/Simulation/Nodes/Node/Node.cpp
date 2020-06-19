@@ -1,5 +1,6 @@
-#include "Node.h"
 #include "Client/AllClients.h"
+#include "Actions.h"
+#include <iostream>
 
 /*Constructor. Sets callbacks in server.*/
 Node::Node(boost::asio::io_context& io_context, const std::string& ip, const unsigned int port,
@@ -73,8 +74,6 @@ const std::string Node::headerFormat(const std::string& result) {
 
 /*Sets new connected client in vector.*/
 int Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
-	int result = -1;
-
 	for (const auto& neighbor : neighbors) {
 		if (neighbor.second.port + 1 == nodeInfo.port() && neighbor.second.ip == nodeInfo.address().to_string())
 			return neighbor.first;
@@ -82,104 +81,3 @@ int Node::setConnectedClientID(const boost::asio::ip::tcp::endpoint& nodeInfo) {
 
 	return -1;
 }
-
-/*********************************************************************************************************************************************************/
-
-Node::GETBlock::GETBlock(Node* node) : Action(node, "Blocks (GET)") {
-}
-
-/*GET performer for GET blocks request. */
-void Node::GETBlock::Perform(const unsigned int id, const std::string& blockID, const unsigned int count) {
-	/*If node is free...*/
-		/*If id is a neighbor and count isn't null...*/
-	if (node->neighbors.find(id) != node->neighbors.end()) {
-		/*Sets new GETBlockClient.*/
-		node->clients.push_back(new GETBlockClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, blockID, count));
-	}
-}
-
-Node::POSTBlock::POSTBlock(Node* node) : Action(node, "Blocks (POST)") {
-}
-
-/*POST connection for blocks.*/
-void Node::POSTBlock::Perform(const unsigned int id, const std::string& blockID, const unsigned int) {
-	/*If node is in client mode...*/
-		/*If id is a neighbor and count isn't null...*/
-	if (node->neighbors.find(id) != node->neighbors.end()) {
-		/*Sets new BlockClient for POST request.*/
-
-		std::string dd = data.dump();
-		node->clients.push_back(new BlockClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data/*getBlock(blockID)*/));
-	}
-}
-
-Node::POSTTrans::POSTTrans(Node* node) : Action(node, "Transaction (POST)") {
-}
-void Node::POSTTrans::Perform(const unsigned int id, const std::string& wallet, const unsigned int amount) {
-	/*If id is a neighbor...*/
-	if (node->neighbors.find(id) != node->neighbors.end()) {
-		if (!data.is_null() && data.size())
-			node->clients.push_back(new TransactionClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));
-	}
-}
-
-Node::POSTFilter::POSTFilter(Node* node) : Action(node, "Filter (POST)") {
-}
-
-void Node::POSTFilter::Perform(const unsigned int id, const std::string& key, const unsigned int) {
-	/*If id is a neighbor...*/
-	if (node->neighbors.find(id) != node->neighbors.end()) {
-		json tempData;
-
-		tempData["key"] = key;
-
-		node->clients.push_back(new FilterClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, tempData));
-	};
-}
-Node::GETHeader::GETHeader(Node* node) : Action(node, "Headers (GET)") {
-}
-
-void Node::GETHeader::Perform(const unsigned int id, const std::string& blockID, const unsigned int count) {
-	if (node->neighbors.find(id) != node->neighbors.end()) {
-		/*Sets new GETBlockClient.*/
-		node->clients.push_back(new GETHeaderClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, blockID, count));
-	}
-}
-
-Node::POSTMerkle::POSTMerkle(Node* node) : Action(node, "MerkleBlock (POST)") {
-}
-
-/*POST merkleblock connection.*/
-void Node::POSTMerkle::Perform(const unsigned int id, const std::string&, const std::string&) {
-	/*If id is a neighbor...*/
-	if (node->neighbors.find(id) != node->neighbors.end()) {
-		node->clients.push_back(new MerkleClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));
-	}
-}
-
-Node::Ping::Ping(Node* node) : Action(node, "Ping") {
-}
-
-/*Ping connection.*/
-void Node::Ping::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
-	node->clients.push_back(new PingClient(ip, node->port + 1, port, data));
-}
-
-Node::Layout::Layout(Node* node) : Action(node, "Ping") {
-}
-
-/*Layout connection.*/
-void Node::Layout::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
-	node->clients.push_back(new LayoutClient(ip, node->port + 1, port, data));
-}
-
-Node::FalseTrans::FalseTrans(Node* node) : Action(node, "False Block") {
-}
-
-/*Layout connection.*/
-void Node::FalseTrans::Perform(const unsigned int id, const std::string& ip, const unsigned int port) {
-	if (node->neighbors.find(id) != node->neighbors.end() && !data.is_null()) {
-		node->clients.push_back(new TransactionClient(node->neighbors[id].ip, node->port + 1, node->neighbors[id].port, data));
-	}
-}
-/*********************************************************************************************************************************************************/

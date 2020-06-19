@@ -1,6 +1,5 @@
-//#include <iostream>
+#include <iostream>
 #include "Simulation/Simulation.h"
-
 int main()
 {
 	int result = -1;

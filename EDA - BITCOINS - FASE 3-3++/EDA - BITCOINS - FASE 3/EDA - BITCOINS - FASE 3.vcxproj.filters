@@ -111,6 +111,9 @@
     <ClCompile Include="Simulation\GUI.cpp">
       <Filter>Source Files\GUI Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\Nodes\Node\Actions.cpp">
+      <Filter>Source Files\Node Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Simulation\Simulation.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files\GUI Headers</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Nodes\FullMiner_Node.h">
+      <Filter>Header Files\Node Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Nodes\Node\Actions.h">
       <Filter>Header Files\Node Headers</Filter>
     </ClInclude>
   </ItemGroup>
