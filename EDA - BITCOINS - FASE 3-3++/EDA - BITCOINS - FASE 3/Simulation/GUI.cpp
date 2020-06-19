@@ -583,36 +583,27 @@ void GUI::selectMessage() {
 	ImGui::Text("Select Message Type: ");
 	ImGui::NewLine();
 
-	/*Sets button setters for every type of message.*/
-	/*auto filter = [this]() {displayWidget("Filter (POST)", [this]() {action = Events::FILTER; state = States::PARAM_SELECTION; }); };
-	auto get_blocks = [this]() {displayWidget("Block (GET)", [this]() {action = Events::GET_BLOCKS; state = States::PARAM_SELECTION; }); };
-	auto get_headers = [this]() {displayWidget("Headers (GET)", [this]() {action = Events::GET_HEADERS;  state = States::PARAM_SELECTION; }); };
-	auto merkleblock = [this]() {displayWidget("Merkleblock (POST)", [this]() {action = Events::MERKLEBLOCK; state = States::PARAM_SELECTION; }); };
-	auto post_block = [this]() {displayWidget("Block (POST)", [this]() {action = Events::POST_BLOCK; state = States::PARAM_SELECTION; }); };
-	*/auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
+	auto transaction = [this]() {displayWidget("Transaction (POST)", [this]() {action = Events::TRANSACTION;  state = States::PARAM_SELECTION; }); };
 	auto falseBlock = [this]() {displayWidget("False Block", [this]() {action = Events::FALSEBLOCK; state = States::INIT_DONE; }); };
+	auto falseTrans = [this]() {displayWidget("False Transaction", [this]() {action = Events::FALSETRANS; state = States::INIT_DONE; }); };
 
 	/*If sender is a Full Node...*/
 	if (nodes[sender].type != NodeTypes::NEW_SPV) {
 		/*If receiver is a Full Node...*/
 		if (nodes[receiver].type != NodeTypes::NEW_SPV) {
-			///*Displays allowed messages.*/
-			//get_blocks();  ImGui::SameLine();
-			//post_block();  ImGui::SameLine();
 			transaction();
 
 			if (nodes[sender].type == NodeTypes::NEW_MINER) {
-				ImGui::SameLine();
-				falseBlock();
+				ImGui::SameLine(); falseBlock();
+			}
+			else {
+				ImGui::SameLine(); falseTrans();
 			}
 
 			ImGui::NewLine();
 		}
 		else
 			state = States::INIT_DONE;
-
-		///*If receiver is an SPV Node, displays allowed messages.*/
-		//else { merkleblock(); ImGui::NewLine(); }
 	}
 
 	/*If sender is an SPV Node...*/
@@ -620,9 +611,8 @@ void GUI::selectMessage() {
 		/*If receiver is a Full Node...*/
 		if (nodes[receiver].type != NodeTypes::NEW_SPV) {
 			///*Displays allowed messages.*/
-			//filter(); ImGui::SameLine();
-			//get_headers(); ImGui::SameLine();
-			transaction(); ImGui::NewLine();
+			transaction(); ImGui::SameLine();
+			falseTrans(); ImGui::NewLine();
 		}
 		else
 			state = States::INIT_DONE;
@@ -630,34 +620,8 @@ void GUI::selectMessage() {
 }
 
 void GUI::selectParameters() {
-	switch (action) {
-		/*Filter (POST).*/
-	//case Events::FILTER:
-	//	state = States::INIT_DONE;
-	//	break;
-
-	//	/*Blocks (GET).*/
-	//case Events::GET_BLOCKS:
-	//	state = States::INIT_DONE;
-	//	break;
-
-	//	/*Headers (GET).*/
-	//case Events::GET_HEADERS:
-	//	state = States::INIT_DONE;
-	//	break;
-
-	//	/*Merkleblock (POST).*/
-	//case Events::MERKLEBLOCK:
-	//	state = States::INIT_DONE;
-	//	break;
-
-	//	/*Block (POST).*/
-	//case Events::POST_BLOCK:
-	//	state = States::INIT_DONE;
-	//	break;
-
-		/*Transaction (POST).*/
-	case Events::TRANSACTION:
+	/*Transaction (POST).*/
+	if (action == Events::TRANSACTION) {
 		ImGui::Text("Enter amount:        ");
 		ImGui::SameLine();
 		ImGui::InputInt("..", &amount);
@@ -666,9 +630,6 @@ void GUI::selectParameters() {
 		ImGui::InputText("_.", &wallet);
 		ImGui::NewLine();
 		displayWidget("Done", [this]() {if (wallet.length() && amount) { state = States::INIT_DONE; } });
-		break;
-	default:
-		break;
 	}
 }
 

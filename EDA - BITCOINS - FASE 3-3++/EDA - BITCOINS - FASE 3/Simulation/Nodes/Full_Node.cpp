@@ -38,6 +38,7 @@ Full_Node::Full_Node(boost::asio::io_context& io_context, const std::string& ip,
 	actions[ConnectionType::POSTTRANS] = new POSTTrans(this);
 	actions[ConnectionType::PING] = new Ping(this);
 	actions[ConnectionType::LAYOUT] = new Layout(this);
+	actions[ConnectionType::FALSETRANS] = new FalseTrans(this);
 
 	/*Generates random time for timer.*/
 	double time = static_cast <double>((rand()) / (static_cast <double> (RAND_MAX)) * (timeMax - timeMin)) + timeMin;
@@ -72,7 +73,11 @@ void Full_Node::perform(ConnectionType type, const unsigned int id, const std::s
 		actions[ConnectionType::POSTBLOCK]->setData(getBlock(blockID));
 
 	else if (type == ConnectionType::POSTTRANS && actions[ConnectionType::POSTTRANS]->isDataNull()) {
-		actions[ConnectionType::POSTTRANS]->setData(generateTransJSON(blockID, count));
+		actions[ConnectionType::POSTTRANS]->setData(generateTransJSON(blockID, count, true));
+	}
+
+	else if (type == ConnectionType::FALSETRANS && actions[type]->isDataNull()) {
+		actions[type]->setData(generateTransJSON(blockID, count, false));
 	}
 
 	if (actions.find(type) != actions.end()) {
@@ -108,7 +113,28 @@ Full_Node::~Full_Node() {
 	}
 }
 
-const json Full_Node::generateTransJSON(const std::string& wallet, const unsigned int amount) {
+const json Full_Node::generateTransJSON(const std::string& wallet, const unsigned int amount, bool real) {
+	if (!real) {
+		json result, vout, vin, temp, tempVout;
+
+		temp["txid"] = "ABCDEFGH";
+		temp["outputIndex"] = 131;
+
+		vin.push_back(temp);
+
+		tempVout["publicid"] = wallet;
+		tempVout["amount"] = amount;
+		vout.push_back(tempVout);
+
+		result["vin"] = vin;
+		result["vout"] = vout;
+		result["txid"] = BlockChain::calculateTXID(result);
+		result["nTxin"] = 1;
+		result["nTxout"] = 1;
+
+		return result;
+	}
+
 	std::map<std::string, int> utxos;
 	json result;
 	int tot = 0;
@@ -149,22 +175,17 @@ const json Full_Node::generateTransJSON(const std::string& wallet, const unsigne
 				result["nTxin"] = result["vin"].size();
 				result["nTxout"] = result["vout"].size();
 
-				//print("Generated ID = " + result["txid"].get<std::string>());
-
-				for (auto& tx : utxos) {
-					UTXOs[tx.first]["vout"][tx.second] = json();
-				}
+				for (auto& tx : utxos) 	UTXOs[tx.first]["vout"][tx.second] = json();
 
 				UTXOs[result["txid"]] = result;
-				transactions.push_back(result["txid"]);
-
 				messenger.setMessage("Node " + std::to_string(identifier) + " made a transaction for " + std::to_string(amount) + " EDA coin(s)");
+				transactions.push_back(result["txid"]);
 
 				return result;
 			}
 		}
 	}
-	messenger.setMessage("Node " + std::to_string(identifier) + " doesn´t have " + std::to_string(amount) + " EDA coin(s) to perform a transaction");
+	messenger.setMessage("Node " + std::to_string(identifier) + " doesn\'t have " + std::to_string(amount) + " EDA coin(s) to perform a transaction");
 
 	return json();
 }
@@ -418,10 +439,8 @@ bool Full_Node::validateTransaction(const json& trans, bool alreadyChecked) {
 		}
 	}
 
-	std::string message = "Node " + std::to_string(identifier) + " is " +
-		(result ? "rejecting" : "accepting") + " a transaction";
+	if (!result) messenger.setMessage("Node " + std::to_string(identifier) + " is rejecting a transaction");
 
-	//print("Returning result of block validation");
 	return result;
 }
 

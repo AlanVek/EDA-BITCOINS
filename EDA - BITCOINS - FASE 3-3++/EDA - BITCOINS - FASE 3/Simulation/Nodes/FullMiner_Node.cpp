@@ -94,7 +94,7 @@ void FullMiner_Node::perform(ConnectionType type, const unsigned int id, const s
 		actions[ConnectionType::POSTBLOCK]->setData(getBlock(blockID));
 
 	else if (type == ConnectionType::POSTTRANS && actions[ConnectionType::POSTTRANS]->isDataNull()) {
-		actions[ConnectionType::POSTTRANS]->setData(generateTransJSON(blockID, count));
+		actions[ConnectionType::POSTTRANS]->setData(generateTransJSON(blockID, count, true));
 	}
 
 	else if (type == ConnectionType::FALSEBLOCK) {

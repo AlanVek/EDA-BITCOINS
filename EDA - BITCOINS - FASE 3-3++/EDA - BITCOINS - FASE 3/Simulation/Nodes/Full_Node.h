@@ -82,7 +82,7 @@ protected:
 	bool validateTransaction(const json&, bool);
 	bool validateBlock(const json&);
 
-	const json generateTransJSON(const std::string&, const unsigned int);
+	const json generateTransJSON(const std::string&, const unsigned int, bool);
 
 	void updateUTXOs(const json&);
 

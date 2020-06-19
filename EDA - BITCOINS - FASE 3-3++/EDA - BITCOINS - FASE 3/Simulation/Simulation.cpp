@@ -84,6 +84,11 @@ void Simulation::dispatch(const Events& code) {
 		}
 
 		break;
+	case Events::FALSETRANS:
+		if (index != -1) {
+			nodes[index]->perform(ConnectionType::FALSETRANS, gui->getReceiverID(), "", NULL);
+		}
+
 	default:
 		break;
 	}

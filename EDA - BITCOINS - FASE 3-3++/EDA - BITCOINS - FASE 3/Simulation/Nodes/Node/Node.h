@@ -16,7 +16,8 @@ const enum class ConnectionType : unsigned int {
 	POSTFILTER,
 	PING,
 	LAYOUT,
-	FALSEBLOCK
+	FALSEBLOCK,
+	FALSETRANS
 };
 
 struct Neighbor {
@@ -66,7 +67,7 @@ protected:
 	virtual const std::string headerFormat(const std::string&);
 
 	virtual int setConnectedClientID(const boost::asio::ip::tcp::endpoint&);
-	virtual const json generateTransJSON(const std::string& wallet, const unsigned int amount) = 0;
+	virtual const json generateTransJSON(const std::string&, const unsigned int, bool) = 0;
 
 	std::list<Client*> clients;
 	Server server;
@@ -153,12 +154,12 @@ protected:
 		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
 		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
 	};
-	//class FalseBlock : public Action {
-	//public:
-	//	FalseBlock(Node*);
-	//	virtual void Perform(const unsigned int, const std::string&, const unsigned int);
-	//	virtual void Perform(const unsigned int, const std::string&, const std::string&);
-	//};
+	class FalseTrans : public Action {
+	public:
+		FalseTrans(Node*);
+		virtual void Perform(const unsigned int, const std::string&, const unsigned int);
+		virtual void Perform(const unsigned int, const std::string&, const std::string&) {};
+	};
 
 	/************************************************************************************************************/
 	std::map <ConnectionType, Action*> actions;

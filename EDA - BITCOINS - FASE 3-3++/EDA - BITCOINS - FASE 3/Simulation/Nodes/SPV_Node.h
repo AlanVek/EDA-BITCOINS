@@ -30,7 +30,7 @@ private:
 	virtual const std::string POSTResponse(const std::string&, const boost::asio::ip::tcp::endpoint&);
 
 	bool validateMerkleBlock(const json&);
-	virtual const json generateTransJSON(const std::string& wallet, const unsigned int amount);
+	virtual const json generateTransJSON(const std::string&, const unsigned int, bool);
 
 	std::map<std::string, json> headers;
 

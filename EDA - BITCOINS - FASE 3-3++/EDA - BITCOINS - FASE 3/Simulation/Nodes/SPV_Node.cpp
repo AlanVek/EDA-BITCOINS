@@ -16,6 +16,7 @@ SPV_Node::SPV_Node(boost::asio::io_context& io_context, const std::string& ip,
 	actions[ConnectionType::POSTFILTER] = new POSTFilter(this);
 	actions[ConnectionType::GETHEADER] = new GETHeader(this);
 	actions[ConnectionType::PING] = new Ping(this);
+	actions[ConnectionType::FALSETRANS] = new FalseTrans(this);
 }
 
 /*GET callback for server.*/
@@ -91,7 +92,10 @@ SPV_Node::~SPV_Node() {}
 void SPV_Node::perform(ConnectionType type, const unsigned int id, const std::string& blockID, const unsigned int count) {
 	if (actions.find(type) != actions.end()) {
 		if (type == ConnectionType::POSTTRANS && actions[type]->isDataNull()) {
-			actions[type]->setData(generateTransJSON(blockID, count));
+			actions[type]->setData(generateTransJSON(blockID, count, true));
+		}
+		else if (type == ConnectionType::FALSETRANS && actions[type]->isDataNull()) {
+			actions[type]->setData(generateTransJSON(blockID, count, false));
 		}
 
 		if (!actions[type]->isDataNull()) messenger.setMessage("Node " + std::to_string(identifier) + " is performing a client request.");
@@ -172,7 +176,27 @@ bool SPV_Node::validateMerkleBlock(const json& merkle) {
 	}
 }
 
-const json SPV_Node::generateTransJSON(const std::string& wallet, const unsigned int amount) {
+const json SPV_Node::generateTransJSON(const std::string& wallet, const unsigned int amount, bool real) {
+	if (!real) {
+		json result, vout, vin, temp, tempVout;
+
+		temp["txid"] = "ABCDEFGH";
+		temp["outputIndex"] = 131;
+
+		vin.push_back(temp);
+
+		tempVout["publicid"] = wallet;
+		tempVout["amount"] = amount;
+		vout.push_back(tempVout);
+
+		result["vin"] = vin;
+		result["vout"] = vout;
+		result["txid"] = BlockChain::calculateTXID(result);
+		result["nTxin"] = 1;
+		result["nTxout"] = 1;
+
+		return result;
+	}
 	std::map<std::string, int> utxos;
 	json result;
 	int tot = 0;
@@ -210,25 +234,21 @@ const json SPV_Node::generateTransJSON(const std::string& wallet, const unsigned
 
 				result["vin"] = vin;
 				result["vout"] = vout;
+
 				result["txid"] = BlockChain::calculateTXID(result);
+
 				result["nTxin"] = result["vin"].size();
 				result["nTxout"] = result["vout"].size();
 
-				for (auto& tx : utxos) {
-					UTXOs.erase(tx.first);
-				}
-
-				std::string res = result.dump();
+				for (auto& tx : utxos) UTXOs.erase(tx.first);
 
 				UTXOs[result["txid"]] = result;
-
 				messenger.setMessage("Node " + std::to_string(identifier) + " made a transaction for " + std::to_string(amount) + " EDA coin(s)");
-
 				return result;
 			}
 		}
 	}
 
-	messenger.setMessage("Node " + std::to_string(identifier) + " doesn´t have " + std::to_string(amount) + " EDA coin(s) to perform a transaction");
+	messenger.setMessage("Node " + std::to_string(identifier) + " doesn\'t have " + std::to_string(amount) + " EDA coin(s) to perform a transaction");
 	return json();
 }
