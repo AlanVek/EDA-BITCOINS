@@ -14,8 +14,8 @@
 /*GUI data.*/
 /***************************************/
 namespace data {
-	const unsigned int width = 1500;
-	const unsigned int height = 800;
+	const unsigned int width = 1000;
+	const unsigned int height = 500;
 	const int notSelectedIndex = -1;
 	const char* autoIP = "127.0.0.1";
 	const std::string word = "Creating Network";
@@ -39,6 +39,8 @@ GUI::GUI(std::vector<Node*>& nodes) :
 	guiQueue(nullptr),
 	action(Events::NOTHING),
 	state(States::INIT),
+	currentIndex(-1),
+	dataIndex(-1),
 	showingBlock(Shower::NOTHING),
 	allNodes(nodes)
 {
@@ -126,7 +128,7 @@ bool GUI::eventManager(void) {
 /*Initial data input for node selection.
 Returns true if setup was done successfully or
 false if user asked to leave.*/
-bool GUI::nodeSelectionScreen(bool* newNet) {
+bool GUI::nodeSelectionScreen(bool* newNet) {                         /*********************************************/
 	bool result = false;
 	*newNet = false;
 	bool endOfSetup = false;
@@ -193,7 +195,7 @@ bool GUI::nodeSelectionScreen(bool* newNet) {
 }
 
 /*Initial screen.*/
-bool GUI::init(bool* endOfSetup) {
+bool GUI::init(bool* endOfSetup) {     /*******************************/
 	bool result = false;
 
 	/*If user already created nodes, it exits.*/
@@ -300,153 +302,15 @@ Events GUI::checkStatus(void) {
 			result = action;
 			action = Events::NOTHING;
 		}
-
-		/***************************************ADDED***********************************/
-
-	/*Fills a vector with each GUINodes struct(contains window position and buttom variables)*/
-		if (guiNodes.size() != allNodes.size())
-			for (unsigned int i = guiNodes.size(); i < allNodes.size(); i++) {
-				guiNodes_t temp = { ImVec2(0,0),false,false,false,-1,Shower::NOTHING };
-				guiNodes.push_back(temp);
-			}
-
-		/*Draw lines on main window*/
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		ImU32 col = ImGui::GetColorU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-
-		for (unsigned int i = 0; i < allNodes.size(); i++)
-			for (auto& neighbor : allNodes[i]->getNeighbors())
-				drawList->AddLine(guiNodes[i].pos, guiNodes[neighbor.first].pos, col, 1.0);
-
-		/*Ends drawing on main screen*/
-		ImGui::End();
-
-		/*Demo window*/
-		//bool demo = true;
-		//ImGui::ShowDemoWindow(&demo);
-
-		/*Creates a window for every Node*/
-		for (unsigned int i = 0; i < allNodes.size(); i++)
-			newNodeWindow(("Node " + std::to_string(allNodes[i]->getID())).c_str(), i);
-
-		/***********************************************************************************/
-
 		/*Rendering.*/
-		ImGui::EndFrame();
+		ImGui::End();
 		render();
 	}
 	return result;
 }
 
-/*****************************************************ADDED***************************************************************************/
-
-/*It creates a window for nodes. positionX and positionY unused*/
-void GUI::newNodeWindow(const char* title, int index) {
-	bool checker = typeid(*allNodes[index]) == typeid(SPV_Node);
-
-	const std::string typeText = checker ? "SPV" : (typeid(*allNodes[index]) == typeid(Full_Node) ? "FULL" : "FULL Miner");
-
-	ImGui::Begin(title);
-
-	//Gets node window position.
-	guiNodes[index].pos = ImGui::GetWindowPos();
-
-	ImGui::Text(("Type: " + typeText).c_str());
-	ImGui::Text("Neighbors: ");
-
-	for (auto& neighbor : allNodes[index]->getNeighbors())
-		ImGui::Text(("Node " + std::to_string(neighbor.first)).c_str());
-
-	if (!checker) {
-		neighborButtons(guiNodes[index].doingNeighbors, guiNodes[index].isLocal, guiNodes[index].selected, index);
-		/*Shows blocks*/
-		showBlocksWindows(index);
-
-		if (guiNodes[index].boxIndex != -1)
-			displayActionsWindows(index);
-	}
-
-	ImGui::End();
-}
-
-/*For every block in the vector, it shows it.*/
-void GUI::showBlocksWindows(unsigned int index) {
-	static bool checker;
-
-	for (unsigned int i = 0; i < allNodes[index]->getData().size(); i++) {
-		checker = (guiNodes[index].boxIndex == i);
-		ImGui::Checkbox(("Block " + std::to_string(i)).c_str(), &checker);
-
-		if (checker)
-			guiNodes[index].boxIndex = i;
-		else if (!checker && (guiNodes[index].boxIndex == i))
-			guiNodes[index].boxIndex = -1;
-
-		ImGui::SameLine();
-	}
-}
-
-/*Displays action buttons.*/
-void GUI::displayActionsWindows(unsigned int index) {
-	unsigned int blockIndex = guiNodes[index].boxIndex;
-	ImGui::NewLine();
-	ImGui::Text("Action to perform: ");
-
-	/*Creates buttons for different functionalities.*/
-	displayWidget("Block ID", ([this]() {showingBlock = Shower::BLOCKID; }));
-	ImGui::SameLine();
-	displayWidget("Previous ID", ([this]() {showingBlock = Shower::PREVIOUS_BLOCKID; }));
-	ImGui::SameLine();
-	displayWidget("nTx", ([this]() {showingBlock = Shower::NTX; }));
-	ImGui::SameLine();
-	displayWidget("Block Number", ([this]() {showingBlock = Shower::BLOCK_NUMBER; }));
-	ImGui::SameLine();
-	displayWidget("Nonce", ([this]() {showingBlock = Shower::NONCE; }));
-	ImGui::SameLine();
-	displayWidget("Calculate MR", ([this]() {showingBlock = Shower::SEE_MROOT; }));
-	ImGui::SameLine();
-	displayWidget("Validate MR", ([this]() {showingBlock = Shower::VALIDATE_MROOT; }));
-	ImGui::SameLine();
-	displayWidget("Print tree", ([this]() {showingBlock = Shower::PRINT_TREE; }));
-
-	/*This is done like this because guiNodes[index].showBlock cannot be on the displayWidget*/
-	if (showingBlock != Shower::NOTHING) {
-		guiNodes[index].showBlock = showingBlock;
-		showingBlock = Shower::NOTHING;
-	}
-
-	/*Acts upon action selected.*/
-	switch (guiNodes[index].showBlock) {
-	case Shower::BLOCKID:
-		ImGui::Text(allNodes[index]->getData()[blockIndex]["blockid"].get<std::string>().c_str());
-		break;
-	case Shower::VALIDATE_MROOT:
-		ImGui::Text(allNodes[index]->validateMRoot(blockIndex).c_str());
-		break;
-	case Shower::BLOCK_NUMBER:
-		ImGui::Text(std::to_string(allNodes[index]->getData()[blockIndex]["height"].get<int>()).c_str());
-		break;
-	case Shower::NONCE:
-		ImGui::Text(std::to_string(allNodes[index]->getData()[blockIndex]["nonce"].get<int>()).c_str());
-		break;
-	case Shower::NTX:
-		ImGui::Text(std::to_string(allNodes[index]->getData()[blockIndex]["nTx"].get<int>()).c_str());
-		break;
-	case Shower::PREVIOUS_BLOCKID:
-		ImGui::Text(allNodes[index]->getData()[blockIndex]["previousblockid"].get<std::string>().c_str());
-		break;
-	case Shower::PRINT_TREE:
-		ImGui::Text(allNodes[index]->printTree(blockIndex).c_str());
-		break;
-	case Shower::SEE_MROOT:
-		ImGui::Text(allNodes[index]->getData()[blockIndex]["merkleroot"].get<std::string>().c_str());
-		break;
-	}
-}
-/*************************************************************************************************************************/
-
 /*New node type selection.*/
-void GUI::newNode() {
+void GUI::newNode() {             /***************************************************/
 	ImGui::Text("Select type: ");
 	ImGui::SameLine();
 
@@ -770,7 +634,7 @@ void GUI::selectParameters() {
 }
 
 /*Adds new neighbor to node.*/
-bool GUI::addNeighbor(bool local, bool type, int currentIndex) {
+bool GUI::addNeighbor(bool local, bool type) {
 	static NewNode neighbor;
 
 	/*Sets new neighbor's IP and port.*/
@@ -790,7 +654,7 @@ bool GUI::addNeighbor(bool local, bool type, int currentIndex) {
 					if (node->getPort() == neighbor.port) {
 						allNodes[currentIndex]->perform(ConnectionType::PING, NULL, node->getIP(), node->getPort());
 						allNodes[currentIndex]->newNeighbor(node->getID(), node->getIP(), node->getPort(), node->getKey());
-						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort(), "");
+						node->newNeighbor(allNodes[currentIndex]->getID(), data::autoIP, allNodes[currentIndex]->getPort(), node->getKey());
 					}
 				}
 				neighbor = NewNode();
@@ -821,9 +685,9 @@ bool GUI::addNeighbor(bool local, bool type, int currentIndex) {
 /*General screen after GUI has been initialized.*/
 void GUI::generalScreen() {
 	/*Shows nodes.*/
-	//showNodes();
-	//ImGui::NewLine();
-	//ImGui::NewLine();
+	showNodes();
+	ImGui::NewLine();
+	ImGui::NewLine();
 
 	ImGui::Text("Actions: ");
 
@@ -840,70 +704,70 @@ void GUI::generalScreen() {
 	displayWidget("New node", [this]() {state = States::APPENDIX_MODE; });
 }
 
-///*Shows nodes.*/
-//void GUI::showNodes() {
-//	static bool doingNeighbors = false;
-//	static bool isLocal = false;
-//	static bool selected = false;
-//	static int neighborIndex = -1;
-//
-//	if (currentIndex == -1) {
-//		ImGui::Text("Nodes: ");
-//
-//		/*Displays buttons with nodes' IDs.*/
-//		for (int i = 0; i < allNodes.size(); i++) {
-//			displayWidget(("Node " + std::to_string(allNodes[i]->getID())).c_str(), [this, i]() {currentIndex = i; });
-//			ImGui::SameLine();
-//		}
-//	}
-//
-//	/*If a specific node has been selected...*/
-//	else {
-//		bool checker = typeid(*allNodes[currentIndex]) != typeid(SPV_Node);
-//		const std::string typeText = !checker ? "SPV" : (typeid(*allNodes[currentIndex]) == typeid(Full_Node) ? "FULL" : "FULL MINER");
-//		ImGui::Text(("Type: " + typeText).c_str());
-//		ImGui::Text("Neighbors: ");
-//		ImGui::SameLine();
-//		for (auto& neighbor : allNodes[currentIndex]->getNeighbors()) {
-//			ImGui::Text(("Node " + std::to_string(neighbor.first)).c_str());
-//			ImGui::SameLine();
-//		}
-//		ImGui::NewLine();
-//		/*If it's a full node...*/
-//		if (checker) {
-//			neighborButtons(doingNeighbors, isLocal, selected, 0);
-//
-//			/*Shows blocks*/
-//			showBlocks();
-//
-//			//displayActions();
-//		}
-//
-//		/*If it was SPV...*/
-//		else {
-//			/*displayWidget("Modify Neighbors", []() {doingNeighbors = true; });
-//			if (doingNeighbors) {
-//				if (neighborIndex == -1) {
-//					for (auto& neighbor : allNodes[currentIndex]->getNeighbors()) {
-//						displayWidget(("Node " + std::to_string(neighbor.first)).c_str(), [&neighbor]() {neighborIndex = neighbor.first; });
-//					}
-//				}
-//				else {
-//					if (modifyNeighbor(neighborIndex)) {
-//						neighborIndex = -1;
-//					};
-//				}
-//			}*/
-//		}
-//
-//		ImGui::SameLine();
-//		/*Button to go back.*/
-//		displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; selected = false; doingNeighbors = false; showingBlock = Shower::NOTHING; });
-//		if (dataIndex != -1) {
-//			displayActions();
-//		}
-//	}
-//}
+/*Shows nodes.*/
+void GUI::showNodes() {
+	static bool doingNeighbors = false;
+	static bool isLocal = false;
+	static bool selected = false;
+	static int neighborIndex = -1;
+
+	if (currentIndex == -1) {
+		ImGui::Text("Nodes: ");
+
+		/*Displays buttons with nodes' IDs.*/
+		for (int i = 0; i < allNodes.size(); i++) {
+			displayWidget(("Node " + std::to_string(allNodes[i]->getID())).c_str(), [this, i]() {currentIndex = i; });
+			ImGui::SameLine();
+		}
+	}
+
+	/*If a specific node has been selected...*/
+	else {
+		bool checker = typeid(*allNodes[currentIndex]) != typeid(SPV_Node);
+		const std::string typeText = !checker ? "SPV" : (typeid(*allNodes[currentIndex]) == typeid(Full_Node) ? "FULL" : "FULL MINER");
+		ImGui::Text(("Type: " + typeText).c_str());
+		ImGui::Text("Neighbors: ");
+		ImGui::SameLine();
+		for (auto& neighbor : allNodes[currentIndex]->getNeighbors()) {
+			ImGui::Text(("Node " + std::to_string(neighbor.first)).c_str());
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+		/*If it's a full node...*/
+		if (checker) {
+			neighborButtons(doingNeighbors, isLocal, selected);
+
+			/*Shows blocks*/
+			showBlocks();
+
+			//displayActions();
+		}
+
+		/*If it was SPV...*/
+		else {
+			/*displayWidget("Modify Neighbors", []() {doingNeighbors = true; });
+			if (doingNeighbors) {
+				if (neighborIndex == -1) {
+					for (auto& neighbor : allNodes[currentIndex]->getNeighbors()) {
+						displayWidget(("Node " + std::to_string(neighbor.first)).c_str(), [&neighbor]() {neighborIndex = neighbor.first; });
+					}
+				}
+				else {
+					if (modifyNeighbor(neighborIndex)) {
+						neighborIndex = -1;
+					};
+				}
+			}*/
+		}
+
+		ImGui::SameLine();
+		/*Button to go back.*/
+		displayWidget("Go Back", [this]() {currentIndex = -1; dataIndex = -1; selected = false; doingNeighbors = false; showingBlock = Shower::NOTHING; });
+		if (dataIndex != -1) {
+			displayActions();
+		}
+	}
+}
 
 void GUI::addMiner() {
 	bool used = false;
@@ -944,7 +808,7 @@ bool GUI::modifyNeighbor(int id) {  /*******************************************
 	return true;
 }
 
-void GUI::neighborButtons(bool& addingNeighbor, bool& isLocal, bool& selected, int currentIndex) {
+void GUI::neighborButtons(bool& addingNeighbor, bool& isLocal, bool& selected) {
 	/*Button to add new neighbor.*/
 	displayWidget("Add neighbor", [this, &addingNeighbor]() {addingNeighbor = true; });
 
@@ -958,7 +822,7 @@ void GUI::neighborButtons(bool& addingNeighbor, bool& isLocal, bool& selected, i
 		}
 		if (selected) {
 			/*Once selected, adds the neighbor.*/
-			if (addNeighbor(isLocal, true, currentIndex)) {
+			if (addNeighbor(isLocal, true)) {
 				addingNeighbor = false;
 				selected = false;
 				isLocal = false;
@@ -967,73 +831,73 @@ void GUI::neighborButtons(bool& addingNeighbor, bool& isLocal, bool& selected, i
 	}
 }
 
-///*Displays action buttons.*/
-//inline void GUI::displayActions() {
-//	ImGui::NewLine();
-//	ImGui::Text("Action to perform: ");
-//
-//	/*Creates buttons for different functionalities.*/
-//	displayWidget("Block ID", ([this]() {showingBlock = Shower::BLOCKID; }));
-//	ImGui::SameLine();
-//	displayWidget("Previous ID", ([this]() {showingBlock = Shower::PREVIOUS_BLOCKID; }));
-//	ImGui::SameLine();
-//	displayWidget("nTx", ([this]() {showingBlock = Shower::NTX; }));
-//	ImGui::SameLine();
-//	displayWidget("Block Number", ([this]() {showingBlock = Shower::BLOCK_NUMBER; }));
-//	ImGui::SameLine();
-//	displayWidget("Nonce", ([this]() {showingBlock = Shower::NONCE; }));
-//	ImGui::SameLine();
-//	displayWidget("Calculate MR", ([this]() {showingBlock = Shower::SEE_MROOT; }));
-//	ImGui::SameLine();
-//	displayWidget("Validate MR", ([this]() {showingBlock = Shower::VALIDATE_MROOT; }));
-//	ImGui::SameLine();
-//	displayWidget("Print tree", ([this]() {showingBlock = Shower::PRINT_TREE; }));
-//
-//	/*Acts upon action selected.*/
-//	switch (showingBlock) {
-//	case Shower::BLOCKID:
-//		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["blockid"].get<std::string>().c_str());
-//		break;
-//	case Shower::VALIDATE_MROOT:
-//		ImGui::Text(allNodes[currentIndex]->validateMRoot(dataIndex).c_str());
-//		break;
-//	case Shower::BLOCK_NUMBER:
-//		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["height"].get<int>()).c_str());
-//		break;
-//	case Shower::NONCE:
-//		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["nonce"].get<int>()).c_str());
-//		break;
-//	case Shower::NTX:
-//		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["nTx"].get<int>()).c_str());
-//		break;
-//	case Shower::PREVIOUS_BLOCKID:
-//		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["previousblockid"].get<std::string>().c_str());
-//		break;
-//	case Shower::PRINT_TREE:
-//		ImGui::Text(allNodes[currentIndex]->printTree(dataIndex).c_str());
-//		break;
-//	case Shower::SEE_MROOT:
-//		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["merkleroot"].get<std::string>().c_str());
-//		break;
-//	}
-//}
+/*Displays action buttons.*/
+inline void GUI::displayActions() {
+	ImGui::NewLine();
+	ImGui::Text("Action to perform: ");
 
-///*For every block in the vector, it shows it.*/
-//void GUI::showBlocks(void) {
-//	bool checker;
-//
-//	/*Sets a button with the blocks number to determine whether the user wants to see each block's data.*/
-//	for (unsigned int i = 0; i < allNodes[currentIndex]->getData().size(); i++) {
-//		checker = (dataIndex == i);
-//		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i)).c_str(), &checker),
-//
-//			[this, i, &checker]() {
-//				if (checker) dataIndex = i;
-//				else dataIndex = -1;
-//			});
-//		ImGui::SameLine();
-//	}
-//}
+	/*Creates buttons for different functionalities.*/
+	displayWidget("Block ID", ([this]() {showingBlock = Shower::BLOCKID; }));
+	ImGui::SameLine();
+	displayWidget("Previous ID", ([this]() {showingBlock = Shower::PREVIOUS_BLOCKID; }));
+	ImGui::SameLine();
+	displayWidget("nTx", ([this]() {showingBlock = Shower::NTX; }));
+	ImGui::SameLine();
+	displayWidget("Block Number", ([this]() {showingBlock = Shower::BLOCK_NUMBER; }));
+	ImGui::SameLine();
+	displayWidget("Nonce", ([this]() {showingBlock = Shower::NONCE; }));
+	ImGui::SameLine();
+	displayWidget("Calculate MR", ([this]() {showingBlock = Shower::SEE_MROOT; }));
+	ImGui::SameLine();
+	displayWidget("Validate MR", ([this]() {showingBlock = Shower::VALIDATE_MROOT; }));
+	ImGui::SameLine();
+	displayWidget("Print tree", ([this]() {showingBlock = Shower::PRINT_TREE; }));
+
+	/*Acts upon action selected.*/
+	switch (showingBlock) {
+	case Shower::BLOCKID:
+		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["blockid"].get<std::string>().c_str());
+		break;
+	case Shower::VALIDATE_MROOT:
+		ImGui::Text(allNodes[currentIndex]->validateMRoot(dataIndex).c_str());
+		break;
+	case Shower::BLOCK_NUMBER:
+		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["height"].get<int>()).c_str());
+		break;
+	case Shower::NONCE:
+		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["nonce"].get<int>()).c_str());
+		break;
+	case Shower::NTX:
+		ImGui::Text(std::to_string(allNodes[currentIndex]->getData()[dataIndex]["nTx"].get<int>()).c_str());
+		break;
+	case Shower::PREVIOUS_BLOCKID:
+		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["previousblockid"].get<std::string>().c_str());
+		break;
+	case Shower::PRINT_TREE:
+		ImGui::Text(allNodes[currentIndex]->printTree(dataIndex).c_str());
+		break;
+	case Shower::SEE_MROOT:
+		ImGui::Text(allNodes[currentIndex]->getData()[dataIndex]["merkleroot"].get<std::string>().c_str());
+		break;
+	}
+}
+
+/*For every block in the vector, it shows it.*/
+void GUI::showBlocks(void) {
+	bool checker;
+
+	/*Sets a button with the blocks number to determine whether the user wants to see each block's data.*/
+	for (unsigned int i = 0; i < allNodes[currentIndex]->getData().size(); i++) {
+		checker = (dataIndex == i);
+		displayWidget(std::bind(ImGui::Checkbox, ("Block " + std::to_string(i)).c_str(), &checker),
+
+			[this, i, &checker]() {
+				if (checker) dataIndex = i;
+				else dataIndex = -1;
+			});
+		ImGui::SameLine();
+	}
+}
 /*Sets a new ImGUI frame and window.*/
 inline void GUI::newWindow(const char* title) const {
 	//Sets new ImGUI frame.
@@ -1045,7 +909,7 @@ inline void GUI::newWindow(const char* title) const {
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 
 	/*Begins window and sets title.*/
-	ImGui::Begin(title, NULL, ImGuiWindowFlags_NoBringToFrontOnFocus);
+	ImGui::Begin(title);
 }
 
 /*Rendering.*/

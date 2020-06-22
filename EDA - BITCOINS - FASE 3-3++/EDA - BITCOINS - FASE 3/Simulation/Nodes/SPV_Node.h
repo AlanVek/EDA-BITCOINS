@@ -15,7 +15,7 @@ public:
 	virtual const std::string printTree(unsigned int) { return std::string(); };
 	virtual const std::string validateMRoot(unsigned int) { return std::string(); };
 
-	virtual const std::string& getKey() { return publicKey; }
+	virtual const std::string getKey() { return publicKey; }
 
 	virtual void startTimer() {}
 

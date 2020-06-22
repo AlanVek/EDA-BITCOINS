@@ -44,7 +44,7 @@ public:
 	virtual const std::string printTree(unsigned int idx) { return blockChain.getBlockInfo(idx, BlockInfo::PRINT_TREE); }
 	virtual const std::string validateMRoot(unsigned int idx) { return blockChain.getBlockInfo(idx, BlockInfo::VALIDATE_MROOT); }
 
-	virtual const std::string& getKey() { return std::string(); }
+	virtual const std::string getKey() { return std::string(); }
 
 	virtual void startTimer() { if (timer) al_start_timer(timer); }
 

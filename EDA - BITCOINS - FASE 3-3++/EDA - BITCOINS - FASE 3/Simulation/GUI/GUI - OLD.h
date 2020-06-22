@@ -1,38 +1,8 @@
 #pragma once
 #include <allegro5/allegro.h>
-#include <allegro5/allegro.h>
 #include <vector>
 #include <string>
-#include "../Simulation/GUI/imgui/imgui.h"
 
-/**************ADDED*******************/
-
-#define PI 3.14159265
-
-//I need this for the struct(if i dont use it, it shows in every node the same action)
-const enum class Shower : int {
-	NOTHING = 0,
-	SEE_MROOT,
-	VALIDATE_MROOT,
-	BLOCKID,
-	PREVIOUS_BLOCKID,
-	NTX,
-	BLOCK_NUMBER,
-	NONCE,
-	PRINT_TREE,
-};
-
-typedef struct {
-	ImVec2 pos;
-	//Buttom variables
-	bool doingNeighbors;
-	bool isLocal;
-	bool selected;
-	int boxIndex;
-	Shower showBlock;
-}guiNodes_t;
-
-/***************************************************/
 class Node;
 
 /*GUI event codes.*/
@@ -58,7 +28,7 @@ const enum class NodeTypes {
 
 class GUI {
 private:
-	/*
+
 	const enum class Shower : int {
 		NOTHING = 0,
 		SEE_MROOT,
@@ -70,7 +40,7 @@ private:
 		NONCE,
 		PRINT_TREE,
 	};
-	*/
+
 	/*Node struct to keep node info in GUI.*/
 	struct NewNode {
 		/*Constructor.*/
@@ -116,12 +86,6 @@ public:
 	void infoGotten();
 
 private:
-
-	/**************************ADDED***********************************************************/
-	void newNodeWindow(const char* title, int index);
-	void showBlocksWindows(unsigned int index);
-	void displayActionsWindows(unsigned int index);
-	/******************************************************************************************/
 
 	/*GUI states.*/
 	/****************************/
@@ -171,7 +135,7 @@ private:
 	void showConnections(void);
 	void showNetworkingInfo(void);
 	void genesisConnection(void);
-	bool addNeighbor(bool, bool, int);
+	bool addNeighbor(bool, bool);
 	bool modifyNeighbor(int);
 	void addMiner();
 	/***********************/
@@ -200,7 +164,7 @@ private:
 	void displayActions();
 	void showNodes();
 	//void displaySPVActions();
-	void neighborButtons(bool&, bool&, bool&, int);
+	void neighborButtons(bool&, bool&, bool&);
 
 	/*Flag data members.*/
 	/******************************/
@@ -216,10 +180,7 @@ private:
 	std::string wallet;
 	int amount;
 	std::string networkingInfo;
+	int currentIndex, dataIndex;
 	Shower showingBlock;
 	/**********************************/
-
-	/***********************************************ADDED**********************************/
-	std::vector <guiNodes_t> guiNodes;
-	/**************************************************************************************/
 };
