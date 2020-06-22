@@ -304,20 +304,21 @@ Events GUI::checkStatus(void) {
 		/***************************************ADDED***********************************/
 
 	/*Fills a vector with each GUINodes struct(contains window position and buttom variables)*/
-		if (guiNodes.size() != allNodes.size())
+		if (guiNodes.size() != allNodes.size()) {
 			for (unsigned int i = guiNodes.size(); i < allNodes.size(); i++) {
 				guiNodes_t temp = { ImVec2(0,0),false,false,false,-1,Shower::NOTHING };
 				guiNodes.push_back(temp);
 			}
+		}
 
 		/*Draw lines on main window*/
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		ImU32 col = ImGui::GetColorU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
 
-		for (unsigned int i = 0; i < allNodes.size(); i++)
+		for (unsigned int i = 0; i < allNodes.size(); i++) {
 			for (auto& neighbor : allNodes[i]->getNeighbors())
 				drawList->AddLine(guiNodes[i].pos, guiNodes[neighbor.first].pos, col, 1.0);
-
+		}
 		/*Ends drawing on main screen*/
 		ImGui::End();
 
