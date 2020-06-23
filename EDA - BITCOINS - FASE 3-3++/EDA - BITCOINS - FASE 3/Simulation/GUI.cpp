@@ -316,8 +316,15 @@ Events GUI::checkStatus(void) {
 		ImU32 col = ImGui::GetColorU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
 
 		for (unsigned int i = 0; i < allNodes.size(); i++) {
-			for (auto& neighbor : allNodes[i]->getNeighbors())
-				drawList->AddLine(guiNodes[i].pos, guiNodes[neighbor.first].pos, col, 1.0);
+			for (auto& neighbor : allNodes[i]->getNeighbors()) {
+				bool isLocal = false;
+				for (unsigned int j = 0; j < allNodes.size(); j++) {
+					if (neighbor.first == allNodes[j]->getID())
+						isLocal = true;
+				}
+				if (isLocal)
+					drawList->AddLine(guiNodes[i].pos, guiNodes[neighbor.first].pos, col, 1.0);
+			}
 		}
 		/*Ends drawing on main screen*/
 		ImGui::End();
